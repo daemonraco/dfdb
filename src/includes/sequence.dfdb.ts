@@ -58,6 +58,21 @@ export class Sequence implements IResource, IDelayedResource {
             done();
         }
     }
+    public close(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            this.save(done);
+            this._value = 0;
+            this._loaded = false;
+        } else {
+            done();
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }
@@ -76,6 +91,9 @@ export class Sequence implements IResource, IDelayedResource {
 
     //
     // Protected methods.
+    protected resetError(): void {
+        this._lastError = null;
+    }
     protected save(done: any = null): void {
         this._connection.filePointer().file(this._resourcePath, `${this._value}`);
 

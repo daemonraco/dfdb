@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------- //
 // Dependences.
 const assert = require('chai').assert;
+const fs = require('fs');
 const path = require('path');
 
 // ---------------------------------------------------------------------------- //
@@ -40,6 +41,9 @@ describe('dfdb: Indexes and Searches', function () {
         assert.typeOf(connection.table, 'function');
 
         connection.table(tableName, tab => {
+            assert.isFalse(connection.error());
+            assert.isNull(connection.lastError());
+
             assert.instanceOf(tab, types.Table);
             assert.isFalse(tab.error());
 
@@ -51,9 +55,9 @@ describe('dfdb: Indexes and Searches', function () {
     it('inserts example documents', done => {
         assert.typeOf(table.insert, 'function');
 
-        let docs = require('./dataset.001.json');
+        let docs = JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.001.json')));
         const run = () => {
-            const doc = docs.pop();
+            const doc = docs.shift();
 
             if (doc) {
                 table.insert(doc, insertedDoc => {
@@ -102,9 +106,9 @@ describe('dfdb: Indexes and Searches', function () {
     it('inserts more example documents', done => {
         assert.typeOf(table.insert, 'function');
 
-        let docs = require('./dataset.002.json');
+        let docs = JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.002.json')));
         const run = () => {
-            const doc = docs.pop();
+            const doc = docs.shift();
 
             if (doc) {
                 table.insert(doc, insertedDoc => {
@@ -166,23 +170,23 @@ describe('dfdb: Indexes and Searches', function () {
             assert.isNull(table.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 199);
+            assert.equal(docs[0]._id, 102);
             assert.equal(docs[0].name, 'Kristine Perry');
 
             done();
         });
     });
 
-    it(`searches for a partial value on field 'email' (value 'blanchardchen')`, done => {
+    it(`searches for a partial value on field 'email' (value 'lolaparks')`, done => {
         assert.typeOf(table.find, 'function');
 
-        table.find({ email: 'blanchardchen' }, docs => {
+        table.find({ email: 'lolaparks' }, docs => {
             assert.isFalse(table.error());
             assert.isNull(table.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 91);
-            assert.equal(docs[0].name, 'Blanchard Chen');
+            assert.equal(docs[0]._id, 6);
+            assert.equal(docs[0].name, 'Lola Parks');
 
             done();
         });
@@ -197,10 +201,10 @@ describe('dfdb: Indexes and Searches', function () {
 
             assert.equal(docs.length, 2);
 
-            assert.equal(docs[0]._id, 154);
+            assert.equal(docs[0]._id, 147);
             assert.equal(docs[0].name, 'Ann Mayo');
 
-            assert.equal(docs[1]._id, 94);
+            assert.equal(docs[1]._id, 7);
             assert.equal(docs[1].name, 'Lakisha Puckett');
 
             done();
@@ -228,7 +232,7 @@ describe('dfdb: Indexes and Searches', function () {
             assert.isNull(table.lastError());
 
             assert.isNotNull(doc.length);
-            assert.equal(doc._id, 91);
+            assert.equal(doc._id, 10);
             assert.equal(doc.name, 'Blanchard Chen');
 
             done();
@@ -246,8 +250,20 @@ describe('dfdb: Indexes and Searches', function () {
             assert.isNull(table.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 94);
+            assert.equal(docs[0]._id, 7);
             assert.equal(docs[0].name, 'Lakisha Puckett');
+
+            done();
+        });
+    });
+
+    it('closes the connection', done => {
+        assert.typeOf(table.update, 'function');
+
+        connection.close(() => {
+            assert.isFalse(connection.connected());
+            assert.isFalse(connection.error());
+            assert.isNull(connection.lastError());
 
             done();
         });

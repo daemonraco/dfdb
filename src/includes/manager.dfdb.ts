@@ -11,7 +11,7 @@ export class DocsOnFileDB {
     private static _instance: DocsOnFileDB;
     //
     // Protected properties.
-    protected connections: { [name: string]: Connection } = {};
+    protected _connections: { [name: string]: Connection } = {};
     //
     // Constructor.
     protected constructor() {
@@ -26,15 +26,33 @@ export class DocsOnFileDB {
             done = (connection: Connection) => { };
         }
 
-        const key = `${dbpath}[${dbname}]`;
-        if (!this.connections[key]) {
-            this.connections[key] = new Connection(dbname, dbpath, options);
-            this.connections[key].connect((connected: boolean) => {
-                done(this.connections[key]);
+        const key = this.buildKey(dbpath, dbname);
+        if (!this._connections[key]) {
+            this._connections[key] = new Connection(dbname, dbpath, options);
+            this._connections[key].connect((connected: boolean) => {
+                done(this._connections[key]);
             });
         } else {
-            done(this.connections[key]);
+            done(this._connections[key]);
         }
+    }
+    public forgetConnection(dbname: string, dbpath: string): boolean {
+        let forgotten = false;
+        const key = this.buildKey(dbpath, dbname);
+
+        if (typeof this._connections[key] !== 'undefined') {
+            if (!this._connections[key].connected()) {
+                delete this._connections[key];
+                forgotten = true;
+            }
+        }
+
+        return forgotten;
+    }
+    //
+    // Protected methods.
+    protected buildKey(dbname: string, dbpath: string): string {
+        return `${dbpath}[${dbname}]`;
     }
     //
     // Public class methods.

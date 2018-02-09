@@ -86,6 +86,21 @@ export class Index implements IResource, IDelayedResource {
             done();
         }
     }
+    public close(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            this.save(done);
+            this._data = {};
+            this._loaded = false;
+        } else {
+            done();
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }
@@ -137,7 +152,7 @@ export class Index implements IResource, IDelayedResource {
     }
 
     //
-    // Protected methods. 
+    // Protected methods.
     protected resetError(): void {
         this._lastError = null;
     }

@@ -15,12 +15,15 @@ export declare class Connection implements IResource {
     constructor(dbName: string, dbPath: string, options?: any);
     connect(done: any): void;
     connected(): boolean;
+    close(done?: any): void;
     error(): boolean;
     filePointer(): JSZip;
+    forgetTable(name: string): boolean;
     lastError(): string | null;
     table(name: string, done: any): void;
     save(done?: any): void;
     protected createBasics(done: any): void;
     protected doesExist(): boolean;
     protected internalConnect(done: any): void;
+    protected resetError(): void;
 }

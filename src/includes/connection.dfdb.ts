@@ -4,6 +4,7 @@
  */
 
 import { BasicConstants } from './constants.dfdb';
+import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Table } from './table.dfdb';
 import * as JSZip from 'jszip';
@@ -44,11 +45,50 @@ export class Connection implements IResource {
     public connected(): boolean {
         return this._connected;
     }
+    public close(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._connected) {
+            const tableNames = Object.keys(this._tables);
+
+            const run = () => {
+                const tableName = tableNames.shift();
+
+                if (tableName) {
+                    this._tables[tableName].close(() => {
+                        delete this._tables[tableName];
+                        run();
+                    });
+                } else {
+                    this._connected = false;
+                    DocsOnFileDB.instance().forgetConnection(this._dbName, this._dbPath);
+                    this.save(done);
+                }
+            }
+            run();
+        } else {
+            done();
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }
     public filePointer(): JSZip {
         return this._dbFile;
+    }
+    public forgetTable(name: string): boolean {
+        let forgotten = false;
+
+        if (typeof this._tables[name] !== 'undefined') {
+            delete this._tables[name];
+            forgotten = true;
+        }
+
+        return forgotten;
     }
     public lastError(): string | null {
         return this._lastError;
@@ -116,5 +156,8 @@ export class Connection implements IResource {
                 });
             }
         });
+    }
+    protected resetError(): void {
+        this._lastError = null;
     }
 }

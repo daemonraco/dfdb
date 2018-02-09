@@ -40,6 +40,9 @@ describe('dfdb: Basic use', function () {
         assert.typeOf(connection.table, 'function');
 
         connection.table(tableName, tab => {
+            assert.isFalse(connection.error());
+            assert.isNull(connection.lastError());
+
             assert.instanceOf(tab, types.Table);
             assert.isFalse(tab.error());
 
@@ -111,6 +114,18 @@ describe('dfdb: Basic use', function () {
             assert.equal(table.lastError(), '[E-0002] The requested document does not exist');
 
             assert.isNull(updatedDoc);
+
+            done();
+        });
+    });
+
+    it('closes the connection', done => {
+        assert.typeOf(table.update, 'function');
+
+        connection.close(() => {
+            assert.isFalse(connection.connected());
+            assert.isFalse(connection.error());
+            assert.isNull(connection.lastError());
 
             done();
         });

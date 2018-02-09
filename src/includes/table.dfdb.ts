@@ -94,6 +94,37 @@ export class Table implements IResource {
             done();
         }
     }
+    public close(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            let steps: TableStep[] = [];
+            steps.push({
+                params: {},
+                function: (params: any, next: any) => {
+                    this._sequence.skipSave();
+                    this._sequence.close(() => {
+                        this._sequence = null;
+                        next();
+                    })
+                }
+            });
+            steps.push({ params: {}, function: (params: any, next: any) => this.closeIndexes(params, next) });
+
+            this.processStepsSequence(steps, () => {
+                this._data = {};
+                this._loaded = false;
+                this._connection.forgetTable(this._name);
+                this.save(done);
+            });
+        } else {
+            done();
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }
@@ -251,6 +282,25 @@ export class Table implements IResource {
             steps.push({
                 params: { doc, indexName },
                 function: (params: any, next: any) => this.addDocToIndex(params, next)
+            });
+        })
+
+        this.processStepsSequence(steps, next);
+    }
+    protected closeIndex(params: any, next: any): void {
+        this._indexes[params.indexName].skipSave();
+        this._indexes[params.indexName].close(() => {
+            delete this._indexes[params.indexName];
+            next();
+        });
+    }
+    protected closeIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
+        Object.keys(this._indexes).forEach(indexName => {
+            steps.push({
+                params: { indexName },
+                function: (params: any, next: any) => this.closeIndex(params, next)
             });
         })
 

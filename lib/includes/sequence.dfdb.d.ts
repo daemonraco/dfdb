@@ -17,9 +17,11 @@ export declare class Sequence implements IResource, IDelayedResource {
     protected _value: number;
     constructor(table: Table, name: string, connection: Connection);
     connect(done?: any): void;
+    close(done?: any): void;
     error(): boolean;
     lastError(): string;
     next(): number;
     skipSave(): void;
+    protected resetError(): void;
     protected save(done?: any): void;
 }

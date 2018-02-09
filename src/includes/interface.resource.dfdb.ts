@@ -5,6 +5,7 @@
 
 export interface IResource {
     connect(done: any): void;
+    close(done: any): void;
     error(): boolean;
     lastError(): string;
 }

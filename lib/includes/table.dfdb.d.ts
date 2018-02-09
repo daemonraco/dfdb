@@ -26,6 +26,7 @@ export declare class Table implements IResource {
     constructor(name: string, connection: Connection);
     addFieldIndex(name: string, done: any): void;
     connect(done: any): void;
+    close(done?: any): void;
     error(): boolean;
     find(conditions: any, done: any): void;
     findOne(conditions: any, done: any): void;
@@ -36,6 +37,8 @@ export declare class Table implements IResource {
     update(id: any, doc: any, done: any): void;
     protected addDocToIndex(params: any, next: any): void;
     protected addDocToIndexes(doc: any, next: any): void;
+    protected closeIndex(params: any, next: any): void;
+    protected closeIndexes(params: any, next: any): void;
     protected loadIndex(params: any, next: any): void;
     protected loadIndexes(params: any, next: any): void;
     protected loadManifest(params: any, next: any): void;

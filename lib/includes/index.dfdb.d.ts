@@ -16,6 +16,7 @@ export declare class Index implements IResource, IDelayedResource {
     constructor(table: Table, field: string, connection: Connection);
     addDocument(doc: any, done?: any): void;
     connect(done?: any): void;
+    close(done?: any): void;
     error(): boolean;
     find(value: string, done: any): void;
     lastError(): string;
