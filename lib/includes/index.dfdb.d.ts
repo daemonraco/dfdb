@@ -22,6 +22,7 @@ export declare class Index implements IResource, IDelayedResource {
     lastError(): string;
     removeDocument(id: string, done?: any): void;
     skipSave(): void;
+    truncate(done: any): void;
     protected resetError(): void;
     protected save(done?: any): void;
 }

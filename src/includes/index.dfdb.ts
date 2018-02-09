@@ -150,6 +150,20 @@ export class Index implements IResource, IDelayedResource {
     public skipSave(): void {
         this._skipSave = true;
     }
+    public truncate(done: any): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            this._data = {};
+            this.save(done);
+        } else {
+            done();
+        }
+    }
 
     //
     // Protected methods.

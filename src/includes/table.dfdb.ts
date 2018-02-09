@@ -238,6 +238,20 @@ export class Table implements IResource {
             })
         }
     }
+    public truncate(done: any): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            this._data = {};
+            this.truncateIndexes(null, () => this.save(done));
+        } else {
+            done();
+        }
+    }
     public update(id: any, doc: any, done: any): void {
         if (done === null) {
             done = (inserted: any) => { };
@@ -389,6 +403,22 @@ export class Table implements IResource {
     }
     protected resetError(): void {
         this._lastError = null;
+    }
+    protected truncateIndex(params: any, next: any): void {
+        this._indexes[params.indexName].skipSave();
+        this._indexes[params.indexName].truncate(next);
+    }
+    protected truncateIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
+        Object.keys(this._indexes).forEach(indexName => {
+            steps.push({
+                params: { indexName },
+                function: (params: any, next: any) => this.truncateIndex(params, next)
+            });
+        })
+
+        this.processStepsSequence(steps, next);
     }
     protected save(done: any = null): void {
         let data: any = [];

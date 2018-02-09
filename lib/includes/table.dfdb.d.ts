@@ -34,6 +34,7 @@ export declare class Table implements IResource {
     lastError(): string;
     name(): string;
     remove(id: any, done: any): void;
+    truncate(done: any): void;
     update(id: any, doc: any, done: any): void;
     protected addDocToIndex(params: any, next: any): void;
     protected addDocToIndexes(doc: any, next: any): void;
@@ -48,5 +49,7 @@ export declare class Table implements IResource {
     protected removeDocFromIndex(params: any, next: any): void;
     protected removeDocFromIndexes(id: string, next: any): void;
     protected resetError(): void;
+    protected truncateIndex(params: any, next: any): void;
+    protected truncateIndexes(params: any, next: any): void;
     protected save(done?: any): void;
 }
