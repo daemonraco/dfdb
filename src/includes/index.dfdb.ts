@@ -71,11 +71,14 @@ export class Index implements IResource, IDelayedResource {
             if (file === null) {
                 this.save(done);
             } else {
+                this._data = {};
                 file.async('text').then((data: string) => {
                     data.split('\n')
+                        .filter(line => line != '')
                         .forEach(line => {
-                            const pieces = line.split('|', 1);
-                            this._data[pieces[0]] = pieces[1].split('|');
+                            const pieces = line.split('|');
+                            const key = pieces.shift();
+                            this._data[key] = pieces;
                         });
 
                     this._connected = true;

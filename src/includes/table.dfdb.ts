@@ -178,20 +178,11 @@ export class Table implements IResource {
                 const idx = indexesToUse.shift();
                 if (idx) {
                     this._indexes[idx].find(`${conditions[idx]}`, (foundIds: string[]) => {
-                        if (ids === null) {
-                            ids = foundIds;
-                        } else {
-                            ids.filter(i => foundIds.indexOf(i) > -1);
-                        }
+                        ids = ids.filter(i => foundIds.indexOf(i) > -1);
                         run();
                     })
                 } else {
-                    if (ids === null) {
-                        ids = [];
-                    }
-
                     ids.forEach(id => findings.push(this._data[id]));
-
                     done(findings);
                 }
             }
@@ -392,11 +383,12 @@ export class Table implements IResource {
                 data.split('\n')
                     .filter(line => line != '')
                     .forEach(line => {
-                        const pieces = line.split('|', 1);
-                        this._data[pieces[0]] = JSON.parse(pieces[1]);
+                        const pieces = line.split('|');
+                        const id = pieces.shift();
+                        this._data[id] = JSON.parse(pieces.join('|'));
                     });
+                next();
             });
-            next();
         }
     }
     protected loadSequence(params: any, next: any): void {
