@@ -149,7 +149,13 @@ export class Table implements IResource {
         return this._lastError !== null;
     }
     public find(conditions: any, done: any): void {
-        if (typeof done === null) {
+        if (typeof conditions === 'function') {
+            done = conditions;
+            conditions = {};
+        } else if (typeof conditions !== 'object' || conditions === null) {
+            conditions = {};
+        }
+        if (done === null) {
             done = (findings: any[]) => { };
         }
 
@@ -166,7 +172,7 @@ export class Table implements IResource {
         });
 
         if (!this.error()) {
-            let ids: string[] = null;
+            let ids: string[] = Object.keys(this._data);
 
             const run = () => {
                 const idx = indexesToUse.shift();
