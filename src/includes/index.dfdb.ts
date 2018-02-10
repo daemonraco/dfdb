@@ -76,8 +76,8 @@ export class Index implements IResource, IDelayedResource {
                     data.split('\n')
                         .filter(line => line != '')
                         .forEach(line => {
-                            const pieces = line.split('|');
-                            const key = pieces.shift();
+                            const pieces: string[] = line.split('|');
+                            const key: string = pieces.shift();
                             this._data[key] = pieces;
                         });
 
@@ -137,7 +137,7 @@ export class Index implements IResource, IDelayedResource {
             if (indexValue.indexOf(value) > -1) {
                 this._data[indexValue].forEach((id: string) => {
                     if (findings.indexOf(id) < 0) {
-                        findings.push(id);
+                        findings.push(`${id}`);
                     }
                 });
             }

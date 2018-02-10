@@ -201,11 +201,11 @@ describe('dfdb: Indexes and Searches', function () {
 
             assert.equal(docs.length, 2);
 
-            assert.equal(docs[0]._id, 147);
-            assert.equal(docs[0].name, 'Ann Mayo');
+            assert.equal(docs[0]._id, 7);
+            assert.equal(docs[0].name, 'Lakisha Puckett');
 
-            assert.equal(docs[1]._id, 7);
-            assert.equal(docs[1].name, 'Lakisha Puckett');
+            assert.equal(docs[1]._id, 147);
+            assert.equal(docs[1].name, 'Ann Mayo');
 
             done();
         });
