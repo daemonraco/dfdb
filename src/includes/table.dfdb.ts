@@ -125,6 +125,26 @@ export class Table implements IResource {
             done();
         }
     }
+    public dropFieldIndex(name: string, done: any): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (typeof this._indexes[name] !== 'undefined') {
+            this._indexes[name].drop(() => {
+                this.save(() => {
+                    delete this._manifest.indexes[name];
+                    delete this._indexes[name];
+
+                    done();
+                });
+            });
+        } else {
+            done();
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }

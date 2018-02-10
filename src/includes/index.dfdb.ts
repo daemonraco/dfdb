@@ -101,6 +101,22 @@ export class Index implements IResource, IDelayedResource {
             done();
         }
     }
+    public drop(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._loaded) {
+            this._connection.filePointer().remove(this._resourcePath);
+
+            // no need to ask table to forget this index because it's the table's
+            // responsibillity to invoke this method and then forget it.
+
+            this._loaded = false;
+        }
+    }
     public error(): boolean {
         return this._lastError !== null;
     }

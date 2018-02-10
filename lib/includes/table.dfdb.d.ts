@@ -27,6 +27,7 @@ export declare class Table implements IResource {
     addFieldIndex(name: string, done: any): void;
     connect(done: any): void;
     close(done?: any): void;
+    dropFieldIndex(name: string, done: any): void;
     error(): boolean;
     find(conditions: any, done: any): void;
     findOne(conditions: any, done: any): void;

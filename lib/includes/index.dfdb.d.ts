@@ -17,6 +17,7 @@ export declare class Index implements IResource, IDelayedResource {
     addDocument(doc: any, done?: any): void;
     connect(done?: any): void;
     close(done?: any): void;
+    drop(done?: any): void;
     error(): boolean;
     find(value: string, done: any): void;
     lastError(): string;
