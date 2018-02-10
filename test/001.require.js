@@ -26,7 +26,7 @@ describe('dfdb: Require', function () {
         assert.property(dfdb.types, 'Connection');
         assert.property(dfdb.types, 'Index');
         assert.property(dfdb.types, 'Sequence');
-        assert.property(dfdb.types, 'Table');
+        assert.property(dfdb.types, 'Collection');
     });
 
     it(`loads a proper list of constant lists`, () => {

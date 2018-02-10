@@ -1,6 +1,6 @@
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Table } from './table.dfdb';
+import { Collection } from './collection.dfdb';
 export declare class Index implements IResource, IDelayedResource {
     protected _connected: boolean;
     protected _connection: Connection;
@@ -12,8 +12,8 @@ export declare class Index implements IResource, IDelayedResource {
     protected _lastError: string;
     protected _resourcePath: string;
     protected _skipSave: boolean;
-    protected _table: Table;
-    constructor(table: Table, field: string, connection: Connection);
+    protected _collection: Collection;
+    constructor(collection: Collection, field: string, connection: Connection);
     addDocument(doc: any, done?: any): void;
     connect(done?: any): void;
     close(done?: any): void;

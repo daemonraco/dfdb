@@ -2,11 +2,11 @@ import { IResource } from './interface.resource.dfdb';
 import { Connection } from './connection.dfdb';
 import { Index } from './index.dfdb';
 import { Sequence } from './sequence.dfdb';
-export interface TableStep {
+export interface CollectionStep {
     params: any;
     function: any;
 }
-export declare class Table implements IResource {
+export declare class Collection implements IResource {
     protected _connection: Connection;
     protected _data: {
         [name: string]: any;
@@ -46,7 +46,7 @@ export declare class Table implements IResource {
     protected loadManifest(params: any, next: any): void;
     protected loadResource(params: any, next: any): void;
     protected loadSequence(params: any, next: any): void;
-    protected processStepsSequence(steps: TableStep[], next: any): void;
+    protected processStepsSequence(steps: CollectionStep[], next: any): void;
     protected removeDocFromIndex(params: any, next: any): void;
     protected removeDocFromIndexes(id: string, next: any): void;
     protected resetError(): void;

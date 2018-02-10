@@ -23,20 +23,20 @@ dfdb.connect('mydb', __dirname, conn => {
 ```
 If such database file doesn't exist, it will be created.
 
-## Table
-Retriving a table pointer:
+## Collection
+Retriving a collection pointer:
 ```js
-let myTable = false;
-db.table('my_table', table => {
-    myTable = table;
+let myCollection = false;
+db.collection('my_collection', collection => {
+    myCollection = collection;
 });
 ```
-If such table does not exist, it's created and initialized.
+If such collection does not exist, it's created and initialized.
 
 ## Insert a document
-Adding a document to a table:
+Adding a document to a collection:
 ```js
-myTable.insert({
+myCollection.insert({
     name: 'John Doe',
     age: 32,
     address: {
@@ -49,9 +49,9 @@ myTable.insert({
 ```
 
 ## Update a document
-Updating/replacing a document with ID `10` in a table:
+Updating/replacing a document with ID `10` in a collection:
 ```js
-myTable.update(10, {
+myCollection.update(10, {
     name: 'Jane Doe',
     age: 45,
     address: {
@@ -66,7 +66,7 @@ myTable.update(10, {
 ## Remove document
 Removing a document with ID `10`:
 ```js
-myTable.remove(10, () => {
+myCollection.remove(10, () => {
     // . . .
 });
 ```
@@ -74,7 +74,7 @@ myTable.remove(10, () => {
 ## Adding a field index
 Adding an index for field `name`:
 ```js
-myTable.addFieldIndex('name', () => {
+myCollection.addFieldIndex('name', () => {
     // . . .
 });
 ```
@@ -83,12 +83,12 @@ This is required because only indexed fields can be search.
 ## Search
 Searching for a document:
 ```js
-myTable.find({ name: 'Jane Doe' }, docs => {
+myCollection.find({ name: 'Jane Doe' }, docs => {
     // . . .
 });
 
 // Or
-myTable.findOne({ name: 'Jane Doe' }, doc => {
+myCollection.findOne({ name: 'Jane Doe' }, doc => {
     // . . .
 });
 ```

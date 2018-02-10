@@ -1,207 +1,229 @@
-"use strict";
 /**
- * @file table.dfdb.ts
+ * @file collection.dfdb.ts
  * @author Alejandro D. Simi
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const constants_dfdb_1 = require("./constants.dfdb");
-const index_dfdb_1 = require("./index.dfdb");
-const sequence_dfdb_1 = require("./sequence.dfdb");
-class Table {
+
+import { BasicConstants, Errors } from './constants.dfdb';
+import { IResource } from './interface.resource.dfdb';
+import { Connection } from './connection.dfdb';
+import { Index } from './index.dfdb';
+import { Sequence } from './sequence.dfdb';
+import * as JSZip from 'jszip';
+
+export interface CollectionStep {
+    params: any;
+    function: any;
+}
+
+export class Collection implements IResource {
+    //
+    // Protected properties.
+    protected _connection: Connection = null;
+    protected _data: { [name: string]: any } = {};
+    protected _indexes: { [name: string]: Index } = {};
+    protected _lastError: string = null;
+    protected _loaded: boolean = false;
+    protected _manifest: { [name: string]: any } = {
+        indexes: {}
+    };
+    protected _manifestPath: string = null;
+    protected _name: string = null;
+    protected _resourcePath: string = null;
+    protected _sequence: Sequence = null;
+
     //
     // Constructor.
-    constructor(name, connection) {
-        //
-        // Protected properties.
-        this._connection = null;
-        this._data = {};
-        this._indexes = {};
-        this._lastError = null;
-        this._loaded = false;
-        this._manifest = {
-            indexes: {}
-        };
-        this._manifestPath = null;
-        this._name = null;
-        this._resourcePath = null;
-        this._sequence = null;
+    constructor(name: string, connection: Connection) {
         this._name = name;
         this._connection = connection;
+
         this._manifestPath = `${this._name}/manifest`;
-        this._resourcePath = `${this._name}/data.tab`;
+        this._resourcePath = `${this._name}/data.col`;
     }
+
     //
     // Public methods.
-    addFieldIndex(name, done) {
+    public addFieldIndex(name: string, done: any): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (typeof this._indexes[name] === 'undefined') {
             this._manifest.indexes[name] = { name, field: name };
             this.loadIndexes(null, () => {
                 let ids = Object.keys(this._data);
+
                 const processIds = () => {
                     const id = ids.shift();
                     if (id) {
                         this._indexes[name].skipSave();
                         this._indexes[name].addDocument(this._data[id], processIds);
-                    }
-                    else {
+                    } else {
                         this.save(done);
                     }
                 };
                 processIds();
             });
-        }
-        else {
-            this._lastError = `${constants_dfdb_1.Errors.DuplicatedIndex}. Index: ${name}.`;
+        } else {
+            this._lastError = `${Errors.DuplicatedIndex}. Index: ${name}.`
             done();
         }
     }
-    connect(done) {
+    public connect(done: any): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (!this._loaded) {
             this._loaded = true;
-            let steps = [];
-            steps.push({ params: {}, function: (params, next) => this.loadManifest(params, next) });
-            steps.push({ params: {}, function: (params, next) => this.loadResource(params, next) });
-            steps.push({ params: {}, function: (params, next) => this.loadSequence(params, next) });
-            steps.push({ params: {}, function: (params, next) => this.loadIndexes(params, next) });
+
+            let steps: CollectionStep[] = [];
+            steps.push({ params: {}, function: (params: any, next: any) => this.loadManifest(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.loadResource(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.loadSequence(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.loadIndexes(params, next) });
+
             this.processStepsSequence(steps, () => {
                 done();
             });
-        }
-        else {
+        } else {
             done();
         }
     }
-    close(done = null) {
+    public close(done: any = null): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (this._loaded) {
-            let steps = [];
+            let steps: CollectionStep[] = [];
             steps.push({
                 params: {},
-                function: (params, next) => {
+                function: (params: any, next: any) => {
                     this._sequence.skipSave();
                     this._sequence.close(() => {
                         this._sequence = null;
                         next();
-                    });
+                    })
                 }
             });
-            steps.push({ params: {}, function: (params, next) => this.closeIndexes(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.closeIndexes(params, next) });
+
             this.processStepsSequence(steps, () => {
                 this._data = {};
                 this._loaded = false;
-                this._connection.forgetTable(this._name);
+                this._connection.forgetCollection(this._name);
                 this.save(done);
             });
-        }
-        else {
+        } else {
             done();
         }
     }
-    dropFieldIndex(name, done) {
+    public dropFieldIndex(name: string, done: any): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (typeof this._indexes[name] !== 'undefined') {
             this._indexes[name].drop(() => {
                 this.save(() => {
                     delete this._manifest.indexes[name];
                     delete this._indexes[name];
+
                     done();
                 });
             });
-        }
-        else {
+        } else {
             done();
         }
     }
-    error() {
+    public error(): boolean {
         return this._lastError !== null;
     }
-    find(conditions, done) {
+    public find(conditions: any, done: any): void {
         if (typeof conditions === 'function') {
             done = conditions;
             conditions = {};
-        }
-        else if (typeof conditions !== 'object' || conditions === null) {
+        } else if (typeof conditions !== 'object' || conditions === null) {
             conditions = {};
         }
         if (done === null) {
-            done = (findings) => { };
+            done = (findings: any[]) => { };
         }
-        const findings = [];
-        const indexesToUse = [];
+
+        const findings: any[] = [];
+        const indexesToUse: string[] = [];
         this.resetError();
+
         Object.keys(conditions).forEach(key => {
             if (typeof this._indexes[key] === 'undefined') {
-                this._lastError = `${constants_dfdb_1.Errors.NotIndexedField}. Field: '${key}'.`;
-            }
-            else {
+                this._lastError = `${Errors.NotIndexedField}. Field: '${key}'.`
+            } else {
                 indexesToUse.push(key);
             }
         });
+
         if (!this.error()) {
-            let ids = Object.keys(this._data);
+            let ids: string[] = Object.keys(this._data);
+
             const run = () => {
                 const idx = indexesToUse.shift();
                 if (idx) {
-                    this._indexes[idx].find(`${conditions[idx]}`, (foundIds) => {
+                    this._indexes[idx].find(`${conditions[idx]}`, (foundIds: string[]) => {
                         ids = ids.filter(i => foundIds.indexOf(i) > -1);
                         run();
-                    });
-                }
-                else {
+                    })
+                } else {
                     ids.forEach(id => findings.push(this._data[id]));
                     done(findings);
                 }
-            };
+            }
             run();
-        }
-        else {
+        } else {
             done(findings);
         }
     }
-    findOne(conditions, done) {
+    public findOne(conditions: any, done: any): void {
         if (typeof done === null) {
-            done = (finding) => { };
+            done = (finding: any) => { };
         }
-        this.find(conditions, (findings) => {
+
+        this.find(conditions, (findings: any[]) => {
             if (findings.length > 0) {
                 done(findings[0]);
-            }
-            else {
+            } else {
                 done(null);
             }
         });
     }
-    insert(doc, done) {
+    public insert(doc: any, done: any): void {
         if (done === null) {
-            done = (inserted) => { };
+            done = (inserted: any) => { };
         }
+
         this.resetError();
+
         if (typeof doc !== 'object' || Array.isArray(doc)) {
-            this._lastError = constants_dfdb_1.Errors.DocIsNotObject;
+            this._lastError = Errors.DocIsNotObject;
             done(null);
-        }
-        else {
+        } else {
             this._sequence.skipSave();
             const newID = this._sequence.next();
             const newDate = new Date();
             doc._id = newID;
             doc._created = newDate;
             doc._updated = newDate;
+
             this._data[newID] = doc;
+
             this.addDocToIndexes(doc, () => {
                 this.save(() => {
                     done(this._data[newID]);
@@ -209,60 +231,65 @@ class Table {
             });
         }
     }
-    lastError() {
+    public lastError(): string {
         return this._lastError;
     }
-    name() {
+    public name(): string {
         return this._name;
     }
-    remove(id, done) {
+    public remove(id: any, done: any): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (typeof this._data[id] === 'undefined') {
-            this._lastError = constants_dfdb_1.Errors.DocNotFound;
+            this._lastError = Errors.DocNotFound;
             done();
-        }
-        else {
+        } else {
             delete this._data[id];
+
             this.removeDocFromIndexes(id, () => {
                 this.save(done);
-            });
+            })
         }
     }
-    truncate(done) {
+    public truncate(done: any): void {
         if (done === null) {
             done = () => { };
         }
+
         this.resetError();
+
         if (this._loaded) {
             this._data = {};
             this.truncateIndexes(null, () => this.save(done));
-        }
-        else {
+        } else {
             done();
         }
     }
-    update(id, doc, done) {
+    public update(id: any, doc: any, done: any): void {
         if (done === null) {
-            done = (inserted) => { };
+            done = (inserted: any) => { };
         }
+
         this.resetError();
+
         if (typeof doc !== 'object' || Array.isArray(doc)) {
-            this._lastError = constants_dfdb_1.Errors.DocIsNotObject;
+            this._lastError = Errors.DocIsNotObject;
             done(null);
-        }
-        else if (typeof this._data[id] === 'undefined') {
-            this._lastError = constants_dfdb_1.Errors.DocNotFound;
+        } else if (typeof this._data[id] === 'undefined') {
+            this._lastError = Errors.DocNotFound;
             done(null);
-        }
-        else {
+        } else {
             const currentDoc = this._data[id];
             doc._id = currentDoc._id;
             doc._created = currentDoc._created;
             doc._updated = new Date();
+
             this._data[id] = doc;
+
             this.removeDocFromIndexes(id, () => {
                 this.addDocToIndexes(doc, () => {
                     this.save(() => {
@@ -272,146 +299,153 @@ class Table {
             });
         }
     }
+
     //
     // Protected methods.
-    addDocToIndex(params, next) {
+    protected addDocToIndex(params: any, next: any): void {
         this._indexes[params.indexName].skipSave();
         this._indexes[params.indexName].addDocument(params.doc, next);
     }
-    addDocToIndexes(doc, next) {
-        let steps = [];
+    protected addDocToIndexes(doc: any, next: any): void {
+        let steps: any[] = [];
+
         Object.keys(this._indexes).forEach(indexName => {
             steps.push({
                 params: { doc, indexName },
-                function: (params, next) => this.addDocToIndex(params, next)
+                function: (params: any, next: any) => this.addDocToIndex(params, next)
             });
-        });
+        })
+
         this.processStepsSequence(steps, next);
     }
-    closeIndex(params, next) {
+    protected closeIndex(params: any, next: any): void {
         this._indexes[params.indexName].skipSave();
         this._indexes[params.indexName].close(() => {
             delete this._indexes[params.indexName];
             next();
         });
     }
-    closeIndexes(params, next) {
-        let steps = [];
+    protected closeIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
         Object.keys(this._indexes).forEach(indexName => {
             steps.push({
                 params: { indexName },
-                function: (params, next) => this.closeIndex(params, next)
+                function: (params: any, next: any) => this.closeIndex(params, next)
             });
-        });
+        })
+
         this.processStepsSequence(steps, next);
     }
-    loadIndex(params, next) {
+    protected loadIndex(params: any, next: any): void {
         if (typeof this._indexes[params.name] === 'undefined') {
-            this._indexes[params.name] = new index_dfdb_1.Index(this, params.field, this._connection);
+            this._indexes[params.name] = new Index(this, params.field, this._connection);
             this._indexes[params.name].connect(next);
-        }
-        else {
+        } else {
             next();
         }
     }
-    loadIndexes(params, next) {
-        let steps = [];
+    protected loadIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
         Object.keys(this._manifest.indexes).forEach(key => {
             steps.push({
                 params: this._manifest.indexes[key],
-                function: (params, next) => this.loadIndex(params, next)
+                function: (params: any, next: any) => this.loadIndex(params, next)
             });
-        });
+        })
+
         this.processStepsSequence(steps, next);
     }
-    loadManifest(params, next) {
+    protected loadManifest(params: any, next: any): void {
         const file = this._connection.filePointer().file(this._manifestPath);
         if (file === null) {
             this._connection.filePointer().file(this._manifestPath, JSON.stringify(this._manifest));
             this._connection.save(() => {
                 next();
             });
-        }
-        else {
+        } else {
             this._data = {};
-            file.async('text').then((data) => {
+            file.async('text').then((data: string) => {
                 this._manifest = JSON.parse(data);
             });
             next();
         }
     }
-    loadResource(params, next) {
+    protected loadResource(params: any, next: any): void {
         const file = this._connection.filePointer().file(this._resourcePath);
         if (file === null) {
             this._connection.filePointer().file(this._resourcePath, '');
             this._connection.save(next);
-        }
-        else {
+        } else {
             this._data = {};
-            file.async('text').then((data) => {
+            file.async('text').then((data: string) => {
                 data.split('\n')
                     .filter(line => line != '')
                     .forEach(line => {
-                    const pieces = line.split('|');
-                    const id = pieces.shift();
-                    this._data[id] = JSON.parse(pieces.join('|'));
-                });
+                        const pieces = line.split('|');
+                        const id = pieces.shift();
+                        this._data[id] = JSON.parse(pieces.join('|'));
+                    });
                 next();
             });
         }
     }
-    loadSequence(params, next) {
-        this._sequence = new sequence_dfdb_1.Sequence(this, constants_dfdb_1.BasicConstants.DefaultSequence, this._connection);
+    protected loadSequence(params: any, next: any): void {
+        this._sequence = new Sequence(this, BasicConstants.DefaultSequence, this._connection);
         this._sequence.connect(next);
     }
-    processStepsSequence(steps, next) {
+    protected processStepsSequence(steps: CollectionStep[], next: any): void {
         if (steps.length > 0) {
             const step = steps.shift();
             step.function(step.params, () => this.processStepsSequence(steps, next));
-        }
-        else {
+        } else {
             next();
         }
     }
-    removeDocFromIndex(params, next) {
+    protected removeDocFromIndex(params: any, next: any): void {
         this._indexes[params.indexName].skipSave();
         this._indexes[params.indexName].removeDocument(params.id, next);
     }
-    removeDocFromIndexes(id, next) {
-        let steps = [];
+    protected removeDocFromIndexes(id: string, next: any): void {
+        let steps: any[] = [];
+
         Object.keys(this._indexes).forEach(indexName => {
             steps.push({
                 params: { id, indexName },
-                function: (params, next) => this.removeDocFromIndex(params, next)
+                function: (params: any, next: any) => this.removeDocFromIndex(params, next)
             });
-        });
+        })
+
         this.processStepsSequence(steps, next);
     }
-    resetError() {
+    protected resetError(): void {
         this._lastError = null;
     }
-    truncateIndex(params, next) {
+    protected truncateIndex(params: any, next: any): void {
         this._indexes[params.indexName].skipSave();
         this._indexes[params.indexName].truncate(next);
     }
-    truncateIndexes(params, next) {
-        let steps = [];
+    protected truncateIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
         Object.keys(this._indexes).forEach(indexName => {
             steps.push({
                 params: { indexName },
-                function: (params, next) => this.truncateIndex(params, next)
+                function: (params: any, next: any) => this.truncateIndex(params, next)
             });
-        });
+        })
+
         this.processStepsSequence(steps, next);
     }
-    save(done = null) {
-        let data = [];
+    protected save(done: any = null): void {
+        let data: any = [];
         Object.keys(this._data).forEach(key => {
             data.push(`${key}|${JSON.stringify(this._data[key])}`);
         });
+
         this._connection.filePointer().file(this._manifestPath, JSON.stringify(this._manifest));
         this._connection.filePointer().file(this._resourcePath, data.join('\n'));
         this._connection.save(done);
     }
 }
-exports.Table = Table;

@@ -4,7 +4,7 @@
  */
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Table } from './table.dfdb';
+import { Collection } from './collection.dfdb';
 export declare class Sequence implements IResource, IDelayedResource {
     protected _connected: boolean;
     protected _connection: Connection;
@@ -13,9 +13,9 @@ export declare class Sequence implements IResource, IDelayedResource {
     protected _name: string;
     protected _resourcePath: string;
     protected _skipSave: boolean;
-    protected _table: Table;
+    protected _collection: Collection;
     protected _value: number;
-    constructor(table: Table, name: string, connection: Connection);
+    constructor(collection: Collection, name: string, connection: Connection);
     connect(done?: any): void;
     close(done?: any): void;
     error(): boolean;

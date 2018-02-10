@@ -9,7 +9,7 @@ const path = require('path');
 // ---------------------------------------------------------------------------- //
 // Values.
 const dbName = '003.testdb';
-const tableName = 'test_table';
+const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
@@ -20,7 +20,7 @@ describe('dfdb: Indexes and Searches', function () {
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
-    let table = null;
+    let collection = null;
 
     it('connects and returns a valid connected pointer', done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
@@ -37,32 +37,32 @@ describe('dfdb: Indexes and Searches', function () {
         });
     });
 
-    it('retrieves a new table and returns a valid one', done => {
-        assert.typeOf(connection.table, 'function');
+    it('retrieves a new collection and returns a valid one', done => {
+        assert.typeOf(connection.collection, 'function');
 
-        connection.table(tableName, tab => {
+        connection.collection(collectionName, col => {
             assert.isFalse(connection.error());
             assert.isNull(connection.lastError());
 
-            assert.instanceOf(tab, types.Table);
-            assert.isFalse(tab.error());
+            assert.instanceOf(col, types.Collection);
+            assert.isFalse(col.error());
 
-            table = tab;
+            collection = col;
             done();
         });
     });
 
     it('inserts example documents', done => {
-        assert.typeOf(table.insert, 'function');
+        assert.typeOf(collection.insert, 'function');
 
         let docs = JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.001.json')));
         const run = () => {
             const doc = docs.shift();
 
             if (doc) {
-                table.insert(doc, insertedDoc => {
-                    assert.isFalse(table.error());
-                    assert.isNull(table.lastError());
+                collection.insert(doc, insertedDoc => {
+                    assert.isFalse(collection.error());
+                    assert.isNull(collection.lastError());
 
                     assert.typeOf(insertedDoc, 'object');
 
@@ -76,44 +76,44 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`adds an index for field 'email'`, done => {
-        table.addFieldIndex('email', () => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.addFieldIndex('email', () => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             done();
         });
     });
 
     it(`adds an index for field 'company'`, done => {
-        table.addFieldIndex('company', () => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.addFieldIndex('company', () => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             done();
         });
     });
 
     it(`re-adds an index for field 'company'`, done => {
-        table.addFieldIndex('company', () => {
-            assert.isTrue(table.error());
-            assert.isNotNull(table.lastError());
-            assert.equal(table.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
+        collection.addFieldIndex('company', () => {
+            assert.isTrue(collection.error());
+            assert.isNotNull(collection.lastError());
+            assert.equal(collection.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
 
             done();
         });
     });
 
     it('inserts more example documents', done => {
-        assert.typeOf(table.insert, 'function');
+        assert.typeOf(collection.insert, 'function');
 
         let docs = JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.002.json')));
         const run = () => {
             const doc = docs.shift();
 
             if (doc) {
-                table.insert(doc, insertedDoc => {
-                    assert.isFalse(table.error());
-                    assert.isNull(table.lastError());
+                collection.insert(doc, insertedDoc => {
+                    assert.isFalse(collection.error());
+                    assert.isNull(collection.lastError());
 
                     assert.typeOf(insertedDoc, 'object');
 
@@ -140,9 +140,9 @@ describe('dfdb: Indexes and Searches', function () {
             "_updated": "2018-02-08T18:50:11.835Z"
         };
 
-        table.update(91, newData, updatedDoc => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.update(91, newData, updatedDoc => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.typeOf(updatedDoc, 'object');
 
@@ -151,23 +151,23 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches a value on a not indexed field`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({ name: 'something' }, docs => {
-            assert.isTrue(table.error());
-            assert.isNotNull(table.lastError());
-            assert.equal(table.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+        collection.find({ name: 'something' }, docs => {
+            assert.isTrue(collection.error());
+            assert.isNotNull(collection.lastError());
+            assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
 
             done();
         });
     });
 
     it(`searches for an exact value on field 'company' (value 'INDEXIA')`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({ company: 'INDEXIA' }, docs => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.find({ company: 'INDEXIA' }, docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
             assert.equal(docs[0]._id, 102);
@@ -178,11 +178,11 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for a partial value on field 'email' (value 'lolaparks')`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({ email: 'lolaparks' }, docs => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.find({ email: 'lolaparks' }, docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
             assert.equal(docs[0]._id, 6);
@@ -193,11 +193,11 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for an exact value on field 'company' with more than 1 result (value 'ISOPLEX')`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({ company: 'ISOPLEX' }, docs => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.find({ company: 'ISOPLEX' }, docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 2);
 
@@ -212,11 +212,11 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for something that doesn't exist`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({ company: 'ISOPLEXISOPLEX' }, docs => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.find({ company: 'ISOPLEXISOPLEX' }, docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 0);
 
@@ -225,11 +225,11 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for the first document for a condition`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.findOne({ email: 'blanchardchen' }, doc => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.findOne({ email: 'blanchardchen' }, doc => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.isNotNull(doc.length);
             assert.equal(doc._id, 10);
@@ -240,14 +240,14 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for more than one field`, done => {
-        assert.typeOf(table.find, 'function');
+        assert.typeOf(collection.find, 'function');
 
-        table.find({
+        collection.find({
             email: 'lakishapuckett',
             company: 'ISOPLEX'
         }, docs => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
             assert.equal(docs[0]._id, 7);
@@ -258,7 +258,7 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it('closes the connection', done => {
-        assert.typeOf(table.update, 'function');
+        assert.typeOf(collection.update, 'function');
 
         connection.close(() => {
             assert.isFalse(connection.connected());

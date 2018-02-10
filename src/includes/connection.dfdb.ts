@@ -6,7 +6,7 @@
 import { BasicConstants } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
-import { Table } from './table.dfdb';
+import { Collection } from './collection.dfdb';
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -18,7 +18,7 @@ export class Connection implements IResource {
     protected _dbName: string = null;
     protected _dbPath: string = null;
     protected _lastError: string = null;
-    protected _tables: { [name: string]: Table } = {};
+    protected _collections: { [name: string]: Collection } = {};
 
     constructor(dbName: string, dbPath: string, options: any = {}) {
         this._dbName = dbName;
@@ -53,14 +53,14 @@ export class Connection implements IResource {
         this.resetError();
 
         if (this._connected) {
-            const tableNames = Object.keys(this._tables);
+            const collectionNames = Object.keys(this._collections);
 
             const run = () => {
-                const tableName = tableNames.shift();
+                const collectionName = collectionNames.shift();
 
-                if (tableName) {
-                    this._tables[tableName].close(() => {
-                        delete this._tables[tableName];
+                if (collectionName) {
+                    this._collections[collectionName].close(() => {
+                        delete this._collections[collectionName];
                         run();
                     });
                 } else {
@@ -80,11 +80,11 @@ export class Connection implements IResource {
     public filePointer(): JSZip {
         return this._dbFile;
     }
-    public forgetTable(name: string): boolean {
+    public forgetCollection(name: string): boolean {
         let forgotten = false;
 
-        if (typeof this._tables[name] !== 'undefined') {
-            delete this._tables[name];
+        if (typeof this._collections[name] !== 'undefined') {
+            delete this._collections[name];
             forgotten = true;
         }
 
@@ -93,17 +93,17 @@ export class Connection implements IResource {
     public lastError(): string | null {
         return this._lastError;
     }
-    public table(name: string, done: any): void {
+    public collection(name: string, done: any): void {
         if (done === null) {
-            done = (table: Table) => { };
+            done = (collection: Collection) => { };
         }
 
-        if (typeof this._tables[name] !== 'undefined') {
-            done(this._tables[name]);
+        if (typeof this._collections[name] !== 'undefined') {
+            done(this._collections[name]);
         } else {
-            this._tables[name] = new Table(name, this);
-            this._tables[name].connect(() => {
-                done(this._tables[name]);
+            this._collections[name] = new Collection(name, this);
+            this._collections[name].connect(() => {
+                done(this._collections[name]);
             });
         }
     }

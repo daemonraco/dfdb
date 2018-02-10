@@ -8,7 +8,7 @@ const path = require('path');
 // ---------------------------------------------------------------------------- //
 // Values.
 const dbName = '002.testdb';
-const tableName = 'test_table';
+const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
@@ -19,7 +19,7 @@ describe('dfdb: Basic use', function () {
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
-    let table = null;
+    let collection = null;
 
     it('connects and returns a valid connected pointer', done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
@@ -36,27 +36,27 @@ describe('dfdb: Basic use', function () {
         });
     });
 
-    it('retrieves a new table and returns a valid one', done => {
-        assert.typeOf(connection.table, 'function');
+    it('retrieves a new collection and returns a valid one', done => {
+        assert.typeOf(connection.collection, 'function');
 
-        connection.table(tableName, tab => {
+        connection.collection(collectionName, col => {
             assert.isFalse(connection.error());
             assert.isNull(connection.lastError());
 
-            assert.instanceOf(tab, types.Table);
-            assert.isFalse(tab.error());
+            assert.instanceOf(col, types.Collection);
+            assert.isFalse(col.error());
 
-            table = tab;
+            collection = col;
             done();
         });
     });
 
     it('inserts a new document', done => {
-        assert.typeOf(table.insert, 'function');
+        assert.typeOf(collection.insert, 'function');
 
-        table.insert({ hello: 'world!' }, insertedDoc => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.insert({ hello: 'world!' }, insertedDoc => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.typeOf(insertedDoc, 'object');
 
@@ -78,11 +78,11 @@ describe('dfdb: Basic use', function () {
     });
 
     it('updates a new document', done => {
-        assert.typeOf(table.update, 'function');
+        assert.typeOf(collection.update, 'function');
 
-        table.update(1, { hola: 'mundo!' }, updatedDoc => {
-            assert.isFalse(table.error());
-            assert.isNull(table.lastError());
+        collection.update(1, { hola: 'mundo!' }, updatedDoc => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
 
             assert.typeOf(updatedDoc, 'object');
 
@@ -105,13 +105,13 @@ describe('dfdb: Basic use', function () {
     });
 
     it('updates an unknown document', done => {
-        assert.typeOf(table.update, 'function');
+        assert.typeOf(collection.update, 'function');
 
-        table.update(2, { konnichiha: 'sekai!' }, updatedDoc => {
-            assert.isTrue(table.error());
-            assert.isNotNull(table.lastError());
-            assert.isString(table.lastError());
-            assert.equal(table.lastError(), '[E-0002] The requested document does not exist');
+        collection.update(2, { konnichiha: 'sekai!' }, updatedDoc => {
+            assert.isTrue(collection.error());
+            assert.isNotNull(collection.lastError());
+            assert.isString(collection.lastError());
+            assert.equal(collection.lastError(), '[E-0002] The requested document does not exist');
 
             assert.isNull(updatedDoc);
 
@@ -120,7 +120,7 @@ describe('dfdb: Basic use', function () {
     });
 
     it('closes the connection', done => {
-        assert.typeOf(table.update, 'function');
+        assert.typeOf(collection.update, 'function');
 
         connection.close(() => {
             assert.isFalse(connection.connected());

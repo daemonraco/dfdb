@@ -6,7 +6,7 @@
 import { Errors } from './constants.dfdb';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Table } from './table.dfdb';
+import { Collection } from './collection.dfdb';
 import * as JSZip from 'jszip';
 
 export class Index implements IResource, IDelayedResource {
@@ -20,16 +20,16 @@ export class Index implements IResource, IDelayedResource {
     protected _lastError: string = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
-    protected _table: Table = null;
+    protected _collection: Collection = null;
 
     //
     // Constructor.
-    constructor(table: Table, field: string, connection: Connection) {
+    constructor(collection: Collection, field: string, connection: Connection) {
         this._field = field;
-        this._table = table;
+        this._collection = collection;
         this._connection = connection;
 
-        this._resourcePath = `${this._table.name()}/${this._field}.idx`;
+        this._resourcePath = `${this._collection.name()}/${this._field}.idx`;
     }
 
     //
@@ -114,8 +114,9 @@ export class Index implements IResource, IDelayedResource {
         if (this._loaded) {
             this._connection.filePointer().remove(this._resourcePath);
 
-            // no need to ask table to forget this index because it's the table's
-            // responsibillity to invoke this method and then forget it.
+            // no need to ask collection to forget this index because it's the
+            // collection's responsibillity to invoke this method and then
+            // forget it.
 
             this._loaded = false;
         }
