@@ -13,8 +13,8 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Basic use', function () {
-    //this.timeout(15000);
-    //
+    this.timeout(5000);
+
     const { DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
