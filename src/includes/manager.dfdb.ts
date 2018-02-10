@@ -19,7 +19,10 @@ export class DocsOnFileDB {
     //
     // Public methods.
     public connect(dbname: string, dbpath: string, options: any = null, done: any = null) {
-        if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+        if (typeof options === 'function') {
+            done = options;
+            options = {};
+        } else if (options === null || typeof options !== 'object' || Array.isArray(options)) {
             options = {};
         }
         if (typeof done !== 'function') {
