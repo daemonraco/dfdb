@@ -3,27 +3,30 @@
  * @author Alejandro D. Simi
  */
 
-import { BasicConstants } from './constants.dfdb';
+import { BasicConstants, ConnectionSaveConstants } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
+import { queue } from 'async';
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class Connection implements IResource {
+    protected _collections: { [name: string]: Collection } = {};
     protected _connected: boolean = false;
     protected _dbFile: JSZip = null;
     protected _dbFullPath: string = null;
     protected _dbName: string = null;
     protected _dbPath: string = null;
     protected _lastError: string = null;
-    protected _collections: { [name: string]: Collection } = {};
+    protected _savingQueue: any = null;
 
     constructor(dbName: string, dbPath: string, options: any = {}) {
         this._dbName = dbName;
         this._dbPath = dbPath;
         this._dbFullPath = path.join(this._dbPath, `${this._dbName}${BasicConstants.DBExtension}`);
+        this.setSavingQueue();
     }
 
     //
@@ -77,9 +80,6 @@ export class Connection implements IResource {
     public error(): boolean {
         return this._lastError !== null;
     }
-    public filePointer(): JSZip {
-        return this._dbFile;
-    }
     public forgetCollection(name: string): boolean {
         let forgotten = false;
 
@@ -92,6 +92,18 @@ export class Connection implements IResource {
     }
     public lastError(): string | null {
         return this._lastError;
+    }
+    public loadFile(zPath: string, done: any) {
+        if (done === null) {
+            done = (error: string, data: string) => { };
+        }
+
+        if (this._connected) {
+            this._savingQueue.push({
+                action: ConnectionSaveConstants.LoadFile,
+                path: zPath
+            }, done);
+        }
     }
     public collection(name: string, done: any): void {
         if (done === null) {
@@ -119,6 +131,31 @@ export class Connection implements IResource {
                 .on('finish', done);
         } else {
             done();
+        }
+    }
+    public removeFile(zPath: string, done: any) {
+        if (done === null) {
+            done = (error: string) => { };
+        }
+
+        if (this._connected) {
+            this._savingQueue.push({
+                action: ConnectionSaveConstants.RemoveFile,
+                path: zPath
+            }, done);
+        }
+    }
+    public updateFile(zPath: string, data: any, done: any, skipPhysicalSave: boolean = false) {
+        if (done === null) {
+            done = (error: string) => { };
+        }
+
+        if (this._connected) {
+            this._savingQueue.push({
+                action: ConnectionSaveConstants.UpdateFile,
+                path: zPath,
+                data, skipPhysicalSave
+            }, done);
         }
     }
 
@@ -159,5 +196,38 @@ export class Connection implements IResource {
     }
     protected resetError(): void {
         this._lastError = null;
+    }
+    protected setSavingQueue(): void {
+        this._savingQueue = queue((task: any, next: any) => {
+            switch (task.action) {
+                case ConnectionSaveConstants.LoadFile:
+                    const file = this._dbFile.file(task.path);
+                    if (file !== null) {
+                        file.async('text').then((data: string) => {
+                            next(null, data);
+                        });
+                    } else {
+                        next(`Zip path '${task.path}' does not exist`, null);
+                    }
+                    break;
+                case ConnectionSaveConstants.RemoveFile:
+                    this._dbFile.remove(task.path);
+                    next(null);
+                    break;
+                case ConnectionSaveConstants.UpdateFile:
+                    this._dbFile.file(task.path, task.data);
+
+                    if (!task.skipPhysicalSave) {
+                        this.save(() => {
+                            next(null);
+                        });
+                    } else {
+                        next(null);
+                    }
+                    break;
+                default:
+                    next(`Unknown action '${task.action}'`);
+            }
+        }, 1);
     }
 }

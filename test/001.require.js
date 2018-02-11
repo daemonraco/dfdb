@@ -45,6 +45,18 @@ describe('dfdb: Require', function () {
         assert.isString(dfdb.constants.BasicConstants.DefaultSequence);
     });
 
+    it(`loads a proper list of connection constants`, () => {
+        //assert.typeOf(dfdb.constants.ConnectionSaveConstants, 'object');
+
+        assert.property(dfdb.constants.ConnectionSaveConstants, 'LoadFile');
+        assert.property(dfdb.constants.ConnectionSaveConstants, 'RemoveFile');
+        assert.property(dfdb.constants.ConnectionSaveConstants, 'UpdateFile');
+
+        assert.isString(dfdb.constants.ConnectionSaveConstants.LoadFile);
+        assert.isString(dfdb.constants.ConnectionSaveConstants.RemoveFile);
+        assert.isString(dfdb.constants.ConnectionSaveConstants.UpdateFile);
+    });
+
     it(`loads a proper list of known errors constants`, () => {
         //assert.typeOf(dfdb.constants.Errors, 'object');
 

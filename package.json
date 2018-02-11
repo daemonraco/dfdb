@@ -21,6 +21,10 @@
         "name": "Alejandro Dario Simi",
         "url": "http://daemonraco.com/"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/daemonraco/dfdb.git"
+    },
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^8.5.9",
@@ -29,7 +33,9 @@
         "typescript": "^2.4.1"
     },
     "dependencies": {
+        "@types/async": "^2.0.47",
         "@types/jszip": "^3.1.3",
+        "async": "^2.6.0",
         "jsonpath-plus": "^0.16.0",
         "jszip": "^3.1.5"
     }

@@ -1,5 +1,5 @@
 import { DocsOnFileDB } from './includes/manager.dfdb';
-import { BasicConstants, Errors } from './includes/constants.dfdb';
+import { BasicConstants, ConnectionSaveConstants, Errors } from './includes/constants.dfdb';
 import { Collection } from './includes/collection.dfdb';
 import { Connection } from './includes/connection.dfdb';
 import { Index } from './includes/index.dfdb';
@@ -9,6 +9,7 @@ declare const _default: {
     DocsOnFileDB: DocsOnFileDB;
     constants: {
         BasicConstants: typeof BasicConstants;
+        ConnectionSaveConstants: typeof ConnectionSaveConstants;
         Errors: typeof Errors;
     };
     types: {

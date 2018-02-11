@@ -67,12 +67,12 @@ export class Index implements IResource, IDelayedResource {
 
         if (!this._loaded) {
             this._loaded = true;
-            const file = this._connection.filePointer().file(this._resourcePath);
-            if (file === null) {
-                this.save(done);
-            } else {
-                this._data = {};
-                file.async('text').then((data: string) => {
+
+            this._data = {};
+            this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
+                if (error) {
+                    this.save(done);
+                } else if (data !== null) {
                     data.split('\n')
                         .filter(line => line != '')
                         .forEach(line => {
@@ -83,8 +83,8 @@ export class Index implements IResource, IDelayedResource {
 
                     this._connected = true;
                     done();
-                });
-            }
+                }
+            });
         } else {
             done();
         }
@@ -97,9 +97,11 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
 
         if (this._loaded) {
-            this.save(done);
-            this._data = {};
-            this._loaded = false;
+            this.save(() => {
+                this._data = {};
+                this._loaded = false;
+                done();
+            });
         } else {
             done();
         }
@@ -112,13 +114,13 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
 
         if (this._loaded) {
-            this._connection.filePointer().remove(this._resourcePath);
+            this._connection.removeFile(this._resourcePath, () => {
+                // no need to ask collection to forget this index because it's the
+                // collection's responsibillity to invoke this method and then
+                // forget it.
 
-            // no need to ask collection to forget this index because it's the
-            // collection's responsibillity to invoke this method and then
-            // forget it.
-
-            this._loaded = false;
+                this._loaded = false;
+            });
         }
     }
     public error(): boolean {
@@ -196,14 +198,9 @@ export class Index implements IResource, IDelayedResource {
             data.push(`${key}|${this._data[key].join('|')}`);
         });
 
-        this._connection.filePointer().file(this._resourcePath, data.join('\n'));
-
-        if (!this._skipSave) {
-            this._connection.save(done);
-        } else {
+        this._connection.updateFile(this._resourcePath, data.join('\n'), () => {
+            this._skipSave = false;
             done();
-        }
-
-        this._skipSave = false;
+        }, this._skipSave);
     }
 }

@@ -87,9 +87,7 @@ export class Collection implements IResource {
             steps.push({ params: {}, function: (params: any, next: any) => this.loadSequence(params, next) });
             steps.push({ params: {}, function: (params: any, next: any) => this.loadIndexes(params, next) });
 
-            this.processStepsSequence(steps, () => {
-                done();
-            });
+            this.processStepsSequence(steps, done);
         } else {
             done();
         }
@@ -116,10 +114,12 @@ export class Collection implements IResource {
             steps.push({ params: {}, function: (params: any, next: any) => this.closeIndexes(params, next) });
 
             this.processStepsSequence(steps, () => {
-                this._data = {};
-                this._loaded = false;
                 this._connection.forgetCollection(this._name);
-                this.save(done);
+                this.save(() => {
+                    this._data = {};
+                    this._loaded = false;
+                    done();
+                });
             });
         } else {
             done();
@@ -358,28 +358,23 @@ export class Collection implements IResource {
         this.processStepsSequence(steps, next);
     }
     protected loadManifest(params: any, next: any): void {
-        const file = this._connection.filePointer().file(this._manifestPath);
-        if (file === null) {
-            this._connection.filePointer().file(this._manifestPath, JSON.stringify(this._manifest));
-            this._connection.save(() => {
-                next();
-            });
-        } else {
-            this._data = {};
-            file.async('text').then((data: string) => {
+        this._connection.loadFile(this._manifestPath, (error: string, data: string) => {
+            if (error) {
+                this._connection.updateFile(this._manifestPath, JSON.stringify(this._manifest), () => {
+                    next();
+                });
+            } else if (data !== null) {
                 this._manifest = JSON.parse(data);
-            });
-            next();
-        }
+                next();
+            }
+        });
     }
     protected loadResource(params: any, next: any): void {
-        const file = this._connection.filePointer().file(this._resourcePath);
-        if (file === null) {
-            this._connection.filePointer().file(this._resourcePath, '');
-            this._connection.save(next);
-        } else {
-            this._data = {};
-            file.async('text').then((data: string) => {
+        this._data = {};
+        this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
+            if (error) {
+                this.save(next);
+            } else if (data !== null) {
                 data.split('\n')
                     .filter(line => line != '')
                     .forEach(line => {
@@ -388,8 +383,8 @@ export class Collection implements IResource {
                         this._data[id] = JSON.parse(pieces.join('|'));
                     });
                 next();
-            });
-        }
+            }
+        });
     }
     protected loadSequence(params: any, next: any): void {
         this._sequence = new Sequence(this, BasicConstants.DefaultSequence, this._connection);
@@ -440,12 +435,12 @@ export class Collection implements IResource {
     }
     protected save(done: any = null): void {
         let data: any = [];
-        Object.keys(this._data).forEach(key => {
-            data.push(`${key}|${JSON.stringify(this._data[key])}`);
+        Object.keys(this._data).forEach(id => {
+            data.push(`${id}|${JSON.stringify(this._data[id])}`);
         });
 
-        this._connection.filePointer().file(this._manifestPath, JSON.stringify(this._manifest));
-        this._connection.filePointer().file(this._resourcePath, data.join('\n'));
-        this._connection.save(done);
+        this._connection.updateFile(this._manifestPath, JSON.stringify(this._manifest), () => {
+            this._connection.updateFile(this._resourcePath, data.join('\n'), done);
+        });
     }
 }

@@ -10,6 +10,14 @@ export class BasicConstants {
     private constructor() { }
 }
 
+export class ConnectionSaveConstants {
+    public static readonly LoadFile: string = 'load-file';
+    public static readonly RemoveFile: string = 'remove-file';
+    public static readonly UpdateFile: string = 'update-file';
+
+    private constructor() { }
+}
+
 export class Errors {
     public static readonly DocIsNotObject: string = '[E-0001] Given document is not an object';
     public static readonly DocNotFound: string = '[E-0002] The requested document does not exist';

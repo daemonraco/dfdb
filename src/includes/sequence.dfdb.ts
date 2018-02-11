@@ -40,20 +40,20 @@ export class Sequence implements IResource, IDelayedResource {
 
         if (!this._loaded) {
             this._loaded = true;
-            const file = this._connection.filePointer().file(this._resourcePath);
-            if (file === null) {
-                this._connected = true;
-                this._value = 0;
-                this._skipSave = false;
 
-                this.save(done);
-            } else {
-                file.async('text').then((x: string) => {
-                    this._value = parseInt(x);
+            this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
+                if (error) {
+                    this._connected = true;
+                    this._value = 0;
+                    this._skipSave = false;
+
+                    this.save(done);
+                } else if (data !== null) {
+                    this._value = parseInt(data);
                     this._connected = true;
                     done();
-                });
-            }
+                }
+            });
         } else {
             done();
         }
@@ -66,9 +66,11 @@ export class Sequence implements IResource, IDelayedResource {
         this.resetError();
 
         if (this._loaded) {
-            this.save(done);
-            this._value = 0;
-            this._loaded = false;
+            this.save(() => {
+                this._value = 0;
+                this._loaded = false;
+                done();
+            });
         } else {
             done();
         }
@@ -95,14 +97,9 @@ export class Sequence implements IResource, IDelayedResource {
         this._lastError = null;
     }
     protected save(done: any = null): void {
-        this._connection.filePointer().file(this._resourcePath, `${this._value}`);
-
-        if (!this._skipSave) {
-            this._connection.save(done);
-        } else {
+        this._connection.updateFile(this._resourcePath, `${this._value}`, () => {
+            this._skipSave = false;
             done();
-        }
-
-        this._skipSave = false;
+        }, this._skipSave);
     }
 }
