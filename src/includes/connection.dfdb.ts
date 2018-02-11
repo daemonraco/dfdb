@@ -3,7 +3,7 @@
  * @author Alejandro D. Simi
  */
 
-import { BasicConstants, ConnectionSaveConstants } from './constants.dfdb';
+import { BasicConstants, ConnectionSaveConstants, Errors } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
@@ -25,8 +25,7 @@ export class Connection implements IResource {
     constructor(dbName: string, dbPath: string, options: any = {}) {
         this._dbName = dbName;
         this._dbPath = dbPath;
-        this._dbFullPath = path.join(this._dbPath, `${this._dbName}${BasicConstants.DBExtension}`);
-        this.setSavingQueue();
+        this._dbFullPath = DocsOnFileDB.GuessDatabasePath(this._dbName, this._dbPath);
     }
 
     //
@@ -68,7 +67,7 @@ export class Connection implements IResource {
                     });
                 } else {
                     this._connected = false;
-                    DocsOnFileDB.instance().forgetConnection(this._dbName, this._dbPath);
+                    DocsOnFileDB.Instance().forgetConnection(this._dbName, this._dbPath);
                     this.save(done);
                 }
             }
@@ -179,16 +178,17 @@ export class Connection implements IResource {
 
         fs.readFile(this._dbFullPath, (error: any, data: any) => {
             if (error) {
-                this._lastError = `Unable to load ${this._dbFullPath}. ${error}`;
+                this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
                 done(this._connected);
             } else {
                 JSZip.loadAsync(data).then((zip: any) => {
                     this._dbFile = zip;
                     this._connected = true;
+                    this.setSavingQueue();
 
                     done(this._connected);
                 }).catch((error: any) => {
-                    this._lastError = `Unable to load ${this._dbFullPath}. ${error}`;
+                    this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
                     done(this._connected);
                 });
             }
@@ -229,5 +229,40 @@ export class Connection implements IResource {
                     next(`Unknown action '${task.action}'`);
             }
         }, 1);
+    }
+
+    //
+    // Protected methods.
+    public static IsValidDatabase(dbName: string, dbPath: string, done: any): void {
+        const results: any = {
+            exists: false,
+            valid: false,
+            error: null
+        };
+
+        const dbFullPath = DocsOnFileDB.GuessDatabasePath(dbName, dbPath);
+        let stat: any = null;
+        try { stat = fs.statSync(dbFullPath); } catch (e) { }
+
+        if (stat) {
+            results.exists = true;
+
+            fs.readFile(dbFullPath, (error: any, data: any) => {
+                if (error) {
+                    results.error = Errors.DatabaseDoesntExist;
+                    done(results);
+                } else {
+                    if (data.toString().substring(0, 2) === 'PK') {
+                        results.valid = true;
+                    } else {
+                        results.error = Errors.DatabaseNotValid;
+                    }
+                    done(results);
+                }
+            });
+        } else {
+            results.error = Errors.DatabaseDoesntExist;
+            done(results);
+        }
     }
 }

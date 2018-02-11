@@ -10,7 +10,9 @@ export declare class DocsOnFileDB {
     };
     protected constructor();
     connect(dbname: string, dbpath: string, options?: any, done?: any): void;
+    dropDatabase(dbname: string, dbpath: string, done?: any): void;
     forgetConnection(dbname: string, dbpath: string): boolean;
-    protected buildKey(dbname: string, dbpath: string): string;
-    static instance(): DocsOnFileDB;
+    static Instance(): DocsOnFileDB;
+    protected static BuildKey(dbname: string, dbpath: string): string;
+    static GuessDatabasePath(dbName: string, dbPath: string): string;
 }

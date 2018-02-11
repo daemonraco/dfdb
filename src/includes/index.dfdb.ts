@@ -15,7 +15,6 @@ export class Index implements IResource, IDelayedResource {
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _data: { [name: string]: any } = {};
-    protected _loaded: boolean = false;
     protected _field: string = null;
     protected _lastError: string = null;
     protected _resourcePath: string = null;
@@ -65,12 +64,11 @@ export class Index implements IResource, IDelayedResource {
             done = () => { };
         }
 
-        if (!this._loaded) {
-            this._loaded = true;
-
+        if (!this._connected) {
             this._data = {};
             this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
                 if (error) {
+                    this._connected = true;
                     this.save(done);
                 } else if (data !== null) {
                     data.split('\n')
@@ -96,10 +94,10 @@ export class Index implements IResource, IDelayedResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             this.save(() => {
                 this._data = {};
-                this._loaded = false;
+                this._connected = false;
                 done();
             });
         } else {
@@ -113,14 +111,17 @@ export class Index implements IResource, IDelayedResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             this._connection.removeFile(this._resourcePath, () => {
                 // no need to ask collection to forget this index because it's the
                 // collection's responsibillity to invoke this method and then
                 // forget it.
 
-                this._loaded = false;
+                this._connected = false;
+                done();
             });
+        } else {
+            done();
         }
     }
     public error(): boolean {
@@ -179,7 +180,7 @@ export class Index implements IResource, IDelayedResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             this._data = {};
             this.save(done);
         } else {

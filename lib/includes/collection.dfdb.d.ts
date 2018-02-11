@@ -7,6 +7,7 @@ export interface CollectionStep {
     function: any;
 }
 export declare class Collection implements IResource {
+    protected _connected: boolean;
     protected _connection: Connection;
     protected _data: {
         [name: string]: any;
@@ -15,7 +16,6 @@ export declare class Collection implements IResource {
         [name: string]: Index;
     };
     protected _lastError: string;
-    protected _loaded: boolean;
     protected _manifest: {
         [name: string]: any;
     };
@@ -27,6 +27,7 @@ export declare class Collection implements IResource {
     addFieldIndex(name: string, done: any): void;
     connect(done: any): void;
     close(done?: any): void;
+    drop(done: any): void;
     dropFieldIndex(name: string, done: any): void;
     error(): boolean;
     find(conditions: any, done: any): void;
@@ -41,6 +42,11 @@ export declare class Collection implements IResource {
     protected addDocToIndexes(doc: any, next: any): void;
     protected closeIndex(params: any, next: any): void;
     protected closeIndexes(params: any, next: any): void;
+    protected dropIndex(params: any, next: any): void;
+    protected dropIndexes(params: any, next: any): void;
+    protected dropManifest(params: any, next: any): void;
+    protected dropResource(params: any, next: any): void;
+    protected dropSequence(params: any, next: any): void;
     protected loadIndex(params: any, next: any): void;
     protected loadIndexes(params: any, next: any): void;
     protected loadManifest(params: any, next: any): void;

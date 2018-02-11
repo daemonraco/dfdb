@@ -33,6 +33,7 @@ describe('dfdb: Require', function () {
         assert.typeOf(dfdb.constants, 'object');
 
         assert.property(dfdb.constants, 'BasicConstants');
+        assert.property(dfdb.constants, 'ConnectionSaveConstants');
         assert.property(dfdb.constants, 'Errors');
     });
 
@@ -65,11 +66,21 @@ describe('dfdb: Require', function () {
         assert.property(dfdb.constants.Errors, 'NotIndexableValue');
         assert.property(dfdb.constants.Errors, 'DuplicatedIndex');
         assert.property(dfdb.constants.Errors, 'NotIndexedField');
+        assert.property(dfdb.constants.Errors, 'CollectionNotConnected');
+        assert.property(dfdb.constants.Errors, 'IndexNotConnected');
+        assert.property(dfdb.constants.Errors, 'SequenceNotConnected');
+        assert.property(dfdb.constants.Errors, 'DatabaseDoesntExist');
+        assert.property(dfdb.constants.Errors, 'DatabaseNotValid');
 
         assert.isString(dfdb.constants.Errors.DocIsNotObject);
         assert.isString(dfdb.constants.Errors.DocNotFound);
         assert.isString(dfdb.constants.Errors.NotIndexableValue);
         assert.isString(dfdb.constants.Errors.DuplicatedIndex);
         assert.isString(dfdb.constants.Errors.NotIndexedField);
+        assert.isString(dfdb.constants.Errors.CollectionNotConnected);
+        assert.isString(dfdb.constants.Errors.IndexNotConnected);
+        assert.isString(dfdb.constants.Errors.SequenceNotConnected);
+        assert.isString(dfdb.constants.Errors.DatabaseDoesntExist);
+        assert.isString(dfdb.constants.Errors.DatabaseNotValid);
     });
 });

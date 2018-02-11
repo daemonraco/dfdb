@@ -24,6 +24,11 @@ export class Errors {
     public static readonly NotIndexableValue: string = '[E-0003] Given value can not be indexed';
     public static readonly DuplicatedIndex: string = '[E-0004] Index already present';
     public static readonly NotIndexedField: string = '[E-0005] Field of searched value has no associated index';
+    public static readonly CollectionNotConnected: string = '[E-0006] Collection not connected';
+    public static readonly IndexNotConnected: string = '[E-0007] Index not connected';
+    public static readonly SequenceNotConnected: string = '[E-0008] Sequence not connected';
+    public static readonly DatabaseDoesntExist: string = `[E-0009] Requested database doesn't exist`;
+    public static readonly DatabaseNotValid: string = `[E-0010] Requested database is not valid`;
 
     private constructor() { }
 }

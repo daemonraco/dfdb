@@ -120,7 +120,7 @@ describe('dfdb: Basic use', function () {
     });
 
     it('closes the connection', done => {
-        assert.typeOf(collection.update, 'function');
+        assert.typeOf(connection.close, 'function');
 
         connection.close(() => {
             assert.isFalse(connection.connected());

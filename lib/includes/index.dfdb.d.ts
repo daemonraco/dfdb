@@ -7,7 +7,6 @@ export declare class Index implements IResource, IDelayedResource {
     protected _data: {
         [name: string]: any;
     };
-    protected _loaded: boolean;
     protected _field: string;
     protected _lastError: string;
     protected _resourcePath: string;

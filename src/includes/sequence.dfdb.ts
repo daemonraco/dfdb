@@ -14,7 +14,6 @@ export class Sequence implements IResource, IDelayedResource {
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _lastError: string = null;
-    protected _loaded: boolean = false;
     protected _name: string = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
@@ -38,9 +37,7 @@ export class Sequence implements IResource, IDelayedResource {
             done = () => { };
         }
 
-        if (!this._loaded) {
-            this._loaded = true;
-
+        if (!this._connected) {
             this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
                 if (error) {
                     this._connected = true;
@@ -65,10 +62,30 @@ export class Sequence implements IResource, IDelayedResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             this.save(() => {
                 this._value = 0;
-                this._loaded = false;
+                this._connected = false;
+                done();
+            });
+        } else {
+            done();
+        }
+    }
+    public drop(done: any = null): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._connected) {
+            this._connection.removeFile(this._resourcePath, () => {
+                // no need to ask collection to forget this index because it's the
+                // collection's responsibillity to invoke this method and then
+                // forget it.
+
+                this._connected = false;
                 done();
             });
         } else {

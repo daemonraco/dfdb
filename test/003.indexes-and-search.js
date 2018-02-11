@@ -76,6 +76,8 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`adds an index for field 'email'`, done => {
+        assert.typeOf(collection.addFieldIndex, 'function');
+
         collection.addFieldIndex('email', () => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
@@ -85,6 +87,8 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`adds an index for field 'company'`, done => {
+        assert.typeOf(collection.addFieldIndex, 'function');
+
         collection.addFieldIndex('company', () => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
@@ -94,6 +98,8 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`re-adds an index for field 'company'`, done => {
+        assert.typeOf(collection.addFieldIndex, 'function');
+
         collection.addFieldIndex('company', () => {
             assert.isTrue(collection.error());
             assert.isNotNull(collection.lastError());
@@ -127,6 +133,8 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it('updates an indexed document', done => {
+        assert.typeOf(collection.update, 'function');
+
         const newData = {
             "isActive": false,
             "age": 32,
@@ -225,7 +233,7 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it(`searches for the first document for a condition`, done => {
-        assert.typeOf(collection.find, 'function');
+        assert.typeOf(collection.findOne, 'function');
 
         collection.findOne({ email: 'blanchardchen' }, doc => {
             assert.isFalse(collection.error());
@@ -258,7 +266,7 @@ describe('dfdb: Indexes and Searches', function () {
     });
 
     it('closes the connection', done => {
-        assert.typeOf(collection.update, 'function');
+        assert.typeOf(connection.close, 'function');
 
         connection.close(() => {
             assert.isFalse(connection.connected());

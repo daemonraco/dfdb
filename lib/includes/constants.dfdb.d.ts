@@ -19,5 +19,10 @@ export declare class Errors {
     static readonly NotIndexableValue: string;
     static readonly DuplicatedIndex: string;
     static readonly NotIndexedField: string;
+    static readonly CollectionNotConnected: string;
+    static readonly IndexNotConnected: string;
+    static readonly SequenceNotConnected: string;
+    static readonly DatabaseDoesntExist: string;
+    static readonly DatabaseNotValid: string;
     private constructor();
 }

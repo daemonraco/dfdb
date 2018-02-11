@@ -30,4 +30,5 @@ export declare class Connection implements IResource {
     protected internalConnect(done: any): void;
     protected resetError(): void;
     protected setSavingQueue(): void;
+    static IsValidDatabase(dbName: string, dbPath: string, done: any): void;
 }

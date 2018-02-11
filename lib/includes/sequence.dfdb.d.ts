@@ -9,7 +9,6 @@ export declare class Sequence implements IResource, IDelayedResource {
     protected _connected: boolean;
     protected _connection: Connection;
     protected _lastError: string;
-    protected _loaded: boolean;
     protected _name: string;
     protected _resourcePath: string;
     protected _skipSave: boolean;
@@ -18,6 +17,7 @@ export declare class Sequence implements IResource, IDelayedResource {
     constructor(collection: Collection, name: string, connection: Connection);
     connect(done?: any): void;
     close(done?: any): void;
+    drop(done?: any): void;
     error(): boolean;
     lastError(): string;
     next(): number;

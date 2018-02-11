@@ -18,11 +18,11 @@ export interface CollectionStep {
 export class Collection implements IResource {
     //
     // Protected properties.
+    protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _data: { [name: string]: any } = {};
     protected _indexes: { [name: string]: Index } = {};
     protected _lastError: string = null;
-    protected _loaded: boolean = false;
     protected _manifest: { [name: string]: any } = {
         indexes: {}
     };
@@ -50,7 +50,7 @@ export class Collection implements IResource {
 
         this.resetError();
 
-        if (typeof this._indexes[name] === 'undefined') {
+        if (this._connected && typeof this._indexes[name] === 'undefined') {
             this._manifest.indexes[name] = { name, field: name };
             this.loadIndexes(null, () => {
                 let ids = Object.keys(this._data);
@@ -66,8 +66,11 @@ export class Collection implements IResource {
                 };
                 processIds();
             });
+        } else if (!this._connected) {
+            this._lastError = Errors.CollectionNotConnected;
+            done();
         } else {
-            this._lastError = `${Errors.DuplicatedIndex}. Index: ${name}.`
+            this._lastError = `${Errors.DuplicatedIndex}. Index: ${name}`;
             done();
         }
     }
@@ -78,16 +81,17 @@ export class Collection implements IResource {
 
         this.resetError();
 
-        if (!this._loaded) {
-            this._loaded = true;
-
+        if (!this._connected) {
             let steps: CollectionStep[] = [];
             steps.push({ params: {}, function: (params: any, next: any) => this.loadManifest(params, next) });
             steps.push({ params: {}, function: (params: any, next: any) => this.loadResource(params, next) });
             steps.push({ params: {}, function: (params: any, next: any) => this.loadSequence(params, next) });
             steps.push({ params: {}, function: (params: any, next: any) => this.loadIndexes(params, next) });
 
-            this.processStepsSequence(steps, done);
+            this.processStepsSequence(steps, () => {
+                this._connected = true;
+                done();
+            });
         } else {
             done();
         }
@@ -99,7 +103,7 @@ export class Collection implements IResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             let steps: CollectionStep[] = [];
             steps.push({
                 params: {},
@@ -117,9 +121,32 @@ export class Collection implements IResource {
                 this._connection.forgetCollection(this._name);
                 this.save(() => {
                     this._data = {};
-                    this._loaded = false;
+                    this._connected = false;
                     done();
                 });
+            });
+        } else {
+            done();
+        }
+    }
+    public drop(done: any): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._connected) {
+
+            let steps: CollectionStep[] = [];
+            steps.push({ params: {}, function: (params: any, next: any) => this.dropIndexes(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.dropSequence(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.dropResource(params, next) });
+            steps.push({ params: {}, function: (params: any, next: any) => this.dropManifest(params, next) });
+
+            this.processStepsSequence(steps, () => {
+                this._connected = false;
+                done();
             });
         } else {
             done();
@@ -214,6 +241,9 @@ export class Collection implements IResource {
         if (typeof doc !== 'object' || Array.isArray(doc)) {
             this._lastError = Errors.DocIsNotObject;
             done(null);
+        } else if (!this._connected) {
+            this._lastError = Errors.CollectionNotConnected;
+            done(null);
         } else {
             this._sequence.skipSave();
             const newID = this._sequence.next();
@@ -244,7 +274,10 @@ export class Collection implements IResource {
 
         this.resetError();
 
-        if (typeof this._data[id] === 'undefined') {
+        if (!this._connected) {
+            this._lastError = Errors.CollectionNotConnected;
+            done();
+        } else if (typeof this._data[id] === 'undefined') {
             this._lastError = Errors.DocNotFound;
             done();
         } else {
@@ -262,7 +295,7 @@ export class Collection implements IResource {
 
         this.resetError();
 
-        if (this._loaded) {
+        if (this._connected) {
             this._data = {};
             this.truncateIndexes(null, () => this.save(done));
         } else {
@@ -281,6 +314,9 @@ export class Collection implements IResource {
             done(null);
         } else if (typeof this._data[id] === 'undefined') {
             this._lastError = Errors.DocNotFound;
+            done(null);
+        } else if (!this._connected) {
+            this._lastError = Errors.CollectionNotConnected;
             done(null);
         } else {
             const currentDoc = this._data[id];
@@ -336,6 +372,43 @@ export class Collection implements IResource {
         })
 
         this.processStepsSequence(steps, next);
+    }
+    protected dropIndex(params: any, next: any): void {
+        delete this._manifest.indexes[params.indexName];
+        this._indexes[params.indexName].drop(() => {
+            delete this._indexes[params.indexName];
+            next();
+        });
+    }
+    protected dropIndexes(params: any, next: any): void {
+        let steps: any[] = [];
+
+        Object.keys(this._indexes).forEach(indexName => {
+            steps.push({
+                params: { indexName },
+                function: (params: any, next: any) => this.dropIndex(params, next)
+            });
+        })
+
+        this.processStepsSequence(steps, next);
+    }
+    protected dropManifest(params: any, next: any): void {
+        this._connection.removeFile(this._manifestPath, (error: string) => {
+            this._manifest = {};
+            next();
+        });
+    }
+    protected dropResource(params: any, next: any): void {
+        this._connection.removeFile(this._resourcePath, (error: string) => {
+            this._data = {};
+            next();
+        });
+    }
+    protected dropSequence(params: any, next: any): void {
+        this._sequence.drop(() => {
+            this._sequence = null;
+            next();
+        });
     }
     protected loadIndex(params: any, next: any): void {
         if (typeof this._indexes[params.name] === 'undefined') {
