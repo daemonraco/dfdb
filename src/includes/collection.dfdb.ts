@@ -70,7 +70,7 @@ export class Collection implements IResource {
             this._lastError = Errors.CollectionNotConnected;
             done();
         } else {
-            this._lastError = `${Errors.DuplicatedIndex}. Index: ${name}`;
+            this._lastError = `${Errors.DuplicatedIndex}. Index: '${name}'`;
             done();
         }
     }
@@ -266,6 +266,23 @@ export class Collection implements IResource {
     }
     public name(): string {
         return this._name;
+    }
+    public rebuildFieldIndex(name: string, done: any): void {
+        if (done === null) {
+            done = () => { };
+        }
+
+        this.resetError();
+
+        if (this._connected && typeof this._indexes[name] !== 'undefined') {
+            this.dropFieldIndex(name, () => this.addFieldIndex(name, done));
+        } else if (!this._connected) {
+            this._lastError = Errors.CollectionNotConnected;
+            done();
+        } else {
+            this._lastError = `${Errors.UnknownIndex}. Index: '${name}'`;
+            done();
+        }
     }
     public remove(id: any, done: any): void {
         if (done === null) {

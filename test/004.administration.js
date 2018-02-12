@@ -102,6 +102,44 @@ describe('dfdb: Indexes and Searches', function () {
         });
     });
 
+    it(`rebuilds the index for field 'name'`, done => {
+        assert.typeOf(collection.rebuildFieldIndex, 'function');
+
+        collection.rebuildFieldIndex('name', () => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            done();
+        });
+    });
+
+    it(`rebuilds a non existing field index`, done => {
+        assert.typeOf(collection.rebuildFieldIndex, 'function');
+
+        collection.rebuildFieldIndex('somefield', () => {
+            assert.isTrue(collection.error());
+            assert.isNotNull(collection.lastError());
+            assert.equal(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
+
+            done();
+        });
+    });
+
+    it(`searches for an exact value on field 'name' after rebuild (value 'Lawanda Guzman')`, done => {
+        assert.typeOf(collection.find, 'function');
+
+        collection.find({ name: 'Lawanda Guzman' }, docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.equal(docs.length, 1);
+            assert.equal(docs[0]._id, 8);
+            assert.equal(docs[0].name, 'Lawanda Guzman');
+
+            done();
+        });
+    });
+
     it(`closes the connection`, done => {
         assert.typeOf(connection.close, 'function');
 

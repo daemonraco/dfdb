@@ -35,6 +35,7 @@ export declare class Collection implements IResource {
     insert(doc: any, done: any): void;
     lastError(): string;
     name(): string;
+    rebuildFieldIndex(name: string, done: any): void;
     remove(id: any, done: any): void;
     truncate(done: any): void;
     update(id: any, doc: any, done: any): void;

@@ -71,6 +71,7 @@ describe('dfdb: Require', function () {
         assert.property(dfdb.constants.Errors, 'SequenceNotConnected');
         assert.property(dfdb.constants.Errors, 'DatabaseDoesntExist');
         assert.property(dfdb.constants.Errors, 'DatabaseNotValid');
+        assert.property(dfdb.constants.Errors, 'UnknownIndex');
 
         assert.isString(dfdb.constants.Errors.DocIsNotObject);
         assert.isString(dfdb.constants.Errors.DocNotFound);
@@ -82,5 +83,6 @@ describe('dfdb: Require', function () {
         assert.isString(dfdb.constants.Errors.SequenceNotConnected);
         assert.isString(dfdb.constants.Errors.DatabaseDoesntExist);
         assert.isString(dfdb.constants.Errors.DatabaseNotValid);
+        assert.isString(dfdb.constants.Errors.UnknownIndex);
     });
 });

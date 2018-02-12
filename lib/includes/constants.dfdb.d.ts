@@ -24,5 +24,6 @@ export declare class Errors {
     static readonly SequenceNotConnected: string;
     static readonly DatabaseDoesntExist: string;
     static readonly DatabaseNotValid: string;
+    static readonly UnknownIndex: string;
     private constructor();
 }
