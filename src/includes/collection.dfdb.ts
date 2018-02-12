@@ -187,36 +187,12 @@ export class Collection implements IResource {
         }
 
         const findings: any[] = [];
-        const indexesToUse: string[] = [];
         this.resetError();
 
-        Object.keys(conditions).forEach(key => {
-            if (typeof this._indexes[key] === 'undefined') {
-                this._lastError = `${Errors.NotIndexedField}. Field: '${key}'.`
-            } else {
-                indexesToUse.push(key);
-            }
-        });
-
-        if (!this.error()) {
-            let ids: string[] = Object.keys(this._data);
-
-            const run = () => {
-                const idx = indexesToUse.shift();
-                if (idx) {
-                    this._indexes[idx].find(`${conditions[idx]}`, (foundIds: string[]) => {
-                        ids = ids.filter(i => foundIds.indexOf(i) > -1);
-                        run();
-                    })
-                } else {
-                    ids.forEach(id => findings.push(this._data[id]));
-                    done(findings);
-                }
-            }
-            run();
-        } else {
+        this.findIds(conditions, (ids: string[]) => {
+            ids.forEach(id => findings.push(this._data[id]));
             done(findings);
-        }
+        });
     }
     public findOne(conditions: any, done: any): void {
         if (typeof done === null) {
@@ -304,6 +280,78 @@ export class Collection implements IResource {
                 this.save(done);
             })
         }
+    }
+    public search(conditions: any, done: any): void {
+        if (typeof conditions === 'function') {
+            done = conditions;
+            conditions = {};
+        } else if (typeof conditions !== 'object' || conditions === null) {
+            conditions = {};
+        }
+        if (done === null) {
+            done = (findings: any[]) => { };
+        }
+
+
+        let findings: any[] = [];
+        let foundIds: string[] = [];
+        let indexedConditions: any = {};
+        let unindexedConditions: any = {};
+
+        const unindexedSearch = () => {
+            const unindexedConditionsKeys = Object.keys(unindexedConditions);
+
+            unindexedConditionsKeys.forEach((key: string) => unindexedConditions[key] = unindexedConditions[key].toLowerCase());
+
+            done(findings.filter((datum: any) => {
+                let accept = true;
+
+                unindexedConditionsKeys.forEach((key: string) => {
+                    if (typeof datum[key] === 'undefined') {
+                        accept = false;
+                    } else {
+                        if (`${datum[key]}`.toLowerCase().indexOf(unindexedConditions[key]) < 0) {
+                            accept = false;
+                        }
+                    }
+                });
+
+                return accept;
+            }));
+        };
+
+        this.resetError();
+
+        Object.keys(conditions).forEach(key => {
+            if (typeof this._indexes[key] === 'undefined') {
+                unindexedConditions[key] = conditions[key];
+            } else {
+                indexedConditions[key] = conditions[key];
+            }
+        });
+
+        if (Object.keys(indexedConditions).length > 0) {
+            this.findIds(indexedConditions, (ids: string[]) => {
+                findings = this.idsToData(ids);
+                unindexedSearch();
+            });
+        } else {
+            findings = this.idsToData(Object.keys(this._data));
+            unindexedSearch();
+        }
+    }
+    public searchOne(conditions: any, done: any): void {
+        if (typeof done === null) {
+            done = (finding: any) => { };
+        }
+
+        this.search(conditions, (findings: any[]) => {
+            if (findings.length > 0) {
+                done(findings[0]);
+            } else {
+                done(null);
+            }
+        });
     }
     public truncate(done: any): void {
         if (done === null) {
@@ -426,6 +474,49 @@ export class Collection implements IResource {
             this._sequence = null;
             next();
         });
+    }
+    protected findIds(conditions: any, done: any): void {
+        if (typeof conditions === 'function') {
+            done = conditions;
+            conditions = {};
+        } else if (typeof conditions !== 'object' || conditions === null) {
+            conditions = {};
+        }
+        if (done === null) {
+            done = (findings: string[]) => { };
+        }
+
+        const indexesToUse: string[] = [];
+
+        Object.keys(conditions).forEach(key => {
+            if (typeof this._indexes[key] === 'undefined') {
+                this._lastError = `${Errors.NotIndexedField}. Field: '${key}'.`
+            } else {
+                indexesToUse.push(key);
+            }
+        });
+
+        if (!this.error()) {
+            let ids: string[] = Object.keys(this._data);
+
+            const run = () => {
+                const idx = indexesToUse.shift();
+                if (idx) {
+                    this._indexes[idx].find(`${conditions[idx]}`, (foundIds: string[]) => {
+                        ids = ids.filter(i => foundIds.indexOf(i) > -1);
+                        run();
+                    })
+                } else {
+                    done(ids);
+                }
+            }
+            run();
+        } else {
+            done([]);
+        }
+    }
+    protected idsToData(ids: string[]): any[] {
+        return ids.map(id => this._data[id]);
     }
     protected loadIndex(params: any, next: any): void {
         if (typeof this._indexes[params.name] === 'undefined') {

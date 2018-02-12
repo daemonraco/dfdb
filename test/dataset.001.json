@@ -122,7 +122,8 @@
             "deserunt",
             "reprehenderit",
             "adipisicing"
-        ]
+        ],
+        "extradata": "somedata"
     },
     {
         "isActive": false,

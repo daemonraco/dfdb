@@ -37,6 +37,8 @@ export declare class Collection implements IResource {
     name(): string;
     rebuildFieldIndex(name: string, done: any): void;
     remove(id: any, done: any): void;
+    search(conditions: any, done: any): void;
+    searchOne(conditions: any, done: any): void;
     truncate(done: any): void;
     update(id: any, doc: any, done: any): void;
     protected addDocToIndex(params: any, next: any): void;
@@ -48,6 +50,8 @@ export declare class Collection implements IResource {
     protected dropManifest(params: any, next: any): void;
     protected dropResource(params: any, next: any): void;
     protected dropSequence(params: any, next: any): void;
+    protected findIds(conditions: any, done: any): void;
+    protected idsToData(ids: string[]): any[];
     protected loadIndex(params: any, next: any): void;
     protected loadIndexes(params: any, next: any): void;
     protected loadManifest(params: any, next: any): void;
