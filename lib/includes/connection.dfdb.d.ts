@@ -27,7 +27,7 @@ export declare class ConnectionDBValidationResult {
     error: string;
 }
 /**
- * This class represent an active connection to a database on file.
+ * This class represents an active connection to a database on file.
  *
  * @class Connection
  */
@@ -63,10 +63,10 @@ export declare class Connection implements IResource {
      * doesn't exist it is created.
      *
      * @method connect
-     * @returns {Promise<boolean>} Returns TRUE or FALSE as a promise indicating
+     * @returns {Promise<void>} Returns TRUE or FALSE as a promise indicating
      * if it's connected or not.
      */
-    connect(): Promise<boolean>;
+    connect(): Promise<void>;
     /**
      * Provides access to the connection status.
      *
@@ -159,10 +159,10 @@ export declare class Connection implements IResource {
      * file.
      *
      * @method internalConnect
-     * @returns {Promise<boolean>} Returns TRUE or FALSE as a promise indicating
+     * @returns {Promise<void>} Returns TRUE or FALSE as a promise indicating
      * if it's connected or not.
      */
-    protected internalConnect(): Promise<boolean>;
+    protected internalConnect(): Promise<void>;
     /**
      * This method cleans up current error messages.
      *

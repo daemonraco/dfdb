@@ -36,7 +36,7 @@ export class ConnectionDBValidationResult {
 }
 
 /**
- * This class represent an active connection to a database on file.
+ * This class represents an active connection to a database on file.
  *
  * @class Connection
  */
@@ -93,9 +93,7 @@ export class Connection implements IResource {
                     .then(() => {
                         resolve(this._collections[name]);
                     })
-                    .catch((err: string) => {
-                        reject(err);
-                    });
+                    .catch(reject);
             }
         });
     }
@@ -104,14 +102,14 @@ export class Connection implements IResource {
      * doesn't exist it is created.
      *
      * @method connect
-     * @returns {Promise<boolean>} Returns TRUE or FALSE as a promise indicating
+     * @returns {Promise<void>} Returns TRUE or FALSE as a promise indicating
      * if it's connected or not.
      */
-    public connect(): Promise<boolean> {
+    public connect(): Promise<void> {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<boolean>((resolve: (connected: boolean) => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             //
             // Does it exist?
             if (this.doesExist()) {
@@ -398,14 +396,14 @@ export class Connection implements IResource {
      * file.
      *
      * @method internalConnect
-     * @returns {Promise<boolean>} Returns TRUE or FALSE as a promise indicating
+     * @returns {Promise<void>} Returns TRUE or FALSE as a promise indicating
      * if it's connected or not.
      */
-    protected internalConnect(): Promise<boolean> {
+    protected internalConnect(): Promise<void> {
         this._connected = false;
         //
         // Building promise to return.
-        return new Promise<boolean>((resolve: (res: boolean) => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             //
             // Physically reading the file.
             fs.readFile(this._dbFullPath, (error: any, data: any) => {
@@ -428,7 +426,7 @@ export class Connection implements IResource {
                         // Starting the queue that centralizes all file accesses.
                         this.setSavingQueue();
 
-                        resolve(this._connected);
+                        resolve();
                     }).catch((error: any) => {
                         this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
                         reject(this._lastError);
