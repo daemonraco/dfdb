@@ -61,8 +61,7 @@ export class DocsOnFileDB {
                 //
                 // Starting connection.
                 this._connections[key].connect()
-                    .then((connected: boolean) => {
-                        /** @todo check if 'connected' should be checked. */
+                    .then(() => {
                         resolve(this._connections[key]);
                     })
                     .catch(reject);
