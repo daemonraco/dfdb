@@ -51,24 +51,26 @@ export class Collection implements IResource {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             if (this._connected && typeof this._indexes[name] === 'undefined') {
                 this._manifest.indexes[name] = { name, field: name };
-                this.loadIndexes(null, () => {
-                    let ids = Object.keys(this._data);
+                this.loadIndexes(null)
+                    .then(() => {
+                        let ids = Object.keys(this._data);
 
-                    const processIds = () => {
-                        const id = ids.shift();
-                        if (id) {
-                            this._indexes[name].skipSave();
-                            this._indexes[name].addDocument(this._data[id])
-                                .then(processIds)
-                                .catch(reject);
-                        } else {
-                            this.save()
-                                .then(resolve)
-                                .catch(reject);
-                        }
-                    };
-                    processIds();
-                });
+                        const processIds = () => {
+                            const id = ids.shift();
+                            if (id) {
+                                this._indexes[name].skipSave();
+                                this._indexes[name].addDocument(this._data[id])
+                                    .then(processIds)
+                                    .catch(reject);
+                            } else {
+                                this.save()
+                                    .then(resolve)
+                                    .catch(reject);
+                            }
+                        };
+                        processIds();
+                    })
+                    .catch(reject);
             } else if (!this._connected) {
                 this._lastError = Errors.CollectionNotConnected;
                 reject(this._lastError);
@@ -84,15 +86,17 @@ export class Collection implements IResource {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             if (!this._connected) {
                 let steps: CollectionStep[] = [];
-                steps.push({ params: {}, function: (params: any, next: any) => this.loadManifest(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.loadResource(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.loadSequence(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.loadIndexes(params, next) });
+                steps.push({ params: {}, function: (params: any) => this.loadManifest(params) });
+                steps.push({ params: {}, function: (params: any) => this.loadResource(params) });
+                steps.push({ params: {}, function: (params: any) => this.loadSequence(params) });
+                steps.push({ params: {}, function: (params: any) => this.loadIndexes(params) });
 
-                this.processStepsSequence(steps, () => {
-                    this._connected = true;
-                    resolve();
-                });
+                this.processStepsSequence(steps)
+                    .then(() => {
+                        this._connected = true;
+                        resolve();
+                    })
+                    .catch(reject);
             } else {
                 resolve();
             }
@@ -106,28 +110,32 @@ export class Collection implements IResource {
                 let steps: CollectionStep[] = [];
                 steps.push({
                     params: {},
-                    function: (params: any, next: any) => {
-                        this._sequence.skipSave();
-                        this._sequence.close()
-                            .then(() => {
-                                this._sequence = null;
-                                next();
-                            })
-                            .catch((err: string) => { });
+                    function: (params: any) => {
+                        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+                            this._sequence.skipSave();
+                            this._sequence.close()
+                                .then(() => {
+                                    this._sequence = null;
+                                    resolve();
+                                })
+                                .catch(reject);
+                        });
                     }
                 });
-                steps.push({ params: {}, function: (params: any, next: any) => this.closeIndexes(params, next) });
+                steps.push({ params: {}, function: (params: any) => this.closeIndexes(params) });
 
-                this.processStepsSequence(steps, () => {
-                    this._connection.forgetCollection(this._name);
-                    this.save()
-                        .then(() => {
-                            this._data = {};
-                            this._connected = false;
-                            resolve();
-                        })
-                        .catch(reject);
-                });
+                this.processStepsSequence(steps)
+                    .then(() => {
+                        this._connection.forgetCollection(this._name);
+                        this.save()
+                            .then(() => {
+                                this._data = {};
+                                this._connected = false;
+                                resolve();
+                            })
+                            .catch(reject);
+                    })
+                    .catch(reject);
             } else {
                 resolve();
             }
@@ -139,15 +147,17 @@ export class Collection implements IResource {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             if (this._connected) {
                 let steps: CollectionStep[] = [];
-                steps.push({ params: {}, function: (params: any, next: any) => this.dropIndexes(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.dropSequence(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.dropResource(params, next) });
-                steps.push({ params: {}, function: (params: any, next: any) => this.dropManifest(params, next) });
+                steps.push({ params: {}, function: (params: any) => this.dropIndexes(params) });
+                steps.push({ params: {}, function: (params: any) => this.dropSequence(params) });
+                steps.push({ params: {}, function: (params: any) => this.dropResource(params) });
+                steps.push({ params: {}, function: (params: any) => this.dropManifest(params) });
 
-                this.processStepsSequence(steps, () => {
-                    this._connected = false;
-                    resolve();
-                });
+                this.processStepsSequence(steps)
+                    .then(() => {
+                        this._connected = false;
+                        resolve();
+                    })
+                    .catch(reject);
             } else {
                 resolve();
             }
@@ -418,11 +428,13 @@ export class Collection implements IResource {
 
     //
     // Protected methods.
-    protected addDocToIndex(params: any, next: any): void {
-        this._indexes[params.indexName].skipSave();
-        this._indexes[params.indexName].addDocument(params.doc)
-            .then(() => next())
-            .catch((err: string) => next());
+    protected addDocToIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._indexes[params.indexName].skipSave();
+            this._indexes[params.indexName].addDocument(params.doc)
+                .then(resolve)
+                .catch(reject);
+        });
     }
     protected addDocToIndexes(doc: any): Promise<void> {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
@@ -431,78 +443,98 @@ export class Collection implements IResource {
             Object.keys(this._indexes).forEach(indexName => {
                 steps.push({
                     params: { doc, indexName },
-                    function: (params: any, next: any) => this.addDocToIndex(params, next)
+                    function: (params: any) => this.addDocToIndex(params)
                 });
             })
 
-            this.processStepsSequence(steps, resolve);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
         });
     }
-    protected closeIndex(params: any, next: any): void {
-        this._indexes[params.indexName].skipSave();
-        this._indexes[params.indexName].close()
-            .then(() => {
-                delete this._indexes[params.indexName];
-                next();
-            })
-            .catch((err: string) => next());
+    protected closeIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._indexes[params.indexName].skipSave();
+            this._indexes[params.indexName].close()
+                .then(() => {
+                    delete this._indexes[params.indexName];
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
-    protected closeIndexes(params: any, next: any): void {
-        let steps: any[] = [];
+    protected closeIndexes(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            let steps: any[] = [];
 
-        Object.keys(this._indexes).forEach(indexName => {
-            steps.push({
-                params: { indexName },
-                function: (params: any, next: any) => this.closeIndex(params, next)
-            });
-        })
+            Object.keys(this._indexes).forEach(indexName => {
+                steps.push({
+                    params: { indexName },
+                    function: (params: any) => this.closeIndex(params)
+                });
+            })
 
-        this.processStepsSequence(steps, next);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
+        });
     }
-    protected dropIndex(params: any, next: any): void {
-        delete this._manifest.indexes[params.indexName];
-        this._indexes[params.indexName].drop()
-            .then(() => {
-                delete this._indexes[params.indexName];
-                next();
-            })
-            .catch((err: string) => next());
+    protected dropIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            delete this._manifest.indexes[params.indexName];
+            this._indexes[params.indexName].drop()
+                .then(() => {
+                    delete this._indexes[params.indexName];
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
-    protected dropIndexes(params: any, next: any): void {
-        let steps: any[] = [];
+    protected dropIndexes(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            let steps: any[] = [];
 
-        Object.keys(this._indexes).forEach(indexName => {
-            steps.push({
-                params: { indexName },
-                function: (params: any, next: any) => this.dropIndex(params, next)
-            });
-        })
+            Object.keys(this._indexes).forEach(indexName => {
+                steps.push({
+                    params: { indexName },
+                    function: (params: any) => this.dropIndex(params)
+                });
+            })
 
-        this.processStepsSequence(steps, next);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
+        });
     }
-    protected dropManifest(params: any, next: any): void {
-        this._connection.removeFile(this._manifestPath)
-            .then((results: ConnectionSavingQueueResult) => {
-                this._manifest = {};
-                next();
-            })
-            .catch((err: string) => next());
+    protected dropManifest(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._connection.removeFile(this._manifestPath)
+                .then((results: ConnectionSavingQueueResult) => {
+                    this._manifest = {};
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
-    protected dropResource(params: any, next: any): void {
-        this._connection.removeFile(this._resourcePath)
-            .then((results: ConnectionSavingQueueResult) => {
-                this._data = {};
-                next();
-            })
-            .catch((err: string) => next());
+    protected dropResource(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._connection.removeFile(this._resourcePath)
+                .then((results: ConnectionSavingQueueResult) => {
+                    this._data = {};
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
-    protected dropSequence(params: any, next: any): void {
-        this._sequence.drop()
-            .then(() => {
-                this._sequence = null;
-                next();
-            })
-            .catch((err: string) => next());
+    protected dropSequence(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._sequence.drop()
+                .then(() => {
+                    this._sequence = null;
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
     protected findIds(conditions: any): Promise<string[]> {
         if (typeof conditions !== 'object' || conditions === null) {
@@ -545,82 +577,101 @@ export class Collection implements IResource {
     protected idsToData(ids: string[]): any[] {
         return ids.map(id => this._data[id]);
     }
-    protected loadIndex(params: any, next: any): void {
-        if (typeof this._indexes[params.name] === 'undefined') {
-            this._indexes[params.name] = new Index(this, params.field, this._connection);
-            this._indexes[params.name].connect()
-                .then(() => next())
-                .catch((err: string) => next());
-        } else {
-            next();
-        }
+    protected loadIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (typeof this._indexes[params.name] === 'undefined') {
+                this._indexes[params.name] = new Index(this, params.field, this._connection);
+                this._indexes[params.name].connect()
+                    .then(resolve)
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
-    protected loadIndexes(params: any, next: any): void {
-        let steps: any[] = [];
+    protected loadIndexes(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            let steps: any[] = [];
 
-        Object.keys(this._manifest.indexes).forEach(key => {
-            steps.push({
-                params: this._manifest.indexes[key],
-                function: (params: any, next: any) => this.loadIndex(params, next)
-            });
-        })
+            Object.keys(this._manifest.indexes).forEach(key => {
+                steps.push({
+                    params: this._manifest.indexes[key],
+                    function: (params: any) => this.loadIndex(params)
+                });
+            })
 
-        this.processStepsSequence(steps, next);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
+        });
     }
-    protected loadManifest(params: any, next: any): void {
-        this._connection.loadFile(this._manifestPath)
-            .then((results: ConnectionSavingQueueResult) => {
-                if (results.error) {
-                    this._connection.updateFile(this._manifestPath, JSON.stringify(this._manifest))
-                        .then(() => next())
-                        .catch((err: string) => next());
-                } else if (results.data !== null) {
-                    this._manifest = JSON.parse(results.data);
-                    next();
-                }
-            })
-            .catch((err: string) => next());
+    protected loadManifest(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._connection.loadFile(this._manifestPath)
+                .then((results: ConnectionSavingQueueResult) => {
+                    if (results.error) {
+                        this._connection.updateFile(this._manifestPath, JSON.stringify(this._manifest))
+                            .then(resolve)
+                            .catch(reject);
+                    } else if (results.data !== null) {
+                        this._manifest = JSON.parse(results.data);
+                        resolve();
+                    }
+                })
+                .catch(reject);
+        });
     }
-    protected loadResource(params: any, next: any): void {
-        this._data = {};
-        this._connection.loadFile(this._resourcePath)
-            .then((results: ConnectionSavingQueueResult) => {
-                if (results.error) {
-                    this.save()
-                        .then(() => next())
-                        .catch((err: string) => next());
-                } else if (results.data !== null) {
-                    results.data.split('\n')
-                        .filter(line => line != '')
-                        .forEach(line => {
-                            const pieces = line.split('|');
-                            const id = pieces.shift();
-                            this._data[id] = JSON.parse(pieces.join('|'));
-                        });
-                    next();
-                }
-            })
-            .catch((err: string) => next());
+    protected loadResource(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._data = {};
+            this._connection.loadFile(this._resourcePath)
+                .then((results: ConnectionSavingQueueResult) => {
+                    if (results.error) {
+                        this.save()
+                            .then(resolve)
+                            .catch(reject);
+                    } else if (results.data !== null) {
+                        results.data.split('\n')
+                            .filter(line => line != '')
+                            .forEach(line => {
+                                const pieces = line.split('|');
+                                const id = pieces.shift();
+                                this._data[id] = JSON.parse(pieces.join('|'));
+                            });
+                        resolve();
+                    }
+                })
+                .catch(reject);
+        });
     }
-    protected loadSequence(params: any, next: any): void {
-        this._sequence = new Sequence(this, BasicConstants.DefaultSequence, this._connection);
-        this._sequence.connect()
-            .then(() => next())
-            .catch((err: string) => next());
+    protected loadSequence(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._sequence = new Sequence(this, BasicConstants.DefaultSequence, this._connection);
+            this._sequence.connect()
+                .then(resolve)
+                .catch(reject);
+        });
     }
-    protected processStepsSequence(steps: CollectionStep[], next: any): void {
-        if (steps.length > 0) {
-            const step = steps.shift();
-            step.function(step.params, () => this.processStepsSequence(steps, next));
-        } else {
-            next();
-        }
+    protected processStepsSequence(steps: CollectionStep[]): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (steps.length > 0) {
+                const step = steps.shift();
+                step.function(step.params)
+                    .then(() => this.processStepsSequence(steps).then(resolve).catch(reject))
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
-    protected removeDocFromIndex(params: any, next: any): void {
-        this._indexes[params.indexName].skipSave();
-        this._indexes[params.indexName].removeDocument(params.id)
-            .then(() => next())
-            .catch((err: string) => next());
+    protected removeDocFromIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._indexes[params.indexName].skipSave();
+
+            this._indexes[params.indexName].removeDocument(params.id)
+                .then(resolve)
+                .catch(reject);
+        });
     }
     protected removeDocFromIndexes(id: string): Promise<void> {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
@@ -629,21 +680,25 @@ export class Collection implements IResource {
             Object.keys(this._indexes).forEach(indexName => {
                 steps.push({
                     params: { id, indexName },
-                    function: (params: any, next: any) => this.removeDocFromIndex(params, next)
+                    function: (params: any) => this.removeDocFromIndex(params)
                 });
             })
 
-            this.processStepsSequence(steps, resolve);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
         });
     }
     protected resetError(): void {
         this._lastError = null;
     }
-    protected truncateIndex(params: any, next: any): void {
-        this._indexes[params.indexName].skipSave();
-        this._indexes[params.indexName].truncate()
-            .then(() => next())
-            .catch((err: string) => next());
+    protected truncateIndex(params: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._indexes[params.indexName].skipSave();
+            this._indexes[params.indexName].truncate()
+                .then(resolve)
+                .catch(reject);
+        });
     }
     protected truncateIndexes(params: any): Promise<void> {
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
@@ -652,11 +707,13 @@ export class Collection implements IResource {
             Object.keys(this._indexes).forEach(indexName => {
                 steps.push({
                     params: { indexName },
-                    function: (params: any, next: any) => this.truncateIndex(params, next)
+                    function: (params: any) => this.truncateIndex(params)
                 });
             })
 
-            this.processStepsSequence(steps, resolve);
+            this.processStepsSequence(steps)
+                .then(resolve)
+                .catch(reject);
         });
     }
     protected save(): Promise<void> {
