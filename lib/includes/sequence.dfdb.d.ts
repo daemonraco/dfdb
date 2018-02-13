@@ -2,6 +2,7 @@
  * @file sequence.dfdb.ts
  * @author Alejandro D. Simi
  */
+import { Promise } from 'es6-promise';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
@@ -15,13 +16,13 @@ export declare class Sequence implements IResource, IDelayedResource {
     protected _collection: Collection;
     protected _value: number;
     constructor(collection: Collection, name: string, connection: Connection);
-    connect(done?: any): void;
-    close(done?: any): void;
-    drop(done?: any): void;
+    connect(): Promise<void>;
+    close(): Promise<void>;
+    drop(): Promise<void>;
     error(): boolean;
     lastError(): string;
     next(): number;
     skipSave(): void;
     protected resetError(): void;
-    protected save(done?: any): void;
+    protected save(): Promise<void>;
 }

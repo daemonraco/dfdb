@@ -14,7 +14,7 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Basic use', function () {
-    this.timeout(6000);
+    this.timeout(10000);
 
     const { DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
@@ -25,31 +25,39 @@ describe('dfdb: Basic use', function () {
     it('connects and returns a valid connected pointer', done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
 
-        DocsOnFileDB.connect(dbName, dbDirPath, null, db => {
-            assert.instanceOf(db, types.Connection);
-            assert.typeOf(db.connected, 'function');
-            assert.equal(db.connected(), true);
+        DocsOnFileDB.connect(dbName, dbDirPath, null)
+            .then(db => {
+                assert.instanceOf(db, types.Connection);
+                assert.typeOf(db.connected, 'function');
+                assert.equal(db.connected(), true);
 
-            assert.isFalse(db.error());
+                assert.isFalse(db.error());
 
-            connection = db;
-            done();
-        });
+                connection = db;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
         assert.typeOf(connection.collection, 'function');
 
-        connection.collection(collectionName, col => {
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
+        connection.collection(collectionName)
+            .then(col => {
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
 
-            assert.instanceOf(col, types.Collection);
-            assert.isFalse(col.error());
+                assert.instanceOf(col, types.Collection);
+                assert.isFalse(col.error());
 
-            collection = col;
-            done();
-        });
+                collection = col;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('inserts example documents', done => {
@@ -61,14 +69,19 @@ describe('dfdb: Basic use', function () {
             const doc = docs.shift();
 
             if (doc) {
-                collection.insert(doc, insertedDoc => {
-                    assert.isFalse(collection.error());
-                    assert.isNull(collection.lastError());
+                collection.insert(doc)
+                    .then(insertedDoc => {
+                        assert.isFalse(collection.error());
+                        assert.isNull(collection.lastError());
 
-                    assert.typeOf(insertedDoc, 'object');
+                        assert.typeOf(insertedDoc, 'object');
 
-                    run();
-                });
+                        run();
+                    })
+                    .catch(err => {
+                        assert.isTrue(false, `a rejection was not expected at this point.`);
+                        done();
+                    })
             } else {
                 done();
             }
@@ -79,12 +92,15 @@ describe('dfdb: Basic use', function () {
     it(`adds an index for field 'company'`, done => {
         assert.typeOf(collection.addFieldIndex, 'function');
 
-        collection.addFieldIndex('company', () => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
-
-            done();
-        });
+        collection.addFieldIndex('company')
+            .then(() => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`searches for an indexed field and another that is not`, done => {
@@ -93,7 +109,7 @@ describe('dfdb: Basic use', function () {
         collection.search({
             email: 'akishapuckett',
             company: 'ISOPLEX'
-        }, docs => {
+        }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
@@ -102,9 +118,9 @@ describe('dfdb: Basic use', function () {
             assert.equal(docs[0].name, 'Lakisha Puckett');
             assert.equal(docs[0].company, 'ISOPLEX');
             assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-
-            done();
-        });
+        }).catch(err => {
+            assert.isTrue(false, `a rejection was not expected at this point.`);
+        }).finally(done);
     });
 
     it(`searches for all unindexed fields`, done => {
@@ -113,7 +129,7 @@ describe('dfdb: Basic use', function () {
         collection.search({
             email: 'akishapuckett',
             name: 'Lakisha Puckett'
-        }, docs => {
+        }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
@@ -122,9 +138,9 @@ describe('dfdb: Basic use', function () {
             assert.equal(docs[0].name, 'Lakisha Puckett');
             assert.equal(docs[0].company, 'ISOPLEX');
             assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-
-            done();
-        });
+        }).catch(err => {
+            assert.isTrue(false, `a rejection was not expected at this point.`);
+        }).finally(done);
     });
 
     it(`searches for an unindexed field that appears only in one document`, done => {
@@ -132,7 +148,7 @@ describe('dfdb: Basic use', function () {
 
         collection.search({
             extradata: 'somedata'
-        }, docs => {
+        }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
@@ -141,9 +157,9 @@ describe('dfdb: Basic use', function () {
             assert.equal(docs[0].name, 'Lakisha Puckett');
             assert.equal(docs[0].company, 'ISOPLEX');
             assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-
-            done();
-        });
+        }).catch(err => {
+            assert.isTrue(false, `a rejection was not expected at this point.`);
+        }).finally(done);
     });
 
     it(`searches for just one document based on an unindexed`, done => {
@@ -151,7 +167,7 @@ describe('dfdb: Basic use', function () {
 
         collection.searchOne({
             email: '@isoplex.com'
-        }, doc => {
+        }).then(doc => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
@@ -159,20 +175,23 @@ describe('dfdb: Basic use', function () {
             assert.equal(doc.name, 'Lakisha Puckett');
             assert.equal(doc.company, 'ISOPLEX');
             assert.equal(doc.email, 'lakishapuckett@isoplex.com');
-
-            done();
-        });
+        }).catch(err => {
+            assert.isTrue(false, `a rejection was not expected at this point.`);
+        }).finally(done);
     });
 
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
-        connection.close(() => {
-            assert.isFalse(connection.connected());
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
-
-            done();
-        });
+        connection.close()
+            .then(() => {
+                assert.isFalse(connection.connected());
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 });

@@ -3,10 +3,12 @@
  * @author Alejandro D. Simi
  */
 
-import { Connection } from './connection.dfdb';
+import { Promise } from 'es6-promise';
+import * as JSZip from 'jszip';
+
+import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
-import * as JSZip from 'jszip';
 
 export class Sequence implements IResource, IDelayedResource {
     //
@@ -32,65 +34,67 @@ export class Sequence implements IResource, IDelayedResource {
 
     //
     // Public methods.
-    public connect(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
+    public connect(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (!this._connected) {
+                this._connection.loadFile(this._resourcePath)
+                    .then((results: ConnectionSavingQueueResult) => {
+                        if (results.error) {
+                            this._connected = true;
+                            this._value = 0;
+                            this._skipSave = false;
 
-        if (!this._connected) {
-            this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
-                if (error) {
-                    this._connected = true;
-                    this._value = 0;
-                    this._skipSave = false;
-
-                    this.save(done);
-                } else if (data !== null) {
-                    this._value = parseInt(data);
-                    this._connected = true;
-                    done();
-                }
-            });
-        } else {
-            done();
-        }
+                            this.save()
+                                .then(resolve)
+                                .catch(reject);
+                        } else if (results.data !== null) {
+                            this._value = parseInt(results.data);
+                            this._connected = true;
+                            resolve();
+                        }
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
-    public close(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
+    public close(): Promise<void> {
         this.resetError();
 
-        if (this._connected) {
-            this.save(() => {
-                this._value = 0;
-                this._connected = false;
-                done();
-            });
-        } else {
-            done();
-        }
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this.save()
+                    .then(() => {
+                        this._value = 0;
+                        this._connected = false;
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
-    public drop(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
+    public drop(): Promise<void> {
         this.resetError();
 
-        if (this._connected) {
-            this._connection.removeFile(this._resourcePath, () => {
-                // no need to ask collection to forget this index because it's the
-                // collection's responsibillity to invoke this method and then
-                // forget it.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._connection.removeFile(this._resourcePath)
+                    .then((results: ConnectionSavingQueueResult) => {
+                        // no need to ask collection to forget this index because it's the
+                        // collection's responsibillity to invoke this method and then
+                        // forget it.
 
-                this._connected = false;
-                done();
-            });
-        } else {
-            done();
-        }
+                        this._connected = false;
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
     public error(): boolean {
         return this._lastError !== null;
@@ -100,7 +104,9 @@ export class Sequence implements IResource, IDelayedResource {
     }
     public next(): number {
         this._value++;
-        this.save(() => { });
+        this.save()
+            .then(() => { })
+            .catch(() => { });
 
         return this._value;
     }
@@ -113,10 +119,14 @@ export class Sequence implements IResource, IDelayedResource {
     protected resetError(): void {
         this._lastError = null;
     }
-    protected save(done: any = null): void {
-        this._connection.updateFile(this._resourcePath, `${this._value}`, () => {
-            this._skipSave = false;
-            done();
-        }, this._skipSave);
+    protected save(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this._connection.updateFile(this._resourcePath, `${this._value}`, this._skipSave)
+                .then((results: ConnectionSavingQueueResult) => {
+                    this._skipSave = false;
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
 }

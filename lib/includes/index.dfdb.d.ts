@@ -1,3 +1,8 @@
+/**
+ * @file index.dfdb.ts
+ * @author Alejandro D. Simi
+ */
+import { Promise } from 'es6-promise';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
@@ -13,16 +18,16 @@ export declare class Index implements IResource, IDelayedResource {
     protected _skipSave: boolean;
     protected _collection: Collection;
     constructor(collection: Collection, field: string, connection: Connection);
-    addDocument(doc: any, done?: any): void;
-    connect(done?: any): void;
-    close(done?: any): void;
-    drop(done?: any): void;
+    addDocument(doc: any): Promise<void>;
+    connect(): Promise<void>;
+    close(): Promise<void>;
+    drop(): Promise<void>;
     error(): boolean;
-    find(value: string, done: any): void;
+    find(value: string): Promise<string[]>;
     lastError(): string;
-    removeDocument(id: string, done?: any): void;
+    removeDocument(id: string): Promise<void>;
     skipSave(): void;
-    truncate(done: any): void;
+    truncate(): Promise<void>;
     protected resetError(): void;
-    protected save(done?: any): void;
+    protected save(): Promise<void>;
 }
