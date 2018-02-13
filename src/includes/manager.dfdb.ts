@@ -54,7 +54,7 @@ export class DocsOnFileDB {
             const key = DocsOnFileDB.BuildKey(dbpath, dbname);
             //
             // Is it a known connection?
-            if (!this._connections[key]) {
+            if (typeof this._connections[key] === 'undefined') {
                 //
                 // Creating a proper connection object.
                 this._connections[key] = new Connection(dbname, dbpath, options);

@@ -36,10 +36,7 @@ describe('dfdb: Administration tools', function () {
 
                 connection = db;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
@@ -55,10 +52,7 @@ describe('dfdb: Administration tools', function () {
 
                 collection = col;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('inserts example documents', done => {
@@ -94,10 +88,7 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for an exact value on field 'name' (value 'Lawanda Guzman')`, done => {
@@ -112,10 +103,7 @@ describe('dfdb: Administration tools', function () {
                 assert.equal(docs[0]._id, 8);
                 assert.equal(docs[0].name, 'Lawanda Guzman');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`rebuilds the index for field 'name'`, done => {
@@ -126,10 +114,7 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`rebuilds a non existing field index`, done => {
@@ -137,14 +122,16 @@ describe('dfdb: Administration tools', function () {
 
         collection.rebuildFieldIndex('somefield')
             .then(() => {
+                assert.isTrue(false, `a success was not expected at this point.`);
+            })
+            .catch(err => {
+                assert.equal(err.indexOf(constants.Errors.UnknownIndex), 0);
+
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
                 assert.equal(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for an exact value on field 'name' after rebuild (value 'Lawanda Guzman')`, done => {
@@ -159,10 +146,7 @@ describe('dfdb: Administration tools', function () {
                 assert.equal(docs[0]._id, 8);
                 assert.equal(docs[0].name, 'Lawanda Guzman');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`closes the connection`, done => {
@@ -176,10 +160,7 @@ describe('dfdb: Administration tools', function () {
                 connection = null;
                 collection = null;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('reconnects and returns a valid connected pointer', done => {
@@ -195,10 +176,7 @@ describe('dfdb: Administration tools', function () {
 
                 connection = db;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('retrieves the same collection', done => {
@@ -214,10 +192,7 @@ describe('dfdb: Administration tools', function () {
 
                 collection = col;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for the same value again (field 'name', value 'Lawanda Guzman')`, done => {
@@ -232,10 +207,7 @@ describe('dfdb: Administration tools', function () {
                 assert.equal(docs[0]._id, 8);
                 assert.equal(docs[0].name, 'Lawanda Guzman');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('drops the collection', done => {
@@ -251,7 +223,7 @@ describe('dfdb: Administration tools', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('retrieves the same collection yet again', done => {
@@ -267,10 +239,7 @@ describe('dfdb: Administration tools', function () {
 
                 collection = col;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for the same value yet again (field 'name', value 'Lawanda Guzman')`, done => {
@@ -284,10 +253,7 @@ describe('dfdb: Administration tools', function () {
 
                 assert.equal(docs.length, 0);
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('closes the connection', done => {
@@ -299,10 +265,7 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('drops current database', done => {
@@ -314,31 +277,26 @@ describe('dfdb: Administration tools', function () {
         assert.isNotNull(stat);
 
         DocsOnFileDB.dropDatabase(dbName, dbDirPath)
-            .then(error => {
-                assert.isNull(error);
-
+            .then(() => {
                 stat = null;
                 try { stat = fs.statSync(dbFullPath); } catch (e) { }
                 assert.isNull(stat);
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`drops a database that doesn't exist`, done => {
         assert.typeOf(DocsOnFileDB.dropDatabase, 'function');
 
         DocsOnFileDB.dropDatabase(dbName, dbDirPath)
-            .then(error => {
-                assert.isNotNull(error);
-                assert.equal(error.indexOf(constants.Errors.DatabaseDoesntExist), 0);
+            .then(() => {
+                assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
+                assert.isNotNull(err);
+                assert.equal(err.indexOf(constants.Errors.DatabaseDoesntExist), 0);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`connects to an invalid database`, done => {
@@ -353,15 +311,12 @@ describe('dfdb: Administration tools', function () {
 
         DocsOnFileDB.connect(invalidDbName, dbDirPath, null)
             .then(db => {
-                assert.isFalse(db.connected());
-                assert.isTrue(db.error());
-                assert.isNotNull(db.lastError());
-                assert.equal(db.lastError().indexOf(constants.Errors.DatabaseNotValid), 0);
+                assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
+                assert.equal(err.indexOf(constants.Errors.DatabaseNotValid), 0);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`drops a database that isn't a valid database`, done => {
@@ -375,13 +330,12 @@ describe('dfdb: Administration tools', function () {
         assert.isNotNull(stat);
 
         DocsOnFileDB.dropDatabase(invalidDbName, dbDirPath)
-            .then(error => {
-                assert.isNotNull(error);
-                assert.equal(error.indexOf(constants.Errors.DatabaseNotValid), 0);
+            .then(() => {
+                assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
+                assert.equal(err.indexOf(constants.Errors.DatabaseNotValid), 0);
             })
-            .finally(done);
+            .then(done, done);
     });
 });

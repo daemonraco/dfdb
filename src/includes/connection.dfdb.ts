@@ -184,15 +184,17 @@ export class Connection implements IResource {
                             .catch(reject);
                     } else {
                         //
-                        // Setting this connection as not connected.
-                        this._connected = false;
-                        //
-                        // Asking manager to forget this connection.
-                        DocsOnFileDB.Instance().forgetConnection(this._dbName, this._dbPath);
-                        //
                         // Saving all changes.
                         this.save()
-                            .then(resolve)
+                            .then(() => {
+                                //
+                                // Setting this connection as not connected.
+                                this._connected = false;
+                                //
+                                // Asking manager to forget this connection.
+                                DocsOnFileDB.Instance().forgetConnection(this._dbName, this._dbPath);
+                                resolve();
+                            })
                             .catch(reject);
                     }
                 }
@@ -304,14 +306,14 @@ export class Connection implements IResource {
         });
     }
     /**
-    * This method centralizes all calls to remove a file from inside the database
-    * zip file.
-    *
-    * @method removeFile
-    * @param {string} zPath Internal path to remove.
-    * @returns {Promise<ConnectionSavingQueueResult>} Returns a standarized
-    * result object.
-    */
+     * This method centralizes all calls to remove a file from inside the database
+     * zip file.
+     *
+     * @method removeFile
+     * @param {string} zPath Internal path to remove.
+     * @returns {Promise<ConnectionSavingQueueResult>} Returns a standarized
+     * result object.
+     */
     public removeFile(zPath: string): Promise<ConnectionSavingQueueResult> {
         //
         // Building promise to return.

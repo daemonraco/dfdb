@@ -124,14 +124,14 @@ export declare class Connection implements IResource {
      */
     save(): Promise<void>;
     /**
-    * This method centralizes all calls to remove a file from inside the database
-    * zip file.
-    *
-    * @method removeFile
-    * @param {string} zPath Internal path to remove.
-    * @returns {Promise<ConnectionSavingQueueResult>} Returns a standarized
-    * result object.
-    */
+     * This method centralizes all calls to remove a file from inside the database
+     * zip file.
+     *
+     * @method removeFile
+     * @param {string} zPath Internal path to remove.
+     * @returns {Promise<ConnectionSavingQueueResult>} Returns a standarized
+     * result object.
+     */
     removeFile(zPath: string): Promise<ConnectionSavingQueueResult>;
     /**
      * This method centralizes all calls to update contents of a file inside the

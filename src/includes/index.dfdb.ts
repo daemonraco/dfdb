@@ -36,21 +36,36 @@ export class Index implements IResource, IDelayedResource {
     //
     // Public methods.
     public addDocument(doc: any): Promise<void> {
+        const addValue = (value: any) => {
+            value = `${doc[this._field]}`.toLowerCase();
+
+            if (typeof this._data[value] === 'undefined') {
+                this._data[value] = [doc._id];
+            } else {
+                if (this._data[value].indexOf(doc._id) < 0) {
+                    this._data[value].push(doc._id);
+                    this._data[value].sort();
+                }
+            }
+        }
+
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             if (typeof doc[this._field] !== 'undefined') {
-                if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
+                if (Array.isArray(doc[this._field])) {
+                    doc[this._field].forEach((value: any) => {
+                        if (typeof value !== 'object') {
+                            addValue(value);
+                        }
+                    });
+
+                    this.save()
+                        .then(resolve)
+                        .catch(reject);
+                } else if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
                     this._lastError = Errors.NotIndexableValue;
                     reject(this._lastError);
                 } else {
-                    const value = `${doc[this._field]}`.toLowerCase();
-                    if (typeof this._data[value] === 'undefined') {
-                        this._data[value] = [doc._id];
-                    } else {
-                        if (this._data[value].indexOf(doc._id) < 0) {
-                            this._data[value].push(doc._id);
-                            this._data[value].sort();
-                        }
-                    }
+                    addValue(doc[this._field]);
 
                     this.save()
                         .then(resolve)
