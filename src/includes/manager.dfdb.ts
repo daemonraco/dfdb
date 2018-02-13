@@ -7,7 +7,7 @@ import { Promise } from 'es6-promise';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Connection } from './connection.dfdb';
+import { Connection, ConnectionDBValidationResult } from './connection.dfdb';
 import { BasicConstants } from './constants.dfdb';
 
 /**
@@ -98,7 +98,7 @@ export class DocsOnFileDB {
             // Checking if given parameters point to a valid and existing
             // database.
             Connection.IsValidDatabase(dbname, dbpath)
-                .then((results: any) => {
+                .then((results: ConnectionDBValidationResult) => {
                     //
                     // Should it be removed?
                     if (results.exists && results.valid) {
@@ -126,7 +126,7 @@ export class DocsOnFileDB {
      * @method forgetConnection
      * @param {string} dbname Name of the database.
      * @param {string} dbpath Directory where the requested database is stored.
-     * @returns {boolean} Returns TRUE when it was forgotten
+     * @returns {boolean} Returns TRUE when it was forgotten.
      */
     public forgetConnection(dbname: string, dbpath: string): boolean {
         //
@@ -199,7 +199,7 @@ export class DocsOnFileDB {
      * @param {string} dbpath Directory where the requested database is stored.
      * @returns {string}
      */
-    public static GuessDatabasePath(dbName: string, dbPath: string): string {
-        return path.join(dbPath, `${dbName}${BasicConstants.DBExtension}`);
+    public static GuessDatabasePath(dbname: string, dbpath: string): string {
+        return path.join(dbpath, `${dbname}${BasicConstants.DBExtension}`);
     }
 }

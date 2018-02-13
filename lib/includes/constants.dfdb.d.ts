@@ -25,5 +25,6 @@ export declare class Errors {
     static readonly DatabaseDoesntExist: string;
     static readonly DatabaseNotValid: string;
     static readonly UnknownIndex: string;
+    static readonly DatabaseNotConnected: string;
     private constructor();
 }

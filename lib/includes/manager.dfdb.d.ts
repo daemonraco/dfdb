@@ -44,7 +44,7 @@ export declare class DocsOnFileDB {
      * @method forgetConnection
      * @param {string} dbname Name of the database.
      * @param {string} dbpath Directory where the requested database is stored.
-     * @returns {boolean} Returns TRUE when it was forgotten
+     * @returns {boolean} Returns TRUE when it was forgotten.
      */
     forgetConnection(dbname: string, dbpath: string): boolean;
     /**
@@ -74,5 +74,5 @@ export declare class DocsOnFileDB {
      * @param {string} dbpath Directory where the requested database is stored.
      * @returns {string}
      */
-    static GuessDatabasePath(dbName: string, dbPath: string): string;
+    static GuessDatabasePath(dbname: string, dbpath: string): string;
 }

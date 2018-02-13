@@ -30,6 +30,7 @@ export class Errors {
     public static readonly DatabaseDoesntExist: string = `[E-0009] Requested database doesn't exist`;
     public static readonly DatabaseNotValid: string = `[E-0010] Requested database is not valid`;
     public static readonly UnknownIndex: string = `[E-0011] Requested index is not present on current collection`;
+    public static readonly DatabaseNotConnected: string = '[E-0012] Database not connected';
 
     private constructor() { }
 }
