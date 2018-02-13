@@ -8,6 +8,8 @@
         "start": "npm run build:live",
         "build": "./node_modules/.bin/tsc",
         "build:live": "./node_modules/.bin/tsc -w",
+        "build:docs": "./node_modules/.bin/yuidoc --extension .ts --config docs/.yuidoc.json --theme simple",
+        "build:docs:live": "./node_modules/.bin/yuidoc --extension .ts --config docs/.yuidoc.json --theme simple --server 4000",
         "pretest": "rm -fr ./test/.tmpdb/*",
         "test": "mkdir -p ./test/.tmpdb;./node_modules/mocha/bin/mocha"
     },
@@ -15,7 +17,8 @@
         "nosql",
         "emulated",
         "serverless",
-        "on-file"
+        "on-file",
+        "zip"
     ],
     "author": {
         "name": "Alejandro Dario Simi",
@@ -30,7 +33,8 @@
         "@types/node": "^8.5.9",
         "chai": "^4.1.1",
         "mocha": "^3.5.0",
-        "typescript": "^2.4.1"
+        "typescript": "^2.4.1",
+        "yuidocjs": "^0.10.2"
     },
     "dependencies": {
         "@types/async": "^2.0.47",
