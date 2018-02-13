@@ -6,6 +6,11 @@ import { Promise } from 'es6-promise';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
+/**
+ * This class represents sequence of ids associated to a collection.
+ *
+ * @class Sequence
+ */
 export declare class Sequence implements IResource, IDelayedResource {
     protected _connected: boolean;
     protected _connection: Connection;

@@ -14,8 +14,7 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Indexing fields that are lists', function () {
-    this.timeout(2000);
-    //this.timeout(6000);
+    this.timeout(6000);
 
     const { DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
