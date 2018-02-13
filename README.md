@@ -13,11 +13,11 @@ npm install --save dfdb
 These are some basic examples you can take to use this library.
 
 ## Connection
-Getting connected to our database:
+Getting connected to a database:
 ```js
 const dfdb = require().DocsOnFileDB;
 let db = false;
-dfdb.connect('mydb', __dirname, conn => {
+dfdb.connect('mydb', __dirname).then(conn => {
     db = conn;
 });
 ```
@@ -27,7 +27,7 @@ If such database file doesn't exist, it will be created.
 Retriving a collection pointer:
 ```js
 let myCollection = false;
-db.collection('my_collection', collection => {
+db.collection('my_collection').then(collection => {
     myCollection = collection;
 });
 ```
@@ -43,7 +43,7 @@ myCollection.insert({
         street: 'Washington'
         number: '233'
     }
-}, insertedDoc => {
+}).then(insertedDoc => {
     // . . .
 });
 ```
@@ -58,7 +58,7 @@ myCollection.update(10, {
         street: 'Paris'
         number: '1521'
     }
-}, updatedDoc => {
+}).then(updatedDoc => {
     // . . .
 });
 ```
@@ -66,7 +66,7 @@ myCollection.update(10, {
 ## Remove document
 Removing a document with ID `10`:
 ```js
-myCollection.remove(10, () => {
+myCollection.remove(10).then(() => {
     // . . .
 });
 ```
@@ -74,24 +74,40 @@ myCollection.remove(10, () => {
 ## Adding a field index
 Adding an index for field `name`:
 ```js
-myCollection.addFieldIndex('name', () => {
+myCollection.addFieldIndex('name').then(() => {
     // . . .
 });
 ```
-This is required because only indexed fields can be search.
+This is required because only indexed fields can be search without incurring in
+long response time.
 
 ## Search
-Searching for a document:
+Searching for a document using only indexed fields:
 ```js
-myCollection.find({ name: 'Jane Doe' }, docs => {
+myCollection.find({ name: 'Jane Doe' }).then(docs => {
     // . . .
 });
 
 // Or
-myCollection.findOne({ name: 'Jane Doe' }, doc => {
+myCollection.findOne({ name: 'Jane Doe' }).then(doc => {
     // . . .
 });
 ```
+
+Searching for a document using indexed and unindexed fields:
+```js
+myCollection.search({ name: 'Jane Doe' }).then(docs => {
+    // . . .
+});
+
+// Or
+myCollection.searchOne({ name: 'Jane Doe' }).then(doc => {
+    // . . .
+});
+```
+When searching for mixed index and unindexed fields, __DocsOnFilesDB__ will first
+look for documents that match indexed field conditions, and then filter by
+unindexed conditions.
 
 # Licence
 MIT &copy; 2018 [Alejandro Dario Simi](http://daemonraco.com)

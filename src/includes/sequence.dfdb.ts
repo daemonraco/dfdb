@@ -10,6 +10,11 @@ import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
 
+/**
+ * This class represents sequence of ids associated to a collection.
+ *
+ * @class Sequence
+ */
 export class Sequence implements IResource, IDelayedResource {
     //
     // Protected properties.
