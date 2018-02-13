@@ -8,13 +8,14 @@ const path = require('path');
 
 // ---------------------------------------------------------------------------- //
 // Values.
-const dbName = '005.testdb';
+const dbName = '006.testdb';
 const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Heavy search', function () {
-    this.timeout(10000);
+describe('dfdb: Indexing fields that are lists', function () {
+    this.timeout(2000);
+    //this.timeout(6000);
 
     const { DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
@@ -34,11 +35,7 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(db.error());
 
                 connection = db;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .then(done, done);
+            }).then(done, done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
@@ -53,18 +50,13 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(col.error());
 
                 collection = col;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .then(done, done);
+            }).then(done, done);
     });
 
     it('inserts example documents', done => {
         assert.typeOf(collection.insert, 'function');
 
         let docs = JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.001.json')));
-        docs = docs.concat(JSON.parse(fs.readFileSync(path.join(__dirname, 'dataset.002.json'))));
         const run = () => {
             const doc = docs.shift();
 
@@ -89,94 +81,67 @@ describe('dfdb: Heavy search', function () {
         run();
     });
 
-    it(`adds an index for field 'company'`, done => {
+    it(`adds an index for field 'tags' which is a list field`, done => {
         assert.typeOf(collection.addFieldIndex, 'function');
 
-        collection.addFieldIndex('company')
+        collection.addFieldIndex('tags')
             .then(() => {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .then(done, done);
+            }).then(done, done);
     });
 
-    it(`searches for an indexed field and another that is not`, done => {
+    it(`searches for an indexed string tag`, done => {
         assert.typeOf(collection.search, 'function');
 
-        collection.search({
-            email: 'akishapuckett',
-            company: 'ISOPLEX'
+        collection.find({
+            tags: 'Some-Unique-Tag-String'
         }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.equal(docs[0]._id, 46);
+            assert.equal(docs[0].name, 'Bruce Lott');
+            assert.equal(docs[0].company, 'IMMUNICS');
+            assert.equal(docs[0].email, 'brucelott@immunics.com');
+            assert.notEqual(docs[0].tags.indexOf('some-unique-tag-string'), -1);
         }).then(done, done);
     });
 
-    it(`searches for all unindexed fields`, done => {
+    it(`searches for an indexed integer tag`, done => {
         assert.typeOf(collection.search, 'function');
 
-        collection.search({
-            email: 'akishapuckett',
-            name: 'Lakisha Puckett'
+        collection.find({
+            tags: 123456
         }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.equal(docs[0]._id, 81);
+            assert.equal(docs[0].name, 'Lorna Martin');
+            assert.equal(docs[0].company, 'CINASTER');
+            assert.equal(docs[0].email, 'lornamartin@cinaster.com');
+            assert.notEqual(docs[0].tags.indexOf(123456), -1);
         }).then(done, done);
     });
 
-    it(`searches for an unindexed field that appears only in one document`, done => {
+    it(`searches for an indexed float tag`, done => {
         assert.typeOf(collection.search, 'function');
 
-        collection.search({
-            extradata: 'somedata'
+        collection.find({
+            tags: 10.37
         }).then(docs => {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
             assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
-        }).then(done, done);
-    });
-
-    it(`searches for just one document based on an unindexed`, done => {
-        assert.typeOf(collection.search, 'function');
-
-        collection.searchOne({
-            email: '@isoplex.com'
-        }).then(doc => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
-
-            assert.equal(doc._id, 7);
-            assert.equal(doc.name, 'Lakisha Puckett');
-            assert.equal(doc.company, 'ISOPLEX');
-            assert.equal(doc.email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.equal(docs[0]._id, 30);
+            assert.equal(docs[0].name, 'Sawyer Weiss');
+            assert.equal(docs[0].company, 'DELPHIDE');
+            assert.equal(docs[0].email, 'sawyerweiss@delphide.com');
+            assert.notEqual(docs[0].tags.indexOf(10.37), -1);
         }).then(done, done);
     });
 
@@ -188,10 +153,6 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(connection.connected());
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .then(done, done);
+            }).then(done, done);
     });
 });

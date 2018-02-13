@@ -535,6 +535,7 @@
             "nisi",
             "qui",
             "amet",
+            10.37,
             "dolore",
             "reprehenderit"
         ]
@@ -824,7 +825,8 @@
             "nostrud",
             "in",
             "est",
-            "aliqua"
+            "aliqua",
+            "some-unique-tag-string"
         ]
     },
     {
@@ -1454,7 +1456,8 @@
             "duis",
             "anim",
             "dolore",
-            "mollit"
+            "mollit",
+            123456
         ]
     },
     {

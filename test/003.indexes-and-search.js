@@ -38,7 +38,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
@@ -57,7 +57,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('inserts example documents', done => {
@@ -99,7 +99,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`adds an index for field 'company'`, done => {
@@ -113,7 +113,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`re-adds an index for field 'company'`, done => {
@@ -121,14 +121,16 @@ describe('dfdb: Indexes and Searches', function () {
 
         collection.addFieldIndex('company')
             .then(() => {
+                assert.isTrue(false, `a success was not expected at this point.`);
+            })
+            .catch(err => {
+                assert.equal(err.indexOf(constants.Errors.DuplicatedIndex), 0);
+
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
                 assert.equal(collection.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
-            .finally(done);
+            .then(done, done);
     });
 
     it('inserts more example documents', done => {
@@ -185,7 +187,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches a value on a not indexed field`, done => {
@@ -200,7 +202,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for an exact value on field 'company' (value 'INDEXIA')`, done => {
@@ -218,7 +220,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for a partial value on field 'email' (value 'lolaparks')`, done => {
@@ -236,7 +238,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for an exact value on field 'company' with more than 1 result (value 'ISOPLEX')`, done => {
@@ -258,7 +260,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for something that doesn't exist`, done => {
@@ -274,7 +276,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for the first document for a condition`, done => {
@@ -292,7 +294,7 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it(`searches for more than one field`, done => {
@@ -310,7 +312,7 @@ describe('dfdb: Indexes and Searches', function () {
             assert.equal(docs[0].name, 'Lakisha Puckett');
         }).catch(err => {
             assert.isTrue(false, `a rejection was not expected at this point.`);
-        }).finally(done);
+        }).then(done, done);
     });
 
     it('closes the connection', done => {
@@ -325,6 +327,6 @@ describe('dfdb: Indexes and Searches', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 });

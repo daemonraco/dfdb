@@ -37,7 +37,7 @@ describe('dfdb: Basic use', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
@@ -56,7 +56,7 @@ describe('dfdb: Basic use', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('inserts a new document', done => {
@@ -81,13 +81,11 @@ describe('dfdb: Basic use', function () {
 
                 assert.equal(insertedDoc._id, 1);
                 assert.equal(insertedDoc.hello, 'world!');
-
-                done();
             })
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
-                done();
-            });
+            })
+            .then(done, done);
     });
 
     it('updates a new document', done => {
@@ -117,7 +115,7 @@ describe('dfdb: Basic use', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('updates an unknown document', done => {
@@ -132,10 +130,8 @@ describe('dfdb: Basic use', function () {
                 assert.isNotNull(collection.lastError());
                 assert.isString(collection.lastError());
                 assert.equal(collection.lastError(), '[E-0002] The requested document does not exist');
-
-                assert.isNull(updatedDoc);
             })
-            .finally(done);
+            .then(done, done);
     });
 
     it('closes the connection', done => {
@@ -150,6 +146,6 @@ describe('dfdb: Basic use', function () {
             .catch(err => {
                 assert.isTrue(false, `a rejection was not expected at this point.`);
             })
-            .finally(done);
+            .then(done, done);
     });
 });
