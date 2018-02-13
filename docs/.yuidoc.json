@@ -1,0 +1,13 @@
+{
+    "name": "DocsOnFileDB",
+    "description": "Code Documentation for DocsOnFileDB.",
+    "version": "0.1.0",
+    "url": "http://example.com/",
+    "options": {
+        "markdown": "true",
+        "paths": [
+            "./src"
+        ],
+        "outdir": "./docs/api"
+    }
+}

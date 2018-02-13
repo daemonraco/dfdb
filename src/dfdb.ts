@@ -1,3 +1,8 @@
+/**
+ * @file dfdb.ts
+ * @author Alejandro D. Simi
+ */
+
 import { DocsOnFileDB } from './includes/manager.dfdb';
 
 import { BasicConstants, ConnectionSaveConstants, Errors } from './includes/constants.dfdb';
@@ -13,4 +18,3 @@ export = {
     constants: { BasicConstants, ConnectionSaveConstants, Errors },
     types: { DocsOnFileDB, Collection, Connection, Index, Sequence }
 };
-
