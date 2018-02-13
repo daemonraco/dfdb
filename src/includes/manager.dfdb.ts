@@ -3,10 +3,12 @@
  * @author Alejandro D. Simi
  */
 
-import { Connection } from './connection.dfdb';
-import { BasicConstants } from './constants.dfdb';
+import { Promise } from 'es6-promise';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Connection } from './connection.dfdb';
+import { BasicConstants } from './constants.dfdb';
 
 export class DocsOnFileDB {
     //
@@ -21,49 +23,48 @@ export class DocsOnFileDB {
     }
     //
     // Public methods.
-    public connect(dbname: string, dbpath: string, options: any = null, done: any = null) {
-        if (typeof options === 'function') {
-            done = options;
-            options = {};
-        } else if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    public connect(dbname: string, dbpath: string, options: any = null): Promise<Connection> {
+        if (options === null || typeof options !== 'object' || Array.isArray(options)) {
             options = {};
         }
-        if (typeof done !== 'function') {
-            done = (connection: Connection) => { };
-        }
 
-        const key = DocsOnFileDB.BuildKey(dbpath, dbname);
-        if (!this._connections[key]) {
-            this._connections[key] = new Connection(dbname, dbpath, options);
-            this._connections[key].connect((connected: boolean) => {
-                done(this._connections[key]);
-            });
-        } else {
-            done(this._connections[key]);
-        }
-    }
-    public dropDatabase(dbname: string, dbpath: string, done: any = null) {
-        if (typeof done !== 'function') {
-            done = (errors: string) => { };
-        }
-
-        let validation: any = null;
-        let errors: string = null;
-        const key = DocsOnFileDB.BuildKey(dbpath, dbname);
-        const dbFullPath = DocsOnFileDB.GuessDatabasePath(dbname, dbpath);
-
-        Connection.IsValidDatabase(dbname, dbpath, (results: any) => {
-            if (results.exists && results.valid) {
-                if (typeof this._connections[key] !== 'undefined') {
-                    delete this._connections[key];
-                }
-
-                fs.unlinkSync(dbFullPath);
-
-                done(null);
+        return new Promise<Connection>((resolve: (conn: Connection) => void, reject: (err: string) => void) => {
+            const key = DocsOnFileDB.BuildKey(dbpath, dbname);
+            if (!this._connections[key]) {
+                this._connections[key] = new Connection(dbname, dbpath, options);
+                this._connections[key].connect().then((connected: boolean) => {
+                    /** @todo check if 'connected' should be checked. */
+                    resolve(this._connections[key]);
+                }).catch((error: string) => {
+                    reject(error);
+                });
             } else {
-                done(results.error);
+                resolve(this._connections[key]);
             }
+        });
+    }
+    public dropDatabase(dbname: string, dbpath: string): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            let validation: any = null;
+            let errors: string = null;
+            const key = DocsOnFileDB.BuildKey(dbpath, dbname);
+            const dbFullPath = DocsOnFileDB.GuessDatabasePath(dbname, dbpath);
+
+            Connection.IsValidDatabase(dbname, dbpath)
+                .then((results: any) => {
+                    if (results.exists && results.valid) {
+                        if (typeof this._connections[key] !== 'undefined') {
+                            delete this._connections[key];
+                        }
+
+                        fs.unlinkSync(dbFullPath);
+
+                        resolve();
+                    } else {
+                        reject(results.error);
+                    }
+                })
+                .catch(reject);
         });
     }
     public forgetConnection(dbname: string, dbpath: string): boolean {

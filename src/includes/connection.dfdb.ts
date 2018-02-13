@@ -3,14 +3,21 @@
  * @author Alejandro D. Simi
  */
 
-import { BasicConstants, ConnectionSaveConstants, Errors } from './constants.dfdb';
-import { DocsOnFileDB } from './manager.dfdb';
-import { IResource } from './interface.resource.dfdb';
-import { Collection } from './collection.dfdb';
+import { Promise } from 'es6-promise';
 import { queue } from 'async';
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { BasicConstants, ConnectionSaveConstants, Errors } from './constants.dfdb';
+import { DocsOnFileDB } from './manager.dfdb';
+import { IResource } from './interface.resource.dfdb';
+import { Collection } from './collection.dfdb';
+
+export class ConnectionSavingQueueResult {
+    public error: string = null;
+    public data: string = null;
+}
 
 export class Connection implements IResource {
     protected _collections: { [name: string]: Collection } = {};
@@ -30,51 +37,74 @@ export class Connection implements IResource {
 
     //
     // Public methods.
-    public connect(done: any): void {
-        if (typeof done !== 'function') {
-            done = (connected: boolean) => { };
-        }
-        //
-        // Is it an empty directory?
-        if (this.doesExist()) {
-            this.internalConnect(done);
-        } else {
-            this.createBasics(() => {
-                this.internalConnect(done);
-            });
-        }
+    public collection(name: string): Promise<Collection> {
+        return new Promise<Collection>((resolve: (res: Collection) => void, reject: (err: string) => void) => {
+            if (typeof this._collections[name] !== 'undefined') {
+                resolve(this._collections[name]);
+            } else {
+                this._collections[name] = new Collection(name, this);
+                this._collections[name].connect()
+                .then(() => {
+                    resolve(this._collections[name]);
+                })
+                .catch((err: string) => {
+                        reject(err);
+                    });
+            }
+        });
+    }
+    public connect(): Promise<boolean> {
+        return new Promise<boolean>((resolve: (connected: boolean) => void, reject: (err: string) => void) => {
+            //
+            // Is it an empty directory?
+            if (this.doesExist()) {
+                this.internalConnect()
+                    .then((c: boolean) => resolve(c))
+                    .catch(reject);
+            } else {
+                this.createBasics()
+                    .then(() => {
+                        this.internalConnect()
+                            .then((c: boolean) => resolve(c))
+                            .catch(reject);
+                    })
+                    .catch(reject);
+            }
+        });
     }
     public connected(): boolean {
         return this._connected;
     }
-    public close(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
+    public close(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            this.resetError();
 
-        this.resetError();
+            if (this._connected) {
+                const collectionNames = Object.keys(this._collections);
 
-        if (this._connected) {
-            const collectionNames = Object.keys(this._collections);
+                const run = () => {
+                    const collectionName = collectionNames.shift();
 
-            const run = () => {
-                const collectionName = collectionNames.shift();
-
-                if (collectionName) {
-                    this._collections[collectionName].close(() => {
-                        delete this._collections[collectionName];
-                        run();
-                    });
-                } else {
-                    this._connected = false;
-                    DocsOnFileDB.Instance().forgetConnection(this._dbName, this._dbPath);
-                    this.save(done);
+                    if (collectionName) {
+                        this._collections[collectionName].close()
+                            .then(() => {
+                                delete this._collections[collectionName];
+                                run();
+                            })
+                            .catch(reject);
+                    } else {
+                        this._connected = false;
+                        DocsOnFileDB.Instance().forgetConnection(this._dbName, this._dbPath);
+                        this.save()
+                            .then(resolve)
+                            .catch(reject);
+                    }
                 }
+                run();
+            } else {
+                resolve();
             }
-            run();
-        } else {
-            done();
-        }
+        });
     }
     public error(): boolean {
         return this._lastError !== null;
@@ -92,106 +122,88 @@ export class Connection implements IResource {
     public lastError(): string | null {
         return this._lastError;
     }
-    public loadFile(zPath: string, done: any) {
-        if (done === null) {
-            done = (error: string, data: string) => { };
-        }
-
-        if (this._connected) {
-            this._savingQueue.push({
-                action: ConnectionSaveConstants.LoadFile,
-                path: zPath
-            }, done);
-        }
+    public loadFile(zPath: string): Promise<ConnectionSavingQueueResult> {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._savingQueue.push({
+                    action: ConnectionSaveConstants.LoadFile,
+                    path: zPath
+                }, (result: ConnectionSavingQueueResult) => resolve(result));
+            }
+        });
     }
-    public collection(name: string, done: any): void {
-        if (done === null) {
-            done = (collection: Collection) => { };
-        }
-
-        if (typeof this._collections[name] !== 'undefined') {
-            done(this._collections[name]);
-        } else {
-            this._collections[name] = new Collection(name, this);
-            this._collections[name].connect(() => {
-                done(this._collections[name]);
-            });
-        }
+    public save(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._dbFile
+                    .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+                    .pipe(fs.createWriteStream(this._dbFullPath))
+                    .on('finish', resolve);
+            } else {
+                resolve();
+            }
+        });
     }
-    public save(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
-        if (this._connected) {
-            this._dbFile
-                .generateNodeStream({ type: 'nodebuffer', streamFiles: true })
-                .pipe(fs.createWriteStream(this._dbFullPath))
-                .on('finish', done);
-        } else {
-            done();
-        }
+    public removeFile(zPath: string): Promise<ConnectionSavingQueueResult> {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._savingQueue.push({
+                    action: ConnectionSaveConstants.RemoveFile,
+                    path: zPath
+                }, (results: ConnectionSavingQueueResult) => resolve(results));
+            }
+        });
     }
-    public removeFile(zPath: string, done: any) {
-        if (done === null) {
-            done = (error: string) => { };
-        }
-
-        if (this._connected) {
-            this._savingQueue.push({
-                action: ConnectionSaveConstants.RemoveFile,
-                path: zPath
-            }, done);
-        }
-    }
-    public updateFile(zPath: string, data: any, done: any, skipPhysicalSave: boolean = false) {
-        if (done === null) {
-            done = (error: string) => { };
-        }
-
-        if (this._connected) {
-            this._savingQueue.push({
-                action: ConnectionSaveConstants.UpdateFile,
-                path: zPath,
-                data, skipPhysicalSave
-            }, done);
-        }
+    public updateFile(zPath: string, data: any, skipPhysicalSave: boolean = false): Promise<ConnectionSavingQueueResult> {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._savingQueue.push({
+                    action: ConnectionSaveConstants.UpdateFile,
+                    path: zPath,
+                    data, skipPhysicalSave
+                }, (results: ConnectionSavingQueueResult) => resolve(results));
+            }
+        });
     }
 
     //
     // Protected methods.
-    protected createBasics(done: any): void {
-        const zip = new JSZip();
-        zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
-            .pipe(fs.createWriteStream(this._dbFullPath))
-            .on('finish', () => {
-                done();
-            });
+    protected createBasics(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            const zip = new JSZip();
+            zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+                .pipe(fs.createWriteStream(this._dbFullPath))
+                .on('finish', () => {
+                    resolve();
+                });
+        });
     }
     protected doesExist(): boolean {
         let stat = null;
         try { stat = fs.statSync(this._dbFullPath); } catch (e) { }
         return stat !== null && stat.isFile();
     }
-    protected internalConnect(done: any): void {
+    protected internalConnect(): Promise<boolean> {
         this._connected = false;
 
-        fs.readFile(this._dbFullPath, (error: any, data: any) => {
-            if (error) {
-                this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
-                done(this._connected);
-            } else {
-                JSZip.loadAsync(data).then((zip: any) => {
-                    this._dbFile = zip;
-                    this._connected = true;
-                    this.setSavingQueue();
-
-                    done(this._connected);
-                }).catch((error: any) => {
+        return new Promise<boolean>((resolve: (res: boolean) => void, reject: (err: string) => void) => {
+            fs.readFile(this._dbFullPath, (error: any, data: any) => {
+                if (error) {
                     this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
-                    done(this._connected);
-                });
-            }
+                    reject(this._lastError);
+                } else {
+                    JSZip.loadAsync(data).then((zip: any) => {
+                        this._dbFile = zip;
+                        this._connected = true;
+                        this.setSavingQueue();
+
+                        resolve(this._connected);
+                    }).catch((error: any) => {
+                        this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
+                        reject(this._lastError);
+                    });
+                }
+            });
         });
     }
     protected resetError(): void {
@@ -199,70 +211,79 @@ export class Connection implements IResource {
     }
     protected setSavingQueue(): void {
         this._savingQueue = queue((task: any, next: any) => {
+            const resutls: ConnectionSavingQueueResult = new ConnectionSavingQueueResult();
+
             switch (task.action) {
                 case ConnectionSaveConstants.LoadFile:
                     const file = this._dbFile.file(task.path);
                     if (file !== null) {
                         file.async('text').then((data: string) => {
-                            next(null, data);
+                            resutls.data = data;
+                            next(resutls);
                         });
                     } else {
-                        next(`Zip path '${task.path}' does not exist`, null);
+                        resutls.error = `Zip path '${task.path}' does not exist`;
+                        next(resutls);
                     }
                     break;
                 case ConnectionSaveConstants.RemoveFile:
                     this._dbFile.remove(task.path);
-                    next(null);
+                    next(resutls);
                     break;
                 case ConnectionSaveConstants.UpdateFile:
                     this._dbFile.file(task.path, task.data);
 
                     if (!task.skipPhysicalSave) {
-                        this.save(() => {
-                            next(null);
-                        });
+                        this.save()
+                            .then(() => {
+                                next(resutls);
+                            })
+                            .catch((err: string) => next(resutls));
                     } else {
-                        next(null);
+                        next(resutls);
                     }
                     break;
                 default:
-                    next(`Unknown action '${task.action}'`);
+                    resutls.error = `Unknown action '${task.action}'`;
+                    next(resutls);
             }
         }, 1);
     }
 
     //
     // Protected methods.
-    public static IsValidDatabase(dbName: string, dbPath: string, done: any): void {
-        const results: any = {
-            exists: false,
-            valid: false,
-            error: null
-        };
+    public static IsValidDatabase(dbName: string, dbPath: string): Promise<any> {
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+            const results: any = {
+                exists: false,
+                valid: false,
+                error: null
+            };
 
-        const dbFullPath = DocsOnFileDB.GuessDatabasePath(dbName, dbPath);
-        let stat: any = null;
-        try { stat = fs.statSync(dbFullPath); } catch (e) { }
+            const dbFullPath = DocsOnFileDB.GuessDatabasePath(dbName, dbPath);
+            let stat: any = null;
+            try { stat = fs.statSync(dbFullPath); } catch (e) { }
 
-        if (stat) {
-            results.exists = true;
+            if (stat) {
+                results.exists = true;
 
-            fs.readFile(dbFullPath, (error: any, data: any) => {
-                if (error) {
-                    results.error = Errors.DatabaseDoesntExist;
-                    done(results);
-                } else {
-                    if (data.toString().substring(0, 2) === 'PK') {
-                        results.valid = true;
+                fs.readFile(dbFullPath, (error: any, data: any) => {
+                    if (error) {
+                        results.error = Errors.DatabaseDoesntExist;
+                        resolve(results);
                     } else {
-                        results.error = Errors.DatabaseNotValid;
+                        if (data.toString().substring(0, 2) === 'PK') {
+                            results.valid = true;
+                        } else {
+                            results.error = Errors.DatabaseNotValid;
+                        }
+                        resolve(results);
                     }
-                    done(results);
-                }
-            });
-        } else {
-            results.error = Errors.DatabaseDoesntExist;
-            done(results);
-        }
+                });
+            } else {
+                results.error = Errors.DatabaseDoesntExist;
+                resolve(results);
+            }
+        });
     }
 }

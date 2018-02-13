@@ -26,31 +26,39 @@ describe('dfdb: Indexes and Searches', function () {
     it('connects and returns a valid connected pointer', done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
 
-        DocsOnFileDB.connect(dbName, dbDirPath, null, db => {
-            assert.instanceOf(db, types.Connection);
-            assert.typeOf(db.connected, 'function');
-            assert.equal(db.connected(), true);
+        DocsOnFileDB.connect(dbName, dbDirPath, null)
+            .then(db => {
+                assert.instanceOf(db, types.Connection);
+                assert.typeOf(db.connected, 'function');
+                assert.equal(db.connected(), true);
 
-            assert.isFalse(db.error());
+                assert.isFalse(db.error());
 
-            connection = db;
-            done();
-        });
+                connection = db;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('retrieves a new collection and returns a valid one', done => {
         assert.typeOf(connection.collection, 'function');
 
-        connection.collection(collectionName, col => {
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
+        connection.collection(collectionName)
+            .then(col => {
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
 
-            assert.instanceOf(col, types.Collection);
-            assert.isFalse(col.error());
+                assert.instanceOf(col, types.Collection);
+                assert.isFalse(col.error());
 
-            collection = col;
-            done();
-        });
+                collection = col;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('inserts example documents', done => {
@@ -61,14 +69,16 @@ describe('dfdb: Indexes and Searches', function () {
             const doc = docs.shift();
 
             if (doc) {
-                collection.insert(doc, insertedDoc => {
-                    assert.isFalse(collection.error());
-                    assert.isNull(collection.lastError());
+                collection.insert(doc)
+                    .then(insertedDoc => {
+                        assert.isFalse(collection.error());
+                        assert.isNull(collection.lastError());
 
-                    assert.typeOf(insertedDoc, 'object');
+                        assert.typeOf(insertedDoc, 'object');
 
-                    run();
-                });
+                        run();
+                    })
+                    .catch(() => done());
             } else {
                 done();
             }
@@ -79,177 +89,220 @@ describe('dfdb: Indexes and Searches', function () {
     it(`adds an index for field 'name'`, done => {
         assert.typeOf(collection.addFieldIndex, 'function');
 
-        collection.addFieldIndex('name', () => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
-
-            done();
-        });
+        collection.addFieldIndex('name')
+            .then(() => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`searches for an exact value on field 'name' (value 'Lawanda Guzman')`, done => {
         assert.typeOf(collection.find, 'function');
 
-        collection.find({ name: 'Lawanda Guzman' }, docs => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
+        collection.find({ name: 'Lawanda Guzman' })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 8);
-            assert.equal(docs[0].name, 'Lawanda Guzman');
-
-            done();
-        });
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0]._id, 8);
+                assert.equal(docs[0].name, 'Lawanda Guzman');
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`rebuilds the index for field 'name'`, done => {
         assert.typeOf(collection.rebuildFieldIndex, 'function');
 
-        collection.rebuildFieldIndex('name', () => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
-
-            done();
-        });
+        collection.rebuildFieldIndex('name')
+            .then(() => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`rebuilds a non existing field index`, done => {
         assert.typeOf(collection.rebuildFieldIndex, 'function');
 
-        collection.rebuildFieldIndex('somefield', () => {
-            assert.isTrue(collection.error());
-            assert.isNotNull(collection.lastError());
-            assert.equal(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
-
-            done();
-        });
+        collection.rebuildFieldIndex('somefield')
+            .then(() => {
+                assert.isTrue(collection.error());
+                assert.isNotNull(collection.lastError());
+                assert.equal(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`searches for an exact value on field 'name' after rebuild (value 'Lawanda Guzman')`, done => {
         assert.typeOf(collection.find, 'function');
 
-        collection.find({ name: 'Lawanda Guzman' }, docs => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
+        collection.find({ name: 'Lawanda Guzman' })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 8);
-            assert.equal(docs[0].name, 'Lawanda Guzman');
-
-            done();
-        });
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0]._id, 8);
+                assert.equal(docs[0].name, 'Lawanda Guzman');
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`closes the connection`, done => {
         assert.typeOf(connection.close, 'function');
 
-        connection.close(() => {
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
+        connection.close()
+            .then(() => {
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
 
-            connection = null;
-            collection = null;
-
-            done();
-        });
+                connection = null;
+                collection = null;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('reconnects and returns a valid connected pointer', done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
 
-        DocsOnFileDB.connect(dbName, dbDirPath, null, db => {
-            assert.instanceOf(db, types.Connection);
-            assert.typeOf(db.connected, 'function');
-            assert.equal(db.connected(), true);
+        DocsOnFileDB.connect(dbName, dbDirPath, null)
+            .then(db => {
+                assert.instanceOf(db, types.Connection);
+                assert.typeOf(db.connected, 'function');
+                assert.equal(db.connected(), true);
 
-            assert.isFalse(db.error());
+                assert.isFalse(db.error());
 
-            connection = db;
-            done();
-        });
+                connection = db;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('retrieves the same collection', done => {
         assert.typeOf(connection.collection, 'function');
 
-        connection.collection(collectionName, col => {
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
+        connection.collection(collectionName)
+            .then(col => {
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
 
-            assert.instanceOf(col, types.Collection);
-            assert.isFalse(col.error());
+                assert.instanceOf(col, types.Collection);
+                assert.isFalse(col.error());
 
-            collection = col;
-            done();
-        });
+                collection = col;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`searches for the same value again (field 'name', value 'Lawanda Guzman')`, done => {
         assert.typeOf(collection.find, 'function');
 
-        collection.find({ name: 'Lawanda Guzman' }, docs => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
+        collection.find({ name: 'Lawanda Guzman' })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 8);
-            assert.equal(docs[0].name, 'Lawanda Guzman');
-
-            done();
-        });
+                assert.equal(docs.length, 1);
+                assert.equal(docs[0]._id, 8);
+                assert.equal(docs[0].name, 'Lawanda Guzman');
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('drops the collection', done => {
         assert.typeOf(collection.drop, 'function');
 
-        collection.drop(() => {
-            assert.isFalse(collection.error());
-            assert.isNull(collection.lastError());
+        collection.drop()
+            .then(() => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
 
-            collection = null;
-            done();
-        });
+                collection = null;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('retrieves the same collection yet again', done => {
         assert.typeOf(connection.collection, 'function');
 
-        connection.collection(collectionName, col => {
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
+        connection.collection(collectionName)
+            .then(col => {
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
 
-            assert.instanceOf(col, types.Collection);
-            assert.isFalse(col.error());
+                assert.instanceOf(col, types.Collection);
+                assert.isFalse(col.error());
 
-            collection = col;
-            done();
-        });
+                collection = col;
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`searches for the same value yet again (field 'name', value 'Lawanda Guzman')`, done => {
         assert.typeOf(collection.find, 'function');
 
-        collection.find({ name: 'Lawanda Guzman' }, docs => {
-            assert.isTrue(collection.error());
-            assert.isNotNull(collection.lastError());
-            assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+        collection.find({ name: 'Lawanda Guzman' })
+            .then(docs => {
+                assert.isTrue(collection.error());
+                assert.isNotNull(collection.lastError());
+                assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
 
-            assert.equal(docs.length, 0);
-
-            done();
-        });
+                assert.equal(docs.length, 0);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
-        connection.close(() => {
-            assert.isFalse(connection.connected());
-            assert.isFalse(connection.error());
-            assert.isNull(connection.lastError());
-
-            done();
-        });
+        connection.close()
+            .then(() => {
+                assert.isFalse(connection.connected());
+                assert.isFalse(connection.error());
+                assert.isNull(connection.lastError());
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it('drops current database', done => {
@@ -260,26 +313,32 @@ describe('dfdb: Indexes and Searches', function () {
         try { stat = fs.statSync(dbFullPath); } catch (e) { }
         assert.isNotNull(stat);
 
-        DocsOnFileDB.dropDatabase(dbName, dbDirPath, error => {
-            assert.isNull(error);
+        DocsOnFileDB.dropDatabase(dbName, dbDirPath)
+            .then(error => {
+                assert.isNull(error);
 
-            stat = null;
-            try { stat = fs.statSync(dbFullPath); } catch (e) { }
-            assert.isNull(stat);
-
-            done();
-        });
+                stat = null;
+                try { stat = fs.statSync(dbFullPath); } catch (e) { }
+                assert.isNull(stat);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`drops a database that doesn't exist`, done => {
         assert.typeOf(DocsOnFileDB.dropDatabase, 'function');
 
-        DocsOnFileDB.dropDatabase(dbName, dbDirPath, error => {
-            assert.isNotNull(error);
-            assert.equal(error.indexOf(constants.Errors.DatabaseDoesntExist), 0);
-
-            done();
-        });
+        DocsOnFileDB.dropDatabase(dbName, dbDirPath)
+            .then(error => {
+                assert.isNotNull(error);
+                assert.equal(error.indexOf(constants.Errors.DatabaseDoesntExist), 0);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`connects to an invalid database`, done => {
@@ -292,14 +351,17 @@ describe('dfdb: Indexes and Searches', function () {
         try { stat = fs.statSync(dbFullPath); } catch (e) { }
         assert.isNotNull(stat);
 
-        DocsOnFileDB.connect(invalidDbName, dbDirPath, null, db => {
-            assert.isFalse(db.connected());
-            assert.isTrue(db.error());
-            assert.isNotNull(db.lastError());
-            assert.equal(db.lastError().indexOf(constants.Errors.DatabaseNotValid), 0);
-
-            done();
-        });
+        DocsOnFileDB.connect(invalidDbName, dbDirPath, null)
+            .then(db => {
+                assert.isFalse(db.connected());
+                assert.isTrue(db.error());
+                assert.isNotNull(db.lastError());
+                assert.equal(db.lastError().indexOf(constants.Errors.DatabaseNotValid), 0);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 
     it(`drops a database that isn't a valid database`, done => {
@@ -312,11 +374,14 @@ describe('dfdb: Indexes and Searches', function () {
         try { stat = fs.statSync(dbFullPath); } catch (e) { }
         assert.isNotNull(stat);
 
-        DocsOnFileDB.dropDatabase(invalidDbName, dbDirPath, error => {
-            assert.isNotNull(error);
-            assert.equal(error.indexOf(constants.Errors.DatabaseNotValid), 0);
-
-            done();
-        });
+        DocsOnFileDB.dropDatabase(invalidDbName, dbDirPath)
+            .then(error => {
+                assert.isNotNull(error);
+                assert.equal(error.indexOf(constants.Errors.DatabaseNotValid), 0);
+            })
+            .catch(err => {
+                assert.isTrue(false, `a rejection was not expected at this point.`);
+            })
+            .finally(done);
     });
 });

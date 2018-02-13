@@ -1,7 +1,16 @@
 /// <reference types="jszip" />
+/**
+ * @file connection.dfdb.ts
+ * @author Alejandro D. Simi
+ */
+import { Promise } from 'es6-promise';
+import * as JSZip from 'jszip';
 import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
-import * as JSZip from 'jszip';
+export declare class ConnectionSavingQueueResult {
+    error: string;
+    data: string;
+}
 export declare class Connection implements IResource {
     protected _collections: {
         [name: string]: Collection;
@@ -14,21 +23,21 @@ export declare class Connection implements IResource {
     protected _lastError: string;
     protected _savingQueue: any;
     constructor(dbName: string, dbPath: string, options?: any);
-    connect(done: any): void;
+    collection(name: string): Promise<Collection>;
+    connect(): Promise<boolean>;
     connected(): boolean;
-    close(done?: any): void;
+    close(): Promise<void>;
     error(): boolean;
     forgetCollection(name: string): boolean;
     lastError(): string | null;
-    loadFile(zPath: string, done: any): void;
-    collection(name: string, done: any): void;
-    save(done?: any): void;
-    removeFile(zPath: string, done: any): void;
-    updateFile(zPath: string, data: any, done: any, skipPhysicalSave?: boolean): void;
-    protected createBasics(done: any): void;
+    loadFile(zPath: string): Promise<ConnectionSavingQueueResult>;
+    save(): Promise<void>;
+    removeFile(zPath: string): Promise<ConnectionSavingQueueResult>;
+    updateFile(zPath: string, data: any, skipPhysicalSave?: boolean): Promise<ConnectionSavingQueueResult>;
+    protected createBasics(): Promise<void>;
     protected doesExist(): boolean;
-    protected internalConnect(done: any): void;
+    protected internalConnect(): Promise<boolean>;
     protected resetError(): void;
     protected setSavingQueue(): void;
-    static IsValidDatabase(dbName: string, dbPath: string, done: any): void;
+    static IsValidDatabase(dbName: string, dbPath: string): Promise<any>;
 }

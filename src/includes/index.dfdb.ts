@@ -3,11 +3,13 @@
  * @author Alejandro D. Simi
  */
 
+import { Promise } from 'es6-promise';
+import * as JSZip from 'jszip';
+
 import { Errors } from './constants.dfdb';
-import { Connection } from './connection.dfdb';
+import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
-import * as JSZip from 'jszip';
 
 export class Index implements IResource, IDelayedResource {
     //
@@ -33,159 +35,158 @@ export class Index implements IResource, IDelayedResource {
 
     //
     // Public methods.
-    public addDocument(doc: any, done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
-        if (typeof doc[this._field] !== 'undefined') {
-            if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
-                this._lastError = Errors.NotIndexableValue;
-                done();
-            } else {
-                const value = `${doc[this._field]}`.toLowerCase();
-                if (typeof this._data[value] === 'undefined') {
-                    this._data[value] = [doc._id];
+    public addDocument(doc: any): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (typeof doc[this._field] !== 'undefined') {
+                if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
+                    this._lastError = Errors.NotIndexableValue;
+                    reject(this._lastError);
                 } else {
-                    if (this._data[value].indexOf(doc._id) < 0) {
-                        this._data[value].push(doc._id);
-                        this._data[value].sort();
+                    const value = `${doc[this._field]}`.toLowerCase();
+                    if (typeof this._data[value] === 'undefined') {
+                        this._data[value] = [doc._id];
+                    } else {
+                        if (this._data[value].indexOf(doc._id) < 0) {
+                            this._data[value].push(doc._id);
+                            this._data[value].sort();
+                        }
                     }
-                }
 
-                this.save(done);
+                    this.save()
+                        .then(resolve)
+                        .catch(reject);
+                }
+            } else {
+                resolve();
             }
-        } else {
-            done();
-        }
+        });
     }
-    public connect(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
-        if (!this._connected) {
-            this._data = {};
-            this._connection.loadFile(this._resourcePath, (error: string, data: string) => {
-                if (error) {
-                    this._connected = true;
-                    this.save(done);
-                } else if (data !== null) {
-                    data.split('\n')
-                        .filter(line => line != '')
-                        .forEach(line => {
-                            const pieces: string[] = line.split('|');
-                            const key: string = pieces.shift();
-                            this._data[key] = pieces;
-                        });
-
-                    this._connected = true;
-                    done();
-                }
-            });
-        } else {
-            done();
-        }
-    }
-    public close(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
-
-        this.resetError();
-
-        if (this._connected) {
-            this.save(() => {
+    public connect(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (!this._connected) {
                 this._data = {};
-                this._connected = false;
-                done();
-            });
-        } else {
-            done();
-        }
-    }
-    public drop(done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
+                this._connection.loadFile(this._resourcePath)
+                    .then((results: ConnectionSavingQueueResult) => {
+                        if (results.error) {
+                            this._connected = true;
+                            this.save()
+                                .then(resolve)
+                                .catch(reject);
+                        } else if (results.data !== null) {
+                            results.data.split('\n')
+                                .filter(line => line != '')
+                                .forEach(line => {
+                                    const pieces: string[] = line.split('|');
+                                    const key: string = pieces.shift();
+                                    this._data[key] = pieces;
+                                });
 
+                            this._connected = true;
+                            resolve();
+                        }
+                    });
+            } else {
+                resolve();
+            }
+        });
+    }
+    public close(): Promise<void> {
         this.resetError();
 
-        if (this._connected) {
-            this._connection.removeFile(this._resourcePath, () => {
-                // no need to ask collection to forget this index because it's the
-                // collection's responsibillity to invoke this method and then
-                // forget it.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this.save()
+                    .then(() => {
+                        this._data = {};
+                        this._connected = false;
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
+    }
+    public drop(): Promise<void> {
+        this.resetError();
 
-                this._connected = false;
-                done();
-            });
-        } else {
-            done();
-        }
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._connection.removeFile(this._resourcePath)
+                    .then(() => {
+                        // no need to ask collection to forget this index because it's the
+                        // collection's responsibillity to invoke this method and then
+                        // forget it.
+
+                        this._connected = false;
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
     public error(): boolean {
         return this._lastError !== null;
     }
-    public find(value: string, done: any): void {
-        if (typeof done === null) {
-            done = (ids: string[]) => { };
-        }
+    public find(value: string): Promise<string[]> {
+        return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: string) => void) => {
+            value = value.toLowerCase();
 
-        value = value.toLowerCase();
+            const findings: string[] = [];
+            this.resetError();
 
-        const findings: string[] = [];
-        this.resetError();
+            Object.keys(this._data).forEach((indexValue: string) => {
+                if (indexValue.indexOf(value) > -1) {
+                    this._data[indexValue].forEach((id: string) => {
+                        if (findings.indexOf(id) < 0) {
+                            findings.push(`${id}`);
+                        }
+                    });
+                }
+            });
 
-        Object.keys(this._data).forEach((indexValue: string) => {
-            if (indexValue.indexOf(value) > -1) {
-                this._data[indexValue].forEach((id: string) => {
-                    if (findings.indexOf(id) < 0) {
-                        findings.push(`${id}`);
-                    }
-                });
-            }
+            findings.sort();
+            resolve(findings);
         });
-
-        findings.sort();
-        done(findings);
     }
     public lastError(): string {
         return this._lastError;
     }
-    public removeDocument(id: string, done: any = null): void {
-        if (done === null) {
-            done = () => { };
-        }
+    public removeDocument(id: string): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            Object.keys(this._data).forEach(key => {
+                const idx = this._data[key].indexOf(id);
+                if (idx > -1) {
+                    this._data[key].splice(idx, 1);
+                }
+                if (this._data[key].length === 0) {
+                    delete this._data[key];
+                }
+            });
 
-        Object.keys(this._data).forEach(key => {
-            const idx = this._data[key].indexOf(id);
-            if (idx > -1) {
-                this._data[key].splice(idx, 1);
-            }
-            if (this._data[key].length === 0) {
-                delete this._data[key];
-            }
+            this.save()
+                .then(resolve)
+                .catch(reject);
         });
-
-        this.save(done);
     }
     public skipSave(): void {
         this._skipSave = true;
     }
-    public truncate(done: any): void {
-        if (done === null) {
-            done = () => { };
-        }
-
+    public truncate(): Promise<void> {
         this.resetError();
 
-        if (this._connected) {
-            this._data = {};
-            this.save(done);
-        } else {
-            done();
-        }
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            if (this._connected) {
+                this._data = {};
+                this.save()
+                    .then(resolve)
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
 
     //
@@ -193,15 +194,19 @@ export class Index implements IResource, IDelayedResource {
     protected resetError(): void {
         this._lastError = null;
     }
-    protected save(done: any = null): void {
-        let data: any = [];
-        Object.keys(this._data).forEach(key => {
-            data.push(`${key}|${this._data[key].join('|')}`);
-        });
+    protected save(): Promise<void> {
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            let data: any = [];
+            Object.keys(this._data).forEach(key => {
+                data.push(`${key}|${this._data[key].join('|')}`);
+            });
 
-        this._connection.updateFile(this._resourcePath, data.join('\n'), () => {
-            this._skipSave = false;
-            done();
-        }, this._skipSave);
+            this._connection.updateFile(this._resourcePath, data.join('\n'), this._skipSave)
+                .then((results: ConnectionSavingQueueResult) => {
+                    this._skipSave = false;
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
 }
