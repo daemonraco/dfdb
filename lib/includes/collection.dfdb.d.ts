@@ -11,6 +11,12 @@ export interface CollectionStep {
     params: any;
     function: any;
 }
+/**
+ * This class represents a collection and provides access to all its information
+ * and associated objects.
+ *
+ * @class Collection
+ */
 export declare class Collection implements IResource {
     protected _connected: boolean;
     protected _connection: Connection;
@@ -37,6 +43,23 @@ export declare class Collection implements IResource {
     error(): boolean;
     find(conditions: any): Promise<any[]>;
     findOne(conditions: any): Promise<any>;
+    /**
+     * Checks if this collection has a specific index.
+     *
+     * @method hasIndex
+     * @param {string} name Index name to search.
+     * @returns {boolean} Returns TRUE when it's a known index.
+     */
+    hasIndex(name: string): boolean;
+    /**
+     * List all indexes of this collection
+     *
+     * @method indexes
+     * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
+     */
+    indexes(): {
+        [name: string]: any;
+    };
     insert(doc: any): Promise<any>;
     lastError(): string;
     name(): string;
