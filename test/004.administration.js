@@ -91,6 +91,39 @@ describe('dfdb: Administration tools', function () {
             .then(done, done);
     });
 
+    it(`checks if there's an index called 'name'`, done => {
+        assert.typeOf(collection.hasIndex, 'function');
+
+        const check = collection.hasIndex('name');
+
+        assert.isBoolean(check);
+        assert.isTrue(check);
+
+        done();
+    });
+
+    it(`list indexes`, done => {
+        assert.typeOf(collection.indexes, 'function');
+
+        const indexName = 'name';
+        const indexes = collection.indexes();
+
+        assert.isObject(indexes);
+        assert.property(indexes, indexName);
+        assert.typeOf(indexes[indexName], 'object');
+
+        assert.property(indexes[indexName], 'name');
+        assert.property(indexes[indexName], 'field');
+
+        assert.typeOf(indexes[indexName].name, 'string');
+        assert.typeOf(indexes[indexName].field, 'string');
+
+        assert.equal(indexes[indexName].name, indexName);
+        assert.equal(indexes[indexName].field, indexName);
+
+        done();
+    });
+
     it(`searches for an exact value on field 'name' (value 'Lawanda Guzman')`, done => {
         assert.typeOf(collection.find, 'function');
 

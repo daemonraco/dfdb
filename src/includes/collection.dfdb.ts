@@ -17,6 +17,12 @@ export interface CollectionStep {
     function: any;
 }
 
+/**
+ * This class represents a collection and provides access to all its information
+ * and associated objects.
+ *
+ * @class Collection
+ */
 export class Collection implements IResource {
     //
     // Protected properties.
@@ -218,6 +224,25 @@ export class Collection implements IResource {
                 })
                 .catch(reject);
         });
+    }
+    /**
+     * Checks if this collection has a specific index.
+     *
+     * @method hasIndex
+     * @param {string} name Index name to search.
+     * @returns {boolean} Returns TRUE when it's a known index.
+     */
+    public hasIndex(name: string): boolean {
+        return typeof this._manifest.indexes[name] !== 'undefined';
+    }
+    /**
+     * List all indexes of this collection
+     *
+     * @method indexes
+     * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
+     */
+    public indexes(): { [name: string]: any } {
+        return JSON.parse(JSON.stringify(this._manifest.indexes));
     }
     public insert(doc: any): Promise<any> {
         this.resetError();

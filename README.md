@@ -1,6 +1,6 @@
 ![TravisCI Master](https://api.travis-ci.org/daemonraco/dfdb.svg?branch=master)
 
-# DocsOnFilesDB
+# DocsOnFileDB
 This is a very simple noSQL database stored in a zipped file.
 
 # Installation
@@ -105,7 +105,7 @@ myCollection.searchOne({ name: 'Jane Doe' }).then(doc => {
     // . . .
 });
 ```
-When searching for mixed index and unindexed fields, __DocsOnFilesDB__ will first
+When searching for mixed index and unindexed fields, __DocsOnFileDB__ will first
 look for documents that match indexed field conditions, and then filter by
 unindexed conditions.
 
