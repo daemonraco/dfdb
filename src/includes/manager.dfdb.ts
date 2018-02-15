@@ -12,6 +12,7 @@ import { BasicConstants } from './constants.dfdb';
 
 /**
  * Central manager for all connection.
+ *
  * @class DocsOnFileDB
  */
 export class DocsOnFileDB {
