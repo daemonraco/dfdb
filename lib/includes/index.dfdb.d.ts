@@ -93,8 +93,29 @@ export declare class Index implements IResource, IDelayedResource {
      * @returns {string|null} Returns an error message.
      */
     lastError(): string | null;
+    /**
+     * This method unindexes a document from this index.
+     *
+     * @method removeDocument
+     * @param {string} id ID of the documento to remove.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     removeDocument(id: string): Promise<void>;
+    /**
+     * When the physical file saving is trigger by a later action, this method
+     * avoids next file save attempt for this sequence.
+     *
+     * @method skipSave
+     */
     skipSave(): void;
+    /**
+     * This method removes all data of this index.
+     *
+     * @method truncate
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     truncate(): Promise<void>;
     /**
      * This method cleans up current error messages.
@@ -103,5 +124,13 @@ export declare class Index implements IResource, IDelayedResource {
      * @method resetError
      */
     protected resetError(): void;
+    /**
+     * This method triggers the physical saving of this index file.
+     *
+     * @protected
+     * @method save
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected save(): Promise<void>;
 }

@@ -68,7 +68,20 @@ export declare class Sequence implements IResource, IDelayedResource {
      * @returns {string|null} Returns an error message.
      */
     lastError(): string | null;
+    /**
+     * This method advances the internal counter and returns it for ID usage
+     * guaranteeing that it's unique.
+     *
+     * @method next
+     * @returns {string} Returns a unique ID.
+     */
     next(): string;
+    /**
+     * When the physical file saving is trigger by a later action, this method
+     * avoids next file save attempt for this sequence.
+     *
+     * @method skipSave
+     */
     skipSave(): void;
     /**
      * This method cleans up current error messages.
@@ -77,5 +90,13 @@ export declare class Sequence implements IResource, IDelayedResource {
      * @method resetError
      */
     protected resetError(): void;
+    /**
+     * This method triggers the physical saving of this sequence file.
+     *
+     * @protected
+     * @method save
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected save(): Promise<void>;
 }

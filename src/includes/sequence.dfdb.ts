@@ -198,18 +198,35 @@ export class Sequence implements IResource, IDelayedResource {
     public lastError(): string | null {
         return this._lastError;
     }
+    /**
+     * This method advances the internal counter and returns it for ID usage
+     * guaranteeing that it's unique.
+     *
+     * @method next
+     * @returns {string} Returns a unique ID.
+     */
     public next(): string {
         //
         // Restarting error messages.
         this.resetError();
-
+        //
+        // Incrementing internal counter.
         this._value++;
+        //
+        // Committing new value to file.
         this.save()
             .then(() => { })
             .catch(() => { });
-
+        //
+        // Returning the ID and enforsing that it's a string.
         return `${this._value}`;
     }
+    /**
+     * When the physical file saving is trigger by a later action, this method
+     * avoids next file save attempt for this sequence.
+     *
+     * @method skipSave
+     */
     public skipSave(): void {
         this._skipSave = true;
     }
@@ -224,13 +241,26 @@ export class Sequence implements IResource, IDelayedResource {
     protected resetError(): void {
         this._lastError = null;
     }
+    /**
+     * This method triggers the physical saving of this sequence file.
+     *
+     * @protected
+     * @method save
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected save(): Promise<void> {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Saving file.
             this._connection.updateFile(this._resourcePath, `${this._value}`, this._skipSave)
                 .then((results: ConnectionSavingQueueResult) => {
+                    //
+                    // Skipped once.
                     this._skipSave = false;
+
                     resolve();
                 })
                 .catch(reject);

@@ -329,6 +329,14 @@ export class Index implements IResource, IDelayedResource {
     public lastError(): string | null {
         return this._lastError;
     }
+    /**
+     * This method unindexes a document from this index.
+     *
+     * @method removeDocument
+     * @param {string} id ID of the documento to remove.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     public removeDocument(id: string): Promise<void> {
         //
         // Restarting error messages.
@@ -336,24 +344,45 @@ export class Index implements IResource, IDelayedResource {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Checking each indexed value because it may point to the document
+            // to remove.
             Object.keys(this._data).forEach(key => {
+                //
+                // Does it have it?
                 const idx = this._data[key].indexOf(id);
                 if (idx > -1) {
                     this._data[key].splice(idx, 1);
                 }
+                //
+                // If current value is empty, it should get forgotten.
                 if (this._data[key].length === 0) {
                     delete this._data[key];
                 }
             });
-
+            //
+            // Saving changes.
             this.save()
                 .then(resolve)
                 .catch(reject);
         });
     }
+    /**
+     * When the physical file saving is trigger by a later action, this method
+     * avoids next file save attempt for this sequence.
+     *
+     * @method skipSave
+     */
     public skipSave(): void {
         this._skipSave = true;
     }
+    /**
+     * This method removes all data of this index.
+     *
+     * @method truncate
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     public truncate(): Promise<void> {
         //
         // Restarting error messages.
@@ -361,8 +390,14 @@ export class Index implements IResource, IDelayedResource {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
             if (this._connected) {
+                //
+                // Freeing memory.
                 this._data = {};
+                //
+                // Saving changes.
                 this.save()
                     .then(resolve)
                     .catch(reject);
@@ -384,18 +419,33 @@ export class Index implements IResource, IDelayedResource {
     protected resetError(): void {
         this._lastError = null;
     }
+    /**
+     * This method triggers the physical saving of this index file.
+     *
+     * @protected
+     * @method save
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected save(): Promise<void> {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             let data: any = [];
+            //
+            // Converting data into a list of strings that can be physically
+            // stored.
             Object.keys(this._data).forEach(key => {
                 data.push(`${key}|${this._data[key].join('|')}`);
             });
-
+            //
+            // Saving file.
             this._connection.updateFile(this._resourcePath, data.join('\n'), this._skipSave)
                 .then((results: ConnectionSavingQueueResult) => {
+                    //
+                    // Skipped once.
                     this._skipSave = false;
+
                     resolve();
                 })
                 .catch(reject);
