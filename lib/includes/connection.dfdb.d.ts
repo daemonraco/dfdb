@@ -146,10 +146,19 @@ export declare class Connection implements IResource {
      * result object.
      */
     updateFile(zPath: string, data: any, skipPhysicalSave?: boolean): Promise<ConnectionSavingQueueResult>;
+    /**
+     * This method creates basic assets.
+     *
+     * @protected
+     * @method createBasics
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected createBasics(): Promise<void>;
     /**
      * This method checks if current connection's zip file exists or not.
      *
+     * @protected
      * @method doesExist
      * @returns {boolean} Returns TRUE when it does.
      */
@@ -158,20 +167,23 @@ export declare class Connection implements IResource {
      * This method makes the acutal physical connection to this connection's zip
      * file.
      *
+     * @protected
      * @method internalConnect
-     * @returns {Promise<void>} Returns TRUE or FALSE as a promise indicating
-     * if it's connected or not.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
      */
     protected internalConnect(): Promise<void>;
     /**
      * This method cleans up current error messages.
      *
+     * @protected
      * @method resetError
      */
     protected resetError(): void;
     /**
      * This method creates a queue to centralize all zip file access.
      *
+     * @protected
      * @method setSavingQueue
      */
     protected setSavingQueue(): void;
@@ -179,6 +191,7 @@ export declare class Connection implements IResource {
      * This method takes the basic values that represent a database and checks if
      * it exists and if it's valid or not.
      *
+     * @static
      * @method IsValidDatabase
      * @param {string} dbname Name of the database.
      * @param {string} dbpath Directory where the requested database is stored.

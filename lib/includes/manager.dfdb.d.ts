@@ -6,6 +6,7 @@ import { Promise } from 'es6-promise';
 import { Connection } from './connection.dfdb';
 /**
  * Central manager for all connection.
+ *
  * @class DocsOnFileDB
  */
 export declare class DocsOnFileDB {

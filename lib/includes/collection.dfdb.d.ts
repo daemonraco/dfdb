@@ -7,9 +7,22 @@ import { IResource } from './interface.resource.dfdb';
 import { Connection } from './connection.dfdb';
 import { Index } from './index.dfdb';
 import { Sequence } from './sequence.dfdb';
+/**
+ * Internal interfase that standardize recursive asynchronous calls to multiple
+ * tasks.
+ *
+ * @interface CollectionStep
+ */
 export interface CollectionStep {
+    /**
+     * @property {any} params Data to use when a step is executed.
+     */
     params: any;
-    function: any;
+    /**
+     * @property {any} function Function to call on execution of this step. It
+     * should returns a promise so it can be chained with other steps.
+     */
+    stepFunction: (params: any) => Promise<any>;
 }
 /**
  * This class represents a collection and provides access to all its information
@@ -34,14 +47,89 @@ export declare class Collection implements IResource {
     protected _name: string;
     protected _resourcePath: string;
     protected _sequence: Sequence;
+    /**
+     * @constructor
+     * @param {string} name Name of the collection to create.
+     * @param {Connection} connection Collection in which it's stored.
+     */
     constructor(name: string, connection: Connection);
+    /**
+     * This method associates a new index to a root document field and trigger
+     * it's first indexation.
+     *
+     * @method addFieldIndex
+     * @param {name} name Field to index. It also acts as index name.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     addFieldIndex(name: string): Promise<void>;
+    /**
+     * Creating a collection object doesn't mean it is connected to physical
+     * information, this method does that.
+     * It connects and loads information from the physical storage in zip file,
+     * and also loads all its indexes and its manifest.
+     *
+     * @method connect
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     connect(): Promise<void>;
+    /**
+     * This method saves all its data and closes all its associated object, and
+     * then informs its connection to fully reload it if it's requested again.
+     *
+     * @method close
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     close(): Promise<void>;
+    /**
+     * This method removes this collection from its connection and erases all
+     * traces of it. This means all its files and associated object files get
+     * remove from the zip file.
+     *
+     * @method drop
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     drop(): Promise<void>;
+    /**
+     * Removes a field associated index and triggers the removal of its physical
+     * data inside the zip file.
+     *
+     * @method dropFieldIndex
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     dropFieldIndex(name: string): Promise<void>;
+    /**
+     * Provides a way to know if there was an error in the last operation.
+     *
+     * @method error
+     * @returns {boolean} Returns TRUE when there was an error.
+     */
     error(): boolean;
-    find(conditions: any): Promise<any[]>;
+    /**
+     * This method searches for documents that match certain criteria. Conditions
+     * should only include indexed fields.
+     *
+     * @method find
+     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * search completes. In the promise it returns the list of found documents.
+     */
+    find(conditions: {
+        [name: string]: any;
+    }): Promise<any[]>;
+    /**
+     * This is the same than 'find()', but it returns only the first found
+     * document.
+     *
+     * @method findOne
+     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * search completes. In the promise it returns a found documents.
+     */
     findOne(conditions: any): Promise<any>;
     /**
      * Checks if this collection has a specific index.
@@ -60,36 +148,349 @@ export declare class Collection implements IResource {
     indexes(): {
         [name: string]: any;
     };
-    insert(doc: any): Promise<any>;
-    lastError(): string;
+    /**
+     * Inserts a new document and updates this collection's indexes with it.
+     *
+     * @method insert
+     * @param {{ [name: string]: any }} doc Document to insert.
+     * @returns {Promise<{ [name: string]: any }>} Returns the inserted document
+     * completed with all internal fields.
+     */
+    insert(doc: {
+        [name: string]: any;
+    }): Promise<{
+        [name: string]: any;
+    }>;
+    /**
+     * Provides access to the error message registed by the last operation.
+     *
+     * @method lastError
+     * @returns {string|null} Returns an error message.
+     */
+    lastError(): string | null;
+    /**
+     * Provides access to current collection name.
+     *
+     * @method name
+     * @returns {string} Returns a name.
+     */
     name(): string;
+    /**
+     * This method forces a index to reload and reindex all documents.
+     *
+     * @method rebuildFieldIndex
+     * @param {string} name Name of the field index to rebuild.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     rebuildFieldIndex(name: string): Promise<void>;
+    /**
+     * This method removes a document from this collection based on an ID.
+     *
+     * @method remove
+     * @param {any} id ID of the document to remove.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     remove(id: any): Promise<void>;
-    search(conditions: any): Promise<any[]>;
-    searchOne(conditions: any): Promise<any>;
+    /**
+     * This method searches for documents that match certain criteria. Conditions
+     * may include indexed and unindexed fields.
+     *
+     * @method search
+     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * search completes. In the promise it returns the list of found documents.
+     */
+    search(conditions: {
+        [name: string]: any;
+    }): Promise<any[]>;
+    /**
+     * This is the same than 'searchOne()', but it returns only the first found
+     * document.
+     *
+     * @method searchOne
+     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * search completes. In the promise it returns a found documents.
+     */
+    searchOne(conditions: {
+        [name: string]: any;
+    }): Promise<any>;
+    /**
+     * This method removes all data of this collection and also its indexes.
+     *
+     * @method truncate
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     truncate(): Promise<void>;
-    update(id: any, doc: any): Promise<any>;
-    protected addDocToIndex(params: any): Promise<void>;
-    protected addDocToIndexes(doc: any): Promise<void>;
+    /**
+     * Updates a document and updates this collection's indexes with it.
+     *
+     * @method update
+     * @param {any} id ID of the document to update.
+     * @param {{ [name: string]: any }} doc Document to use as new data.
+     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * completed with all internal fields.
+     */
+    update(id: any, doc: {
+        [name: string]: any;
+    }): Promise<any>;
+    /**
+     * This method adds a document to a specific index.
+     *
+     * @protected
+     * @method addDocToIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('name', 'doc').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected addDocToIndex(params: {
+        [name: string]: any;
+    }): Promise<void>;
+    /**
+     * This method adds certain document to all field indexes.
+     *
+     * @protected
+     * @method addDocToIndexes
+     * @param {{ [name: string]: any }} doc Document to be added.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected addDocToIndexes(doc: {
+        [name: string]: any;
+    }): Promise<void>;
+    /**
+     * This closes a specific index.
+     *
+     * @protected
+     * @method closeIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('name').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected closeIndex(params: any): Promise<void>;
+    /**
+     * This method closes all field indexes.
+     *
+     * @protected
+     * @method closeIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected closeIndexes(params: any): Promise<void>;
+    /**
+     * This method drops a specific index.
+     *
+     * @protected
+     * @method dropIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('name').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected dropIndex(params: any): Promise<void>;
+    /**
+     * This method drops all field indexes.
+     *
+     * @protected
+     * @method dropIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected dropIndexes(params: any): Promise<void>;
+    /**
+     * This method drops the internal manifest file from zip.
+     *
+     * @protected
+     * @method dropManifest
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected dropManifest(params: any): Promise<void>;
+    /**
+     * This method drops the data file from zip.
+     *
+     * @protected
+     * @method dropResource
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected dropResource(params: any): Promise<void>;
+    /**
+     * This method drops the associated collection sequence.
+     *
+     * @protected
+     * @method dropSequence
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected dropSequence(params: any): Promise<void>;
-    protected findIds(conditions: any): Promise<string[]>;
-    protected idsToData(ids: string[]): any[];
+    /**
+     * This method takes a list of conditions and uses them to search ids inside
+     * indexes. Once all involved indexes had been checked, it returns those that
+     * match in all conditions.
+     *
+     * @protected
+     * @method findIds
+     * @param {{ [name: string]: any }} conditions Filtering conditions.
+     * @returns {Promise<string[]>} Returns a promise that gets resolve when all
+     * operations had finished. In the promise it returns a list of indexes.
+     */
+    protected findIds(conditions: {
+        [name: string]: any;
+    }): Promise<string[]>;
+    /**
+     * This method takes a list of IDs and returns a list of documents with those
+     * IDs.
+     *
+     * @protected
+     * @method idsToData
+     * @param {string[]} ids List of IDs.
+     * @returns {{ [name: string]: any}[]} Returns a list of documents.
+     */
+    protected idsToData(ids: string[]): {
+        [name: string]: any;
+    }[];
+    /**
+     * This closes a specific index.
+     *
+     * @protected
+     * @method loadIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected loadIndex(params: any): Promise<void>;
+    /**
+     * This method loads all associated field indexes.
+     *
+     * @protected
+     * @method loadIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected loadIndexes(params: any): Promise<void>;
+    /**
+     * This method loads the internal manifest file from zip.
+     *
+     * @protected
+     * @method loadManifest
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected loadManifest(params: any): Promise<void>;
+    /**
+     * This method loads the data file from zip.
+     *
+     * @protected
+     * @method loadResource
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected loadResource(params: any): Promise<void>;
+    /**
+     * This method loads the associated collection sequence.
+     *
+     * @protected
+     * @method loadSequence
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected loadSequence(params: any): Promise<void>;
-    protected processStepsSequence(steps: CollectionStep[]): Promise<void>;
+    /**
+     * This method removes a document from a specific index.
+     *
+     * @protected
+     * @method removeDocFromIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('id', 'name').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected removeDocFromIndex(params: any): Promise<void>;
+    /**
+     * This method a document from all field indexes.
+     *
+     * @protected
+     * @method removeDocFromIndexes
+     * @param {string} id ID of the document to be removed.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected removeDocFromIndexes(id: string): Promise<void>;
+    /**
+     * This method cleans up current error messages.
+     *
+     * @protected
+     * @method resetError
+     */
     protected resetError(): void;
+    /**
+     * This method truncates a specific index.
+     *
+     * @protected
+     * @method truncateIndex
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('name').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected truncateIndex(params: any): Promise<void>;
+    /**
+     * This method truncates all field indexes.
+     *
+     * @protected
+     * @method truncateIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected truncateIndexes(params: any): Promise<void>;
+    /**
+     * This method triggers the physical saving of all files.
+     *
+     * @protected
+     * @method save
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     protected save(): Promise<void>;
+    /**
+     * This method is a generic iterator of recursive asynchronous calls to
+     * multiple tasks.
+     *
+     * @protected
+     * @static
+     * @method ProcessStepsSequence
+     * @param {CollectionStep[]} steps List of steps to take.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected static ProcessStepsSequence(steps: CollectionStep[]): Promise<void>;
 }
