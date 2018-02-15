@@ -11,6 +11,7 @@ import { IResource } from './interface.resource.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { Index } from './index.dfdb';
 import { Sequence } from './sequence.dfdb';
+import { Tools } from './tools.dfdb';
 
 /**
  * Internal interfase that standardize recursive asynchronous calls to multiple
@@ -507,6 +508,50 @@ export class Collection implements IResource {
      */
     public name(): string {
         return this._name;
+    }
+    /**
+     * This method is similar to 'update()' but it doesn't need to take a complete
+     * document. It can take an object with a few fields and deep-merge with the
+     * one inside the database.
+     *
+     * @method update
+     * @param {any} id ID of the document to update.
+     * @param {{ [name: string]: any }} partialDoc Partial document to use as new
+     * data.
+     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * completed with all internal fields.
+     */
+    public partialUpdate(id: any, partialDoc: { [name: string]: any }): Promise<any> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+            //
+            // Is it a valid document?
+            //      Is it a known document?
+            //          Is it connected?
+            if (typeof partialDoc !== 'object' || Array.isArray(partialDoc)) {
+                this._lastError = Errors.DocIsNotObject;
+                reject(this._lastError);
+            } else if (typeof this._data[id] === 'undefined') {
+                this._lastError = Errors.DocNotFound;
+                reject(this._lastError);
+            } else if (!this._connected) {
+                this._lastError = Errors.CollectionNotConnected;
+                reject(this._lastError);
+            } else {
+                //
+                // Merging.
+                const mergedDoc = Tools.DeepMergeObjects(this._data[id], partialDoc);
+                //
+                // Forwarding call.
+                this.update(id, mergedDoc)
+                    .then(resolve)
+                    .catch(reject);
+            }
+        });
     }
     /**
      * This method forces a index to reload and reindex all documents.

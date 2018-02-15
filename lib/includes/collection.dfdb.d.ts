@@ -176,6 +176,21 @@ export declare class Collection implements IResource {
      */
     name(): string;
     /**
+     * This method is similar to 'update()' but it doesn't need to take a complete
+     * document. It can take an object with a few fields and deep-merge with the
+     * one inside the database.
+     *
+     * @method update
+     * @param {any} id ID of the document to update.
+     * @param {{ [name: string]: any }} partialDoc Partial document to use as new
+     * data.
+     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * completed with all internal fields.
+     */
+    partialUpdate(id: any, partialDoc: {
+        [name: string]: any;
+    }): Promise<any>;
+    /**
      * This method forces a index to reload and reindex all documents.
      *
      * @method rebuildFieldIndex

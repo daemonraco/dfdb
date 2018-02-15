@@ -8,6 +8,7 @@ import { Collection } from './includes/collection.dfdb';
 import { Connection } from './includes/connection.dfdb';
 import { Index } from './includes/index.dfdb';
 import { Sequence } from './includes/sequence.dfdb';
+import { Tools } from './includes/tools.dfdb';
 declare const _default: {
     dfdb: DocsOnFileDB;
     DocsOnFileDB: DocsOnFileDB;
@@ -17,11 +18,12 @@ declare const _default: {
         Errors: typeof Errors;
     };
     types: {
-        DocsOnFileDB: typeof DocsOnFileDB;
         Collection: typeof Collection;
         Connection: typeof Connection;
+        DocsOnFileDB: typeof DocsOnFileDB;
         Index: typeof Index;
         Sequence: typeof Sequence;
+        Tools: typeof Tools;
     };
 };
 export = _default;

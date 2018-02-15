@@ -26,7 +26,6 @@ export class Sequence implements IResource, IDelayedResource {
     protected _skipSave: boolean = false;
     protected _collection: Collection = null;
     protected _value: number = 0;
-
     //
     // Constructor.
     constructor(collection: Collection, name: string, connection: Connection) {
@@ -36,7 +35,6 @@ export class Sequence implements IResource, IDelayedResource {
 
         this._resourcePath = `${this._collection.name()}/${this._name}.seq`;
     }
-
     //
     // Public methods.
     public connect(): Promise<void> {
@@ -118,7 +116,6 @@ export class Sequence implements IResource, IDelayedResource {
     public skipSave(): void {
         this._skipSave = true;
     }
-
     //
     // Protected methods.
     protected resetError(): void {
