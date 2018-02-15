@@ -3,6 +3,12 @@
  * @author Alejandro D. Simi
  */
 
+/**
+ * This basic class provides a set of generic constants used by all DocsOnFileDB
+ * assets.
+ *
+ * @class BasicConstants
+ */
 export class BasicConstants {
     public static readonly DBExtension: string = '.dfdb';
     public static readonly DefaultSequence: string = '_id';
@@ -10,6 +16,12 @@ export class BasicConstants {
     private constructor() { }
 }
 
+/**
+ * This class provides a specific set of constants used by the connection class to
+ * queue operation on the zip file.
+ *
+ * @class ConnectionSaveConstants
+ */
 export class ConnectionSaveConstants {
     public static readonly LoadFile: string = 'load-file';
     public static readonly RemoveFile: string = 'remove-file';
@@ -18,6 +30,11 @@ export class ConnectionSaveConstants {
     private constructor() { }
 }
 
+/**
+ * This class collects the list of known errors thrown in DocsOnFileDB assets.
+ *
+ * @class Errors
+ */
 export class Errors {
     public static readonly DocIsNotObject: string = '[E-0001] Given document is not an object';
     public static readonly DocNotFound: string = '[E-0002] The requested document does not exist';
