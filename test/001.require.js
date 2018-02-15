@@ -22,11 +22,12 @@ describe('dfdb: Require', function () {
     it(`loads a proper list of types`, () => {
         assert.typeOf(dfdb.types, 'object');
 
-        assert.property(dfdb.types, 'DocsOnFileDB');
+        assert.property(dfdb.types, 'Collection');
         assert.property(dfdb.types, 'Connection');
+        assert.property(dfdb.types, 'DocsOnFileDB');
         assert.property(dfdb.types, 'Index');
         assert.property(dfdb.types, 'Sequence');
-        assert.property(dfdb.types, 'Collection');
+        assert.property(dfdb.types, 'Tools');
     });
 
     it(`loads a proper list of constant lists`, () => {

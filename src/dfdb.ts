@@ -11,10 +11,11 @@ import { Collection } from './includes/collection.dfdb';
 import { Connection } from './includes/connection.dfdb';
 import { Index } from './includes/index.dfdb';
 import { Sequence } from './includes/sequence.dfdb';
+import { Tools } from './includes/tools.dfdb';
 
 export = {
     dfdb: DocsOnFileDB.Instance(),
     DocsOnFileDB: DocsOnFileDB.Instance(),
     constants: { BasicConstants, ConnectionSaveConstants, Errors },
-    types: { DocsOnFileDB, Collection, Connection, Index, Sequence }
+    types: { Collection, Connection, DocsOnFileDB, Index, Sequence, Tools }
 };

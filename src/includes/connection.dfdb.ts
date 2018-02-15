@@ -41,6 +41,8 @@ export class ConnectionDBValidationResult {
  * @class Connection
  */
 export class Connection implements IResource {
+    //
+    // Protected properties.
     protected _collections: { [name: string]: Collection } = {};
     protected _connected: boolean = false;
     protected _dbFile: JSZip = null;
@@ -49,7 +51,8 @@ export class Connection implements IResource {
     protected _dbPath: string = null;
     protected _lastError: string = null;
     protected _savingQueue: any = null;
-
+    //
+    // Constructor.
     /**
      * @constructor
      * @param {string} dbname Name of the database to connect.
@@ -61,7 +64,6 @@ export class Connection implements IResource {
         this._dbPath = dbPath;
         this._dbFullPath = DocsOnFileDB.GuessDatabasePath(this._dbName, this._dbPath);
     }
-
     //
     // Public methods.
     /**
@@ -367,7 +369,6 @@ export class Connection implements IResource {
             }
         });
     }
-
     //
     // Protected methods.
     /**
@@ -526,7 +527,6 @@ export class Connection implements IResource {
             }
         }, 1);
     }
-
     //
     // Public class methods.
     /**

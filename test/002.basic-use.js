@@ -34,9 +34,6 @@ describe('dfdb: Basic use', function () {
 
                 connection = db;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -53,16 +50,13 @@ describe('dfdb: Basic use', function () {
 
                 collection = col;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
     it('inserts a new document', done => {
         assert.typeOf(collection.insert, 'function');
 
-        collection.insert({ hello: 'world!' })
+        collection.insert({ hello: 'world!', extra: 10 })
             .then(insertedDoc => {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
@@ -73,25 +67,23 @@ describe('dfdb: Basic use', function () {
                 assert.property(insertedDoc, '_created');
                 assert.property(insertedDoc, '_updated');
                 assert.property(insertedDoc, 'hello');
+                assert.property(insertedDoc, 'extra');
 
                 assert.isNumber(insertedDoc._id);
                 assert.instanceOf(insertedDoc._created, Date);
                 assert.instanceOf(insertedDoc._updated, Date);
-                assert.isString(insertedDoc.hello);
 
                 assert.equal(insertedDoc._id, 1);
-                assert.equal(insertedDoc.hello, 'world!');
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
+                assert.strictEqual(insertedDoc.hello, 'world!');
+                assert.strictEqual(insertedDoc.extra, 10);
             })
             .then(done, done);
     });
 
-    it('updates a new document', done => {
+    it('updates the new document', done => {
         assert.typeOf(collection.update, 'function');
 
-        collection.update(1, { hola: 'mundo!' })
+        collection.update(1, { hola: 'mundo!', extra: 10 })
             .then(updatedDoc => {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
@@ -103,17 +95,15 @@ describe('dfdb: Basic use', function () {
                 assert.property(updatedDoc, '_updated');
                 assert.notProperty(updatedDoc, 'hello');
                 assert.property(updatedDoc, 'hola');
+                assert.property(updatedDoc, 'extra');
 
                 assert.isNumber(updatedDoc._id);
                 assert.instanceOf(updatedDoc._created, Date);
                 assert.instanceOf(updatedDoc._updated, Date);
-                assert.isString(updatedDoc.hola);
 
                 assert.equal(updatedDoc._id, 1);
-                assert.equal(updatedDoc.hola, 'mundo!');
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
+                assert.strictEqual(updatedDoc.hola, 'mundo!');
+                assert.strictEqual(updatedDoc.extra, 10);
             })
             .then(done, done);
     });
@@ -134,6 +124,36 @@ describe('dfdb: Basic use', function () {
             .then(done, done);
     });
 
+    it('partially updates a document', done => {
+        assert.typeOf(collection.partialUpdate, 'function');
+
+        collection.partialUpdate(1, { extra: 20, another: 30 })
+            .then(updatedDoc => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.typeOf(updatedDoc, 'object');
+
+                assert.property(updatedDoc, '_id');
+                assert.property(updatedDoc, '_created');
+                assert.property(updatedDoc, '_updated');
+                assert.notProperty(updatedDoc, 'hello');
+                assert.property(updatedDoc, 'hola');
+                assert.property(updatedDoc, 'extra');
+                assert.property(updatedDoc, 'another');
+
+                assert.isNumber(updatedDoc._id);
+                assert.instanceOf(updatedDoc._created, Date);
+                assert.instanceOf(updatedDoc._updated, Date);
+
+                assert.equal(updatedDoc._id, 1);
+                assert.strictEqual(updatedDoc.hola, 'mundo!');
+                assert.strictEqual(updatedDoc.extra, 20);
+                assert.strictEqual(updatedDoc.another, 30);
+            })
+            .then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
@@ -142,9 +162,6 @@ describe('dfdb: Basic use', function () {
                 assert.isFalse(connection.connected());
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });

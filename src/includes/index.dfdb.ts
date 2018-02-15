@@ -22,7 +22,6 @@ export class Index implements IResource, IDelayedResource {
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
     protected _collection: Collection = null;
-
     //
     // Constructor.
     constructor(collection: Collection, field: string, connection: Connection) {
@@ -32,7 +31,6 @@ export class Index implements IResource, IDelayedResource {
 
         this._resourcePath = `${this._collection.name()}/${this._field}.idx`;
     }
-
     //
     // Public methods.
     public addDocument(doc: any): Promise<void> {
@@ -203,7 +201,6 @@ export class Index implements IResource, IDelayedResource {
             }
         });
     }
-
     //
     // Protected methods.
     protected resetError(): void {
