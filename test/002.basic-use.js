@@ -69,11 +69,11 @@ describe('dfdb: Basic use', function () {
                 assert.property(insertedDoc, 'hello');
                 assert.property(insertedDoc, 'extra');
 
-                assert.isNumber(insertedDoc._id);
+                assert.isString(insertedDoc._id);
                 assert.instanceOf(insertedDoc._created, Date);
                 assert.instanceOf(insertedDoc._updated, Date);
 
-                assert.equal(insertedDoc._id, 1);
+                assert.strictEqual(insertedDoc._id, '1');
                 assert.strictEqual(insertedDoc.hello, 'world!');
                 assert.strictEqual(insertedDoc.extra, 10);
             })
@@ -97,11 +97,11 @@ describe('dfdb: Basic use', function () {
                 assert.property(updatedDoc, 'hola');
                 assert.property(updatedDoc, 'extra');
 
-                assert.isNumber(updatedDoc._id);
+                assert.isString(updatedDoc._id);
                 assert.instanceOf(updatedDoc._created, Date);
                 assert.instanceOf(updatedDoc._updated, Date);
 
-                assert.equal(updatedDoc._id, 1);
+                assert.strictEqual(updatedDoc._id, '1');
                 assert.strictEqual(updatedDoc.hola, 'mundo!');
                 assert.strictEqual(updatedDoc.extra, 10);
             })
@@ -142,11 +142,11 @@ describe('dfdb: Basic use', function () {
                 assert.property(updatedDoc, 'extra');
                 assert.property(updatedDoc, 'another');
 
-                assert.isNumber(updatedDoc._id);
+                assert.isString(updatedDoc._id);
                 assert.instanceOf(updatedDoc._created, Date);
                 assert.instanceOf(updatedDoc._updated, Date);
 
-                assert.equal(updatedDoc._id, 1);
+                assert.strictEqual(updatedDoc._id, '1');
                 assert.strictEqual(updatedDoc.hola, 'mundo!');
                 assert.strictEqual(updatedDoc.extra, 20);
                 assert.strictEqual(updatedDoc.another, 30);

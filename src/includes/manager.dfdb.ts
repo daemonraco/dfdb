@@ -154,7 +154,6 @@ export class DocsOnFileDB {
 
         return forgotten;
     }
-
     //
     // Public class methods.
     /**
@@ -175,7 +174,6 @@ export class DocsOnFileDB {
 
         return this._instance;
     }
-
     //
     // Protected class methods.
     /**

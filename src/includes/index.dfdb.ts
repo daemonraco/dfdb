@@ -11,6 +11,11 @@ import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
 
+/**
+ * This class represents a document's field index associated to a collection.
+ *
+ * @class Index
+ */
 export class Index implements IResource, IDelayedResource {
     //
     // Protected properties.
@@ -24,68 +29,152 @@ export class Index implements IResource, IDelayedResource {
     protected _collection: Collection = null;
     //
     // Constructor.
+    /**
+     * @constructor
+     * @param {Collection} collection Collection to which this index is
+     * associated.
+     * @param {string} field Name of the field to be index.
+     * @param {Connection} connection Collection in which it's stored.
+     */
     constructor(collection: Collection, field: string, connection: Connection) {
+        //
+        // Shortcuts.
         this._field = field;
         this._collection = collection;
         this._connection = connection;
-
+        //
+        // Main path.
         this._resourcePath = `${this._collection.name()}/${this._field}.idx`;
     }
     //
     // Public methods.
-    public addDocument(doc: any): Promise<void> {
+    /**
+     * This method takes a document and adds into this index if it contains the
+     * index field.
+     *
+     * @method addDocument
+     * @param {{ [name:string]: any }} doc Document to be indexed.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    public addDocument(doc: { [name: string]: any }): Promise<void> {
+        //
+        // This anonymous function takes a value for a index entry and adds the
+        // given document ID to it.
         const addValue = (value: any) => {
-            value = `${doc[this._field]}`.toLowerCase();
-
+            //
+            // Value should be indexed in lower case for case-insensitive search.
+            value = `${value}`.toLowerCase();
+            //
+            // Is it a new index value?
             if (typeof this._data[value] === 'undefined') {
                 this._data[value] = [doc._id];
             } else {
+                //
+                // Is it already indexed for this value?
                 if (this._data[value].indexOf(doc._id) < 0) {
                     this._data[value].push(doc._id);
                     this._data[value].sort();
                 }
             }
         }
-
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
-            if (typeof doc[this._field] !== 'undefined') {
+            //
+            // Is it connected and is it the required field present?
+            if (this._connected && typeof doc[this._field] !== 'undefined') {
+                //
+                // If it's an array, each element should be indexes separately.
                 if (Array.isArray(doc[this._field])) {
+                    //
+                    // Indexing each value.
                     doc[this._field].forEach((value: any) => {
                         if (typeof value !== 'object') {
                             addValue(value);
                         }
                     });
-
+                    //
+                    // Saving data on file.
                     this.save()
                         .then(resolve)
                         .catch(reject);
                 } else if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
+                    //
+                    // At this point, if the value is an object, it cannot be
+                    // indexed and should be treated as an error.
                     this._lastError = Errors.NotIndexableValue;
                     reject(this._lastError);
                 } else {
+                    //
+                    // Indexing field's value.
                     addValue(doc[this._field]);
-
+                    //
+                    // Saving data on file.
                     this.save()
                         .then(resolve)
                         .catch(reject);
                 }
+            } else if (!this._connected) {
+                this._lastError = Errors.IndexNotConnected;
+                reject(this._lastError);
             } else {
+                //
+                // IF the required field isn't present, the given document is
+                // ignored.
                 resolve();
             }
         });
     }
+    /**
+     * Creating an index object doesn't mean it is connected to physical
+     * information, this method does that.
+     * It connects and loads information from the physical storage in zip file.
+     *
+     * @method connect
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     public connect(): Promise<void> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
             if (!this._connected) {
+                //
+                // Setting default data.
                 this._data = {};
+                //
+                // Retrieving data from zip.
                 this._connection.loadFile(this._resourcePath)
                     .then((results: ConnectionSavingQueueResult) => {
+                        //
+                        // Did it return any data?
                         if (results.error) {
+                            //
+                            // Setting as connected.
                             this._connected = true;
+                            //
+                            // Forcing to save.
+                            this._connected = true;
+                            //
+                            // Physically saving data.
                             this.save()
                                 .then(resolve)
                                 .catch(reject);
-                        } else if (results.data !== null) {
+                        } else {
+                            //
+                            // Sanitization.
+                            results.data = results.data ? results.data : '';
+                            //
+                            // Parsing data.
                             results.data.split('\n')
                                 .filter(line => line != '')
                                 .forEach(line => {
@@ -93,37 +182,75 @@ export class Index implements IResource, IDelayedResource {
                                     const key: string = pieces.shift();
                                     this._data[key] = pieces;
                                 });
-
+                            //
+                            // Setting as connected.
                             this._connected = true;
+
                             resolve();
                         }
                     });
             } else {
+                //
+                // If it's not connected, nothing is done.
                 resolve();
             }
         });
     }
+    /**
+     * This method saves current data and then closes this index.
+     *
+     * @method close
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     public close(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
-
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
             if (this._connected) {
+                //
+                // Saving data on file.
                 this.save()
                     .then(() => {
+                        //
+                        // Freeing memory
                         this._data = {};
+                        //
+                        // Disconnecting this index.
                         this._connected = false;
+
                         resolve();
                     })
                     .catch(reject);
             } else {
+                //
+                // If it's not connected, nothing is done.
                 resolve();
             }
         });
     }
+    /**
+     * This method removes this index from its connection and erases all
+     * traces of it.
+     *
+     * @method drop
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     public drop(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
-
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
             if (this._connected) {
                 this._connection.removeFile(this._resourcePath)
                     .then(() => {
@@ -136,38 +263,78 @@ export class Index implements IResource, IDelayedResource {
                     })
                     .catch(reject);
             } else {
+                //
+                // If it's not connected, nothing is done.
                 resolve();
             }
         });
     }
+    /**
+     * Provides a way to know if there was an error in the last operation.
+     *
+     * @method error
+     * @returns {boolean} Returns TRUE when there was an error.
+     */
     public error(): boolean {
         return this._lastError !== null;
     }
+    /**
+     * This method searches for document IDs associated to a certain value or
+     * piece of value.
+     *
+     * @method find
+     * @param {string} value Value to look for.
+     * @returns {Promise<string[]>} Returns a promise that gets resolve when the
+     * search completes. In the promise it returns the list of found document IDs.
+     */
     public find(value: string): Promise<string[]> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
         return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: string) => void) => {
+            //
+            // Searches should be done case insensitively
             value = value.toLowerCase();
-
-            const findings: string[] = [];
-            this.resetError();
-
+            //
+            // Initializing a list of findings.
+            let findings: string[] = [];
+            //
+            // Checking every index value becuase the one being search may be
+            // equal or contained in it.
             Object.keys(this._data).forEach((indexValue: string) => {
+                //
+                // Does current value contain the one being searched.
                 if (indexValue.indexOf(value) > -1) {
-                    this._data[indexValue].forEach((id: string) => {
-                        if (findings.indexOf(id) < 0) {
-                            findings.push(`${id}`);
-                        }
-                    });
+                    //
+                    // Adding IDs.
+                    findings = findings.concat(this._data[indexValue]);
                 }
             });
-
-            findings.sort();
+            //
+            // Removing duplicates.
+            findings = Array.from(new Set(findings));
+            //
+            // Finishing and returning found IDs.
             resolve(findings);
         });
     }
-    public lastError(): string {
+    /**
+     * Provides access to the error message registed by the last operation.
+     *
+     * @method lastError
+     * @returns {string|null} Returns an error message.
+     */
+    public lastError(): string | null {
         return this._lastError;
     }
     public removeDocument(id: string): Promise<void> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             Object.keys(this._data).forEach(key => {
                 const idx = this._data[key].indexOf(id);
@@ -188,8 +355,11 @@ export class Index implements IResource, IDelayedResource {
         this._skipSave = true;
     }
     public truncate(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
-
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             if (this._connected) {
                 this._data = {};
@@ -197,16 +367,26 @@ export class Index implements IResource, IDelayedResource {
                     .then(resolve)
                     .catch(reject);
             } else {
+                //
+                // If it's not connected, nothing is done.
                 resolve();
             }
         });
     }
     //
     // Protected methods.
+    /**
+     * This method cleans up current error messages.
+     *
+     * @protected
+     * @method resetError
+     */
     protected resetError(): void {
         this._lastError = null;
     }
     protected save(): Promise<void> {
+        //
+        // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             let data: any = [];
             Object.keys(this._data).forEach(key => {

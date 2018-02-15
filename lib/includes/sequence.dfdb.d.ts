@@ -20,14 +20,62 @@ export declare class Sequence implements IResource, IDelayedResource {
     protected _skipSave: boolean;
     protected _collection: Collection;
     protected _value: number;
+    /**
+     * @constructor
+     * @param {Collection} collection Collection to which this index is
+     * associated.
+     * @param {Connection} connection Collection in which it's stored.
+     */
     constructor(collection: Collection, name: string, connection: Connection);
+    /**
+     * Creating a sequence object doesn't mean it is connected to physical
+     * information, this method does that.
+     * It connects and loads information from the physical storage in zip file.
+     *
+     * @method connect
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     connect(): Promise<void>;
+    /**
+     * This method saves current value and then closes this sequence.
+     *
+     * @method close
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     close(): Promise<void>;
+    /**
+     * This method removes this sequence from its connection and erases all
+     * traces of it.
+     *
+     * @method drop
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
     drop(): Promise<void>;
+    /**
+     * Provides a way to know if there was an error in the last operation.
+     *
+     * @method error
+     * @returns {boolean} Returns TRUE when there was an error.
+     */
     error(): boolean;
-    lastError(): string;
-    next(): number;
+    /**
+     * Provides access to the error message registed by the last operation.
+     *
+     * @method lastError
+     * @returns {string|null} Returns an error message.
+     */
+    lastError(): string | null;
+    next(): string;
     skipSave(): void;
+    /**
+     * This method cleans up current error messages.
+     *
+     * @protected
+     * @method resetError
+     */
     protected resetError(): void;
     protected save(): Promise<void>;
 }

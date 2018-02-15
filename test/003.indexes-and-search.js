@@ -35,9 +35,6 @@ describe('dfdb: Indexes and Searches', function () {
 
                 connection = db;
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -53,9 +50,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(col.error());
 
                 collection = col;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -76,10 +70,6 @@ describe('dfdb: Indexes and Searches', function () {
                         assert.typeOf(insertedDoc, 'object');
 
                         run();
-                    })
-                    .catch(err => {
-                        assert.isTrue(false, `a rejection was not expected at this point.`);
-                        done();
                     });
             } else {
                 done();
@@ -96,9 +86,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -109,9 +96,6 @@ describe('dfdb: Indexes and Searches', function () {
             .then(() => {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -149,10 +133,6 @@ describe('dfdb: Indexes and Searches', function () {
                         assert.typeOf(insertedDoc, 'object');
 
                         run();
-                    })
-                    .catch(err => {
-                        assert.isTrue(false, `a rejection was not expected at this point.`);
-                        done();
                     });
             } else {
                 done();
@@ -184,9 +164,6 @@ describe('dfdb: Indexes and Searches', function () {
 
                 assert.typeOf(updatedDoc, 'object');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -198,9 +175,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
                 assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -217,9 +191,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.equal(docs[0]._id, 102);
                 assert.equal(docs[0].name, 'Kristine Perry');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -234,9 +205,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.equal(docs.length, 1);
                 assert.equal(docs[0]._id, 6);
                 assert.equal(docs[0].name, 'Lola Parks');
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -257,9 +225,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.equal(docs[1]._id, 147);
                 assert.equal(docs[1].name, 'Ann Mayo');
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -272,9 +237,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isNull(collection.lastError());
 
                 assert.equal(docs.length, 0);
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -290,9 +252,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isNotNull(doc.length);
                 assert.equal(doc._id, 10);
                 assert.equal(doc.name, 'Blanchard Chen');
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -310,8 +269,6 @@ describe('dfdb: Indexes and Searches', function () {
             assert.equal(docs.length, 1);
             assert.equal(docs[0]._id, 7);
             assert.equal(docs[0].name, 'Lakisha Puckett');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
         }).then(done, done);
     });
 
@@ -323,9 +280,6 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(connection.connected());
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
