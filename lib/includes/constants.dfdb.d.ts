@@ -14,6 +14,18 @@ export declare class BasicConstants {
     private constructor();
 }
 /**
+ * This class provides a set of constants used to identify the kind of internal
+ * logic a collection uses.
+ *
+ * @class CollectionTypes
+ */
+export declare class CollectionTypes {
+    static readonly Simple: string;
+    /** @todo 'CollectionTypes.Heavy' will be implemented on v0.2.0 */
+    static readonly Heavy: string;
+    private constructor();
+}
+/**
  * This class provides a specific set of constants used by the connection class to
  * queue operation on the zip file.
  *

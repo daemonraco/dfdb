@@ -39,6 +39,11 @@ describe('dfdb: Basic use', function () {
 
     it('retrieves a new collection and returns a valid one', done => {
         assert.typeOf(connection.collection, 'function');
+        assert.typeOf(connection.hasCollection, 'function');
+
+        const hasCollection = connection.hasCollection(collectionName);
+        assert.isBoolean(hasCollection);
+        assert.isFalse(hasCollection);
 
         connection.collection(collectionName)
             .then(col => {
@@ -47,6 +52,10 @@ describe('dfdb: Basic use', function () {
 
                 assert.instanceOf(col, types.Collection);
                 assert.isFalse(col.error());
+
+                const hasCollection = connection.hasCollection(collectionName);
+                assert.isBoolean(hasCollection);
+                assert.isTrue(hasCollection);
 
                 collection = col;
             })

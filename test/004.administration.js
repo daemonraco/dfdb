@@ -41,6 +41,11 @@ describe('dfdb: Administration tools', function () {
 
     it('retrieves a new collection and returns a valid one', done => {
         assert.typeOf(connection.collection, 'function');
+        assert.typeOf(connection.hasCollection, 'function');
+
+        const hasCollection = connection.hasCollection(collectionName);
+        assert.isBoolean(hasCollection);
+        assert.isFalse(hasCollection);
 
         connection.collection(collectionName)
             .then(col => {
@@ -49,6 +54,10 @@ describe('dfdb: Administration tools', function () {
 
                 assert.instanceOf(col, types.Collection);
                 assert.isFalse(col.error());
+
+                const hasCollection = connection.hasCollection(collectionName);
+                assert.isBoolean(hasCollection);
+                assert.isTrue(hasCollection);
 
                 collection = col;
             })
@@ -214,6 +223,11 @@ describe('dfdb: Administration tools', function () {
 
     it('retrieves the same collection', done => {
         assert.typeOf(connection.collection, 'function');
+        assert.typeOf(connection.hasCollection, 'function');
+
+        const hasCollection = connection.hasCollection(collectionName);
+        assert.isBoolean(hasCollection);
+        assert.isTrue(hasCollection);
 
         connection.collection(collectionName)
             .then(col => {
@@ -245,11 +259,20 @@ describe('dfdb: Administration tools', function () {
 
     it('drops the collection', done => {
         assert.typeOf(collection.drop, 'function');
+        assert.typeOf(connection.hasCollection, 'function');
+
+        const hasCollection = connection.hasCollection(collectionName);
+        assert.isBoolean(hasCollection);
+        assert.isTrue(hasCollection);
 
         collection.drop()
             .then(() => {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
+
+                const hasCollection = connection.hasCollection(collectionName);
+                assert.isBoolean(hasCollection);
+                assert.isFalse(hasCollection);
 
                 collection = null;
             })
@@ -261,6 +284,11 @@ describe('dfdb: Administration tools', function () {
 
     it('retrieves the same collection yet again', done => {
         assert.typeOf(connection.collection, 'function');
+        assert.typeOf(connection.hasCollection, 'function');
+
+        const hasCollection = connection.hasCollection(collectionName);
+        assert.isBoolean(hasCollection);
+        assert.isFalse(hasCollection);
 
         connection.collection(collectionName)
             .then(col => {
@@ -269,6 +297,10 @@ describe('dfdb: Administration tools', function () {
 
                 assert.instanceOf(col, types.Collection);
                 assert.isFalse(col.error());
+
+                const hasCollection = connection.hasCollection(collectionName);
+                assert.isBoolean(hasCollection);
+                assert.isTrue(hasCollection);
 
                 collection = col;
             })

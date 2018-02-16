@@ -17,6 +17,20 @@ export class BasicConstants {
 }
 
 /**
+ * This class provides a set of constants used to identify the kind of internal
+ * logic a collection uses.
+ *
+ * @class CollectionTypes
+ */
+export class CollectionTypes {
+    public static readonly Simple: string = 'simple';
+    /** @todo 'CollectionTypes.Heavy' will be implemented on v0.2.0 */
+    public static readonly Heavy: string = 'heavy';
+
+    private constructor() { }
+}
+
+/**
  * This class provides a specific set of constants used by the connection class to
  * queue operation on the zip file.
  *

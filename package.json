@@ -1,6 +1,6 @@
 {
     "name": "dfdb",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "description": "DFDB (DocsOnFileDB) locally stores a very simple noSQL database inside a zip file.",
     "main": "lib/dfdb",
     "types": "lib/dfdb",
