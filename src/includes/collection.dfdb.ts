@@ -226,17 +226,22 @@ export class Collection implements IResource {
                         //
                         // Asking connection to forget this collection and load
                         // from scratch next time it's required.
-                        this._connection.forgetCollection(this._name);
-                        this.save()
+                        this._connection.forgetCollection(this._name)
                             .then(() => {
                                 //
-                                // Cleaning data to free memory.
-                                this._data = {};
-                                //
-                                // At this point, this collection is considered
-                                // disconnected.
-                                this._connected = false;
-                                resolve();
+                                // Saving changes.
+                                this.save()
+                                    .then(() => {
+                                        //
+                                        // Cleaning data to free memory.
+                                        this._data = {};
+                                        //
+                                        // At this point, this collection is considered
+                                        // disconnected.
+                                        this._connected = false;
+                                        resolve();
+                                    })
+                                    .catch(reject);
                             })
                             .catch(reject);
                     })
@@ -281,12 +286,15 @@ export class Collection implements IResource {
                         //
                         // Completelly forgetting this collection from its
                         // connection.
-                        this._connection.forgetCollection(this._name, true);
-                        //
-                        // At this point, this collection is considered
-                        // disconnected.
-                        this._connected = false;
-                        resolve();
+                        this._connection.forgetCollection(this._name, true)
+                            .then(() => {
+                                //
+                                // At this point, this collection is considered
+                                // disconnected.
+                                this._connected = false;
+                                resolve();
+                            })
+                            .catch(reject);
                     })
                     .catch(reject);
             } else {

@@ -101,10 +101,11 @@ export declare class Connection implements IResource {
      * @param {string} name Collection name.
      * @param {boolean} drop Forgetting a collection is simple assuming that it's
      * not loaded, but it will still have an entry in the manifest. This parameter
-     * forces this connection to completelly forget it
-     * @returns {boolean} Returns TRUE when it was forgotten.
+     * forces this connection to completelly forget it.
+     * @returns {Promise<void>} Returns a promise that gets resolved when this
+     * operation is finished.
      */
-    forgetCollection(name: string, drop?: boolean): boolean;
+    forgetCollection(name: string, drop?: boolean): Promise<void>;
     /**
      * Provides a way to know if this connection stores certain collection.
      *

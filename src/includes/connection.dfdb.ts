@@ -262,33 +262,40 @@ export class Connection implements IResource {
      * @param {string} name Collection name.
      * @param {boolean} drop Forgetting a collection is simple assuming that it's
      * not loaded, but it will still have an entry in the manifest. This parameter
-     * forces this connection to completelly forget it
-     * @returns {boolean} Returns TRUE when it was forgotten.
+     * forces this connection to completelly forget it.
+     * @returns {Promise<void>} Returns a promise that gets resolved when this
+     * operation is finished.
      */
-    public forgetCollection(name: string, drop: boolean = false): boolean {
+    public forgetCollection(name: string, drop: boolean = false): Promise<void> {
         //
-        // Default values.
-        let forgotten = false;
-        //
-        // Is it tracked?
-        if (typeof this._collections[name] !== 'undefined') {
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             //
-            // Forgetting.
-            delete this._collections[name];
-            //
-            // Should it completelly forget it?
-            if (drop) {
+            // Is it tracked?
+            if (typeof this._collections[name] !== 'undefined') {
                 //
                 // Forgetting.
-                delete this._manifest.collections[name];
-                /** @todo keep an eye on this, there may be some collision. */
-                this.save();
+                delete this._collections[name];
+                //
+                // Should it completelly forget it?
+                if (drop) {
+                    //
+                    // Forgetting.
+                    delete this._manifest.collections[name];
+                    //
+                    // Saving changes.
+                    this.save()
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    resolve();
+                }
+            } else {
+                //
+                // If it's not tracked, nothing is done.
+                resolve();
             }
-
-            forgotten = true;
-        }
-
-        return forgotten;
+        });
     }
     /**
      * Provides a way to know if this connection stores certain collection.
