@@ -9,7 +9,7 @@ import * as JSZip from 'jszip';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { BasicConstants, ConnectionSaveConstants, Errors } from './constants.dfdb';
+import { BasicConstants, CollectionTypes, ConnectionSaveConstants, Errors } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
@@ -49,8 +49,12 @@ export class Connection implements IResource {
     protected _dbFullPath: string = null;
     protected _dbName: string = null;
     protected _dbPath: string = null;
+    protected _fileAccessQueue: any = null;
     protected _lastError: string = null;
-    protected _savingQueue: any = null;
+    protected _manifest: { [name: string]: any } = {
+        collections: {}
+    };
+    protected _manifestPath: string = null;
     //
     // Constructor.
     /**
@@ -60,8 +64,13 @@ export class Connection implements IResource {
      * @param {any} options List of extra options to use when connecting.
      */
     constructor(dbName: string, dbPath: string, options: any = {}) {
+        //
+        // Shortcuts.
         this._dbName = dbName;
         this._dbPath = dbPath;
+        //
+        // Main paths.
+        this._manifestPath = `manifest`;
         this._dbFullPath = DocsOnFileDB.GuessDatabasePath(this._dbName, this._dbPath);
     }
     //
@@ -75,6 +84,8 @@ export class Connection implements IResource {
      * @returns {Promise<Collection>} Returns a connection as a promise.
      */
     public collection(name: string): Promise<Collection> {
+        //
+        // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
@@ -87,15 +98,38 @@ export class Connection implements IResource {
                 resolve(this._collections[name]);
             } else {
                 //
-                // Creating a proper collection object.
-                this._collections[name] = new Collection(name, this);
+                // Anonymous function to actually handle the collection loading.
+                const loadCollection = () => {
+                    //
+                    // Creating a proper collection object.
+                    this._collections[name] = new Collection(name, this);
+                    //
+                    // Starting collection connector.
+                    this._collections[name].connect()
+                        .then(() => {
+                            resolve(this._collections[name]);
+                        })
+                        .catch(reject);
+                };
                 //
-                // Starting collection connector.
-                this._collections[name].connect()
-                    .then(() => {
-                        resolve(this._collections[name]);
-                    })
-                    .catch(reject);
+                // Is it a known collection?
+                if (typeof this._manifest.collections[name] === 'undefined') {
+                    //
+                    // Adding it as known.
+                    this._manifest.collections[name] = {
+                        name,
+                        type: CollectionTypes.Simple
+                    };
+                    //
+                    // Saving changes before loading.
+                    this.save()
+                        .then(loadCollection)
+                        .catch(reject);
+                } else {
+                    //
+                    // If it's known, it's get immediately loaded.
+                    loadCollection();
+                }
             }
         });
     }
@@ -108,6 +142,8 @@ export class Connection implements IResource {
      * if it's connected or not.
      */
     public connect(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
@@ -153,6 +189,8 @@ export class Connection implements IResource {
      * operation is finished.
      */
     public close(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
@@ -222,9 +260,12 @@ export class Connection implements IResource {
      *
      * @method forgetCollection
      * @param {string} name Collection name.
+     * @param {boolean} drop Forgetting a collection is simple assuming that it's
+     * not loaded, but it will still have an entry in the manifest. This parameter
+     * forces this connection to completelly forget it
      * @returns {boolean} Returns TRUE when it was forgotten.
      */
-    public forgetCollection(name: string): boolean {
+    public forgetCollection(name: string, drop: boolean = false): boolean {
         //
         // Default values.
         let forgotten = false;
@@ -234,10 +275,30 @@ export class Connection implements IResource {
             //
             // Forgetting.
             delete this._collections[name];
+            //
+            // Should it completelly forget it?
+            if (drop) {
+                //
+                // Forgetting.
+                delete this._manifest.collections[name];
+                /** @todo keep an eye on this, there may be some collision. */
+                this.save();
+            }
+
             forgotten = true;
         }
 
         return forgotten;
+    }
+    /**
+     * Provides a way to know if this connection stores certain collection.
+     *
+     * @method hasCollection
+     * @param {string} name Name of the collection to check.
+     * @returns {boolean} Returns TRUE when it does.
+     */
+    public hasCollection(name: string): boolean {
+        return typeof this._manifest.collections[name] !== 'undefined';
     }
     /**
      * Provides access to the error message registed by the last operation.
@@ -266,7 +327,7 @@ export class Connection implements IResource {
             if (this._connected) {
                 //
                 // Piling up a new zip access operation to read a file.
-                this._savingQueue.push({
+                this._fileAccessQueue.push({
                     action: ConnectionSaveConstants.LoadFile,
                     path: zPath
                 }, (result: ConnectionSavingQueueResult) => resolve(result));
@@ -286,6 +347,8 @@ export class Connection implements IResource {
      * operation is finished.
      */
     public save(): Promise<void> {
+        //
+        // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
@@ -293,6 +356,10 @@ export class Connection implements IResource {
             //
             // Is it connected?
             if (this._connected) {
+                //
+                // Updating internal manifest file's contents. If it doesn't
+                // exist, it is created.
+                this._dbFile.file(this._manifestPath, JSON.stringify(this._manifest));
                 //
                 // Physcally saving.
                 this._dbFile
@@ -325,7 +392,7 @@ export class Connection implements IResource {
             if (this._connected) {
                 //
                 // Piling up a new zip access operation to remove a file.
-                this._savingQueue.push({
+                this._fileAccessQueue.push({
                     action: ConnectionSaveConstants.RemoveFile,
                     path: zPath
                 }, (results: ConnectionSavingQueueResult) => resolve(results));
@@ -356,7 +423,7 @@ export class Connection implements IResource {
             //
             // Is it connected?
             if (this._connected) {
-                this._savingQueue.push({
+                this._fileAccessQueue.push({
                     action: ConnectionSaveConstants.UpdateFile,
                     path: zPath,
                     data, skipPhysicalSave
@@ -380,6 +447,7 @@ export class Connection implements IResource {
      * operation finishes.
      */
     protected createBasics(): Promise<void> {
+        /** @todo check this method because it's too similar to 'save()' */
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
@@ -439,15 +507,52 @@ export class Connection implements IResource {
                         this._connected = true;
                         //
                         // Starting the queue that centralizes all file accesses.
-                        this.setSavingQueue();
-
-                        resolve();
+                        this.setFileAccessQueue();
+                        //
+                        // Loading internal manifest.
+                        this.loadManifest()
+                            .then(resolve)
+                            .catch(reject);
                     }).catch((error: any) => {
                         this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
                         reject(this._lastError);
                     });
                 }
             });
+        });
+    }
+    /**
+     * This method loads the internal manifest file from zip.
+     *
+     * @protected
+     * @method loadManifest
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected loadManifest(): Promise<void> {
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Retrieving information from file.
+            this.loadFile(this._manifestPath)
+                .then((results: ConnectionSavingQueueResult) => {
+                    //
+                    // Did we get information?
+                    if (results.error) {
+                        //
+                        // If there's no information it creates the file.
+                        this.save()
+                            .then(resolve)
+                            .catch(reject);
+                    } else if (results.data !== null) {
+                        //
+                        // Parsing information.
+                        this._manifest = JSON.parse(results.data);
+                        resolve();
+                    }
+                })
+                .catch(reject);
         });
     }
     /**
@@ -465,11 +570,11 @@ export class Connection implements IResource {
      * @protected
      * @method setSavingQueue
      */
-    protected setSavingQueue(): void {
+    protected setFileAccessQueue(): void {
         //
         // Creating a new queue.
         // @note It only allow 1 (one) access at a time.
-        this._savingQueue = queue((task: any, next: (res: ConnectionSavingQueueResult) => void) => {
+        this._fileAccessQueue = queue((task: any, next: (res: ConnectionSavingQueueResult) => void) => {
             //
             // Default values.
             const resutls: ConnectionSavingQueueResult = new ConnectionSavingQueueResult();

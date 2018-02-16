@@ -40,8 +40,12 @@ export declare class Connection implements IResource {
     protected _dbFullPath: string;
     protected _dbName: string;
     protected _dbPath: string;
+    protected _fileAccessQueue: any;
     protected _lastError: string;
-    protected _savingQueue: any;
+    protected _manifest: {
+        [name: string]: any;
+    };
+    protected _manifestPath: string;
     /**
      * @constructor
      * @param {string} dbname Name of the database to connect.
@@ -95,9 +99,20 @@ export declare class Connection implements IResource {
      *
      * @method forgetCollection
      * @param {string} name Collection name.
+     * @param {boolean} drop Forgetting a collection is simple assuming that it's
+     * not loaded, but it will still have an entry in the manifest. This parameter
+     * forces this connection to completelly forget it
      * @returns {boolean} Returns TRUE when it was forgotten.
      */
-    forgetCollection(name: string): boolean;
+    forgetCollection(name: string, drop?: boolean): boolean;
+    /**
+     * Provides a way to know if this connection stores certain collection.
+     *
+     * @method hasCollection
+     * @param {string} name Name of the collection to check.
+     * @returns {boolean} Returns TRUE when it does.
+     */
+    hasCollection(name: string): boolean;
     /**
      * Provides access to the error message registed by the last operation.
      *
@@ -174,6 +189,15 @@ export declare class Connection implements IResource {
      */
     protected internalConnect(): Promise<void>;
     /**
+     * This method loads the internal manifest file from zip.
+     *
+     * @protected
+     * @method loadManifest
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected loadManifest(): Promise<void>;
+    /**
      * This method cleans up current error messages.
      *
      * @protected
@@ -186,7 +210,7 @@ export declare class Connection implements IResource {
      * @protected
      * @method setSavingQueue
      */
-    protected setSavingQueue(): void;
+    protected setFileAccessQueue(): void;
     /**
      * This method takes the basic values that represent a database and checks if
      * it exists and if it's valid or not.

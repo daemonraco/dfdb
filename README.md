@@ -1,7 +1,13 @@
 ![TravisCI Master](https://api.travis-ci.org/daemonraco/dfdb.svg?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/26894a2e6acc457386dc500559c23f9b)](https://www.codacy.com/app/daemonraco/dfdb?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=daemonraco/dfdb&amp;utm_campaign=Badge_Grade)
+[![Maintainability](https://api.codeclimate.com/v1/badges/821ae90c8840339c310f/maintainability)](https://codeclimate.com/github/daemonraco/dfdb/maintainability)
 
 # DocsOnFileDB
 This is a very simple noSQL database stored in a zipped file.
+
+__Warning__: This module is not intended for heavy usage, but rather a simple
+solution for quick application in which you need a noSQL database, but you don't
+want use a complete solution like MongoDB or others like it.
 
 # Installation
 To install this module you may run:

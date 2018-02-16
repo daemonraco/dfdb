@@ -61,7 +61,7 @@ export class Collection implements IResource {
      */
     constructor(name: string, connection: Connection) {
         //
-        // Short cuts.
+        // Shortcuts.
         this._name = name;
         this._connection = connection;
         //
@@ -278,6 +278,10 @@ export class Collection implements IResource {
                 // Dropping everything.
                 Collection.ProcessStepsSequence(steps)
                     .then(() => {
+                        //
+                        // Completelly forgetting this collection from its
+                        // connection.
+                        this._connection.forgetCollection(this._name, true);
                         //
                         // At this point, this collection is considered
                         // disconnected.
