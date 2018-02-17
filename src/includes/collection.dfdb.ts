@@ -441,7 +441,7 @@ export class Collection implements IResource {
      * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
      */
     public indexes(): { [name: string]: any } {
-        return JSON.parse(JSON.stringify(this._manifest.indexes));
+        return Tools.DeepCopy(this._manifest.indexes);
     }
     /**
      * Inserts a new document and updates this collection's indexes with it.

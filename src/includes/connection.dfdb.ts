@@ -13,6 +13,7 @@ import { BasicConstants, CollectionTypes, ConnectionSaveConstants, Errors } from
 import { DocsOnFileDB } from './manager.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
+import { Tools } from './tools.dfdb';
 
 /**
  * Internal class to handle physical interaction responses with the database.
@@ -132,6 +133,17 @@ export class Connection implements IResource {
                 }
             }
         });
+    }
+    /**
+     * Provides access to the list of collection this connections knows.
+     *
+     * @method collections
+     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     */
+    public collections(): { [name: string]: any } {
+        //
+        // Returning a deep-copy to avoid unintentional changes.
+        return Tools.DeepCopy(this._manifest.collections);
     }
     /**
      * Connects this object to the physicial database file. If the database file

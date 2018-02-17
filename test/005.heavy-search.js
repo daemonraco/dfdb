@@ -14,7 +14,7 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Heavy search', function () {
-    this.timeout(10000);
+    this.timeout(12000);
 
     const { DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');

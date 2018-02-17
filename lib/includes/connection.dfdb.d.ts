@@ -63,6 +63,15 @@ export declare class Connection implements IResource {
      */
     collection(name: string): Promise<Collection>;
     /**
+     * Provides access to the list of collection this connections knows.
+     *
+     * @method collections
+     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     */
+    collections(): {
+        [name: string]: any;
+    };
+    /**
      * Connects this object to the physicial database file. If the database file
      * doesn't exist it is created.
      *

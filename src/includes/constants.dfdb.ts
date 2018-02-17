@@ -23,9 +23,9 @@ export class BasicConstants {
  * @class CollectionTypes
  */
 export class CollectionTypes {
-    public static readonly Simple: string = 'simple';
     /** @todo 'CollectionTypes.Heavy' will be implemented on v0.2.0 */
     public static readonly Heavy: string = 'heavy';
+    public static readonly Simple: string = 'simple';
 
     private constructor() { }
 }

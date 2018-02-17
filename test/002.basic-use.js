@@ -13,9 +13,9 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Basic use', function () {
-    this.timeout(5000);
+    this.timeout(6000);
 
-    const { DocsOnFileDB, types } = require('..');
+    const { DocsOnFileDB, types, constants } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -40,10 +40,15 @@ describe('dfdb: Basic use', function () {
     it('retrieves a new collection and returns a valid one', done => {
         assert.typeOf(connection.collection, 'function');
         assert.typeOf(connection.hasCollection, 'function');
+        assert.typeOf(connection.collections, 'function');
 
         const hasCollection = connection.hasCollection(collectionName);
         assert.isBoolean(hasCollection);
         assert.isFalse(hasCollection);
+
+        const collections = connection.collections();
+        assert.isObject(collections);
+        assert.strictEqual(Object.keys(collections).length, 0);
 
         connection.collection(collectionName)
             .then(col => {
@@ -56,6 +61,21 @@ describe('dfdb: Basic use', function () {
                 const hasCollection = connection.hasCollection(collectionName);
                 assert.isBoolean(hasCollection);
                 assert.isTrue(hasCollection);
+
+                const collections = connection.collections();
+                assert.isObject(collections);
+                assert.strictEqual(Object.keys(collections).length, 1);
+
+                assert.property(collections, collectionName);
+                assert.isObject(collections[collectionName]);
+                assert.property(collections[collectionName], 'name');
+                assert.property(collections[collectionName], 'type');
+
+                assert.isString(collections[collectionName].name);
+                assert.isString(collections[collectionName].type);
+
+                assert.strictEqual(collections[collectionName].name, collectionName);
+                assert.strictEqual(collections[collectionName].type, constants.CollectionTypes.Simple);
 
                 collection = col;
             })
