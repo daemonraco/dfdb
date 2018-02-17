@@ -179,4 +179,65 @@ describe('dfdb: Require', function () {
         assert.strictEqual(resutls.aa.z[1], 66.6);
         assert.strictEqual(resutls.aa.z[2], '77');
     });
+
+    it(`Deep-copies an object and checks how it reacts to modifications`, () => {
+        const check = (copy) => {
+            assert.property(copy, '1');
+            assert.property(copy, 'a');
+            assert.property(copy, 'b');
+            assert.property(copy, 'c');
+            assert.property(copy, 'aa');
+
+            assert.strictEqual(copy['1'], 1);
+            assert.strictEqual(copy.a, 10);
+            assert.strictEqual(copy.b, 20.2);
+            assert.strictEqual(copy.c, ' 30 ');
+
+            assert.isObject(copy.aa);
+            assert.property(copy.aa, 'v');
+            assert.property(copy.aa, 'x');
+            assert.property(copy.aa, 'y');
+            assert.property(copy.aa, 'z');
+
+            assert.strictEqual(copy.aa.v, 11);
+            assert.strictEqual(copy.aa.x, '33');
+
+            assert.isObject(copy.aa.y);
+            assert.isArray(copy.aa.z);
+
+            assert.property(copy.aa.y, 'alfa');
+            assert.property(copy.aa.y, 'beta');
+
+            assert.strictEqual(copy.aa.y.alfa, 111);
+            assert.strictEqual(copy.aa.y.beta, '222');
+
+            assert.equal(copy.aa.z.length, 2);
+
+            assert.strictEqual(copy.aa.z[0], 55);
+            assert.strictEqual(copy.aa.z[1], 66.6);
+        }
+
+        const orginal = {
+            1: 1,
+            a: 10,
+            b: 20.2,
+            c: ' 30 ',
+            aa: {
+                v: 11,
+                x: '33',
+                y: {
+                    alfa: 111,
+                    beta: '222'
+                },
+                z: [55, 66.6]
+            }
+        };
+
+        let copy = Tools.DeepCopy(orginal);
+        check(orginal);
+        check(copy);
+
+        copy.aa.y.beta = 'changed value';
+        check(orginal);
+    });
 });

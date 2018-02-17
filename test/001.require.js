@@ -34,6 +34,7 @@ describe('dfdb: Require', function () {
         assert.typeOf(dfdb.constants, 'object');
 
         assert.property(dfdb.constants, 'BasicConstants');
+        assert.property(dfdb.constants, 'CollectionTypes');
         assert.property(dfdb.constants, 'ConnectionSaveConstants');
         assert.property(dfdb.constants, 'Errors');
     });
@@ -45,6 +46,16 @@ describe('dfdb: Require', function () {
         assert.property(dfdb.constants.BasicConstants, 'DefaultSequence');
 
         assert.isString(dfdb.constants.BasicConstants.DefaultSequence);
+    });
+
+    it(`loads a proper list of collection types`, () => {
+        //assert.typeOf(dfdb.constants.ConnectionSaveConstants, 'object');
+
+        assert.property(dfdb.constants.CollectionTypes, 'Heavy');
+        assert.property(dfdb.constants.CollectionTypes, 'Simple');
+
+        assert.isString(dfdb.constants.CollectionTypes.Heavy);
+        assert.isString(dfdb.constants.CollectionTypes.Simple);
     });
 
     it(`loads a proper list of connection constants`, () => {

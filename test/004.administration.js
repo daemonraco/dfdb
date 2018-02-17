@@ -15,7 +15,7 @@ const collectionName = 'test_collection';
 // ---------------------------------------------------------------------------- //
 // Testing.
 describe('dfdb: Administration tools', function () {
-    this.timeout(5000);
+    this.timeout(6000);
 
     const { constants, DocsOnFileDB, types } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');

@@ -21,6 +21,18 @@ export class Tools {
     //
     // Public class methods.
     /**
+     * Takes an object and returns a clone of if. It avoids using the same
+     * pointer.
+     *
+     * @static
+     * @method DeepCopy
+     * @param {any} obj Object to be copied.
+     * @returns {any} Returns a deep copy of the given object.
+     */
+    public static DeepCopy(obj: any): any {
+        return JSON.parse(JSON.stringify(obj));
+    }
+    /**
      * This method takes two things that can be objects, arrays or simple values
      * and tries the deep-merge the second one into the first one.
      *
