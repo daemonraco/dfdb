@@ -1,4 +1,4 @@
-![TravisCI Master](https://api.travis-ci.org/daemonraco/dfdb.svg?branch=master)
+[![Build Status](https://travis-ci.org/daemonraco/dfdb.svg?branch=master)](https://travis-ci.org/daemonraco/dfdb)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/26894a2e6acc457386dc500559c23f9b)](https://www.codacy.com/app/daemonraco/dfdb?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=daemonraco/dfdb&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/821ae90c8840339c310f/maintainability)](https://codeclimate.com/github/daemonraco/dfdb/maintainability)
 
