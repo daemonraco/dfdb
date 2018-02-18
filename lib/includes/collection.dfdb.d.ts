@@ -46,6 +46,8 @@ export declare class Collection implements IResource {
     protected _manifestPath: string;
     protected _name: string;
     protected _resourcePath: string;
+    protected _schemaApplier: any;
+    protected _schemaValidator: any;
     protected _sequence: Sequence;
     /**
      * @constructor
@@ -140,6 +142,13 @@ export declare class Collection implements IResource {
      */
     hasIndex(name: string): boolean;
     /**
+     * Checks if this collection has a schema defined for its documents.
+     *
+     * @method hasSchema
+     * @returns {boolean} Returns TRUE when it has a schema defined.
+     */
+    hasSchema(): boolean;
+    /**
      * List all indexes of this collection
      *
      * @method indexes
@@ -209,6 +218,22 @@ export declare class Collection implements IResource {
      */
     remove(id: any): Promise<void>;
     /**
+     * This method removes a the assigned schema for document validaton on this
+     * collection.
+     *
+     * @method removeSchema
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    removeSchema(): Promise<void>;
+    /**
+     * Provides a copy of the assigned schema for document validaton.
+     *
+     * @method removeSchema
+     * @returns {any} Return a deep-copy of current collection's schema.
+     */
+    schema(): any;
+    /**
      * This method searches for documents that match certain criteria. Conditions
      * may include indexed and unindexed fields.
      *
@@ -232,6 +257,15 @@ export declare class Collection implements IResource {
     searchOne(conditions: {
         [name: string]: any;
     }): Promise<any>;
+    /**
+     * Assignes or replaces the schema for document validaton on this collection.
+     *
+     * @method setSchema
+     * @param {any} schema Schema to be assigned.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    setSchema(schema: any): Promise<void>;
     /**
      * This method removes all data of this collection and also its indexes.
      *
@@ -275,6 +309,20 @@ export declare class Collection implements IResource {
      * operation finishes.
      */
     protected addDocToIndexes(doc: {
+        [name: string]: any;
+    }): Promise<void>;
+    /**
+     * This method validates and replaces this collection's schema for document
+     * validation.
+     *
+     * @protected
+     * @method applySchema
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('schema', 'schemaMD5').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected applySchema(params: {
         [name: string]: any;
     }): Promise<void>;
     /**
@@ -425,6 +473,13 @@ export declare class Collection implements IResource {
      */
     protected loadResource(params: any): Promise<void>;
     /**
+     * This method loads internal schema validation objects.
+     *
+     * @protected
+     * @method loadSchemaHandlers
+     */
+    protected loadSchemaHandlers(): void;
+    /**
      * This method loads the associated collection sequence.
      *
      * @protected
@@ -435,6 +490,17 @@ export declare class Collection implements IResource {
      * operation finishes.
      */
     protected loadSequence(params: any): Promise<void>;
+    /**
+     * This method removes a document from a specific index.
+     *
+     * @protected
+     * @method rebuildAllIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected rebuildAllIndexes(params: any): Promise<void>;
     /**
      * This method removes a document from a specific index.
      *

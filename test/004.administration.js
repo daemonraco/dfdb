@@ -30,7 +30,7 @@ describe('dfdb: Administration tools', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
@@ -127,8 +127,8 @@ describe('dfdb: Administration tools', function () {
         assert.typeOf(indexes[indexName].name, 'string');
         assert.typeOf(indexes[indexName].field, 'string');
 
-        assert.equal(indexes[indexName].name, indexName);
-        assert.equal(indexes[indexName].field, indexName);
+        assert.strictEqual(indexes[indexName].name, indexName);
+        assert.strictEqual(indexes[indexName].field, indexName);
 
         done();
     });
@@ -141,9 +141,9 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0]._id, 8);
-                assert.equal(docs[0].name, 'Lawanda Guzman');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '8');
+                assert.strictEqual(docs[0].name, 'Lawanda Guzman');
             })
             .then(done, done);
     });
@@ -167,11 +167,11 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.equal(err.indexOf(constants.Errors.UnknownIndex), 0);
+                assert.strictEqual(err.indexOf(constants.Errors.UnknownIndex), 0);
 
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.equal(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
+                assert.strictEqual(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
             })
             .then(done, done);
     });
@@ -184,9 +184,9 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0]._id, 8);
-                assert.equal(docs[0].name, 'Lawanda Guzman');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '8');
+                assert.strictEqual(docs[0].name, 'Lawanda Guzman');
             })
             .then(done, done);
     });
@@ -212,7 +212,7 @@ describe('dfdb: Administration tools', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
@@ -250,9 +250,9 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0]._id, 8);
-                assert.equal(docs[0].name, 'Lawanda Guzman');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '8');
+                assert.strictEqual(docs[0].name, 'Lawanda Guzman');
             })
             .then(done, done);
     });
@@ -275,9 +275,6 @@ describe('dfdb: Administration tools', function () {
                 assert.isFalse(hasCollection);
 
                 collection = null;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -314,9 +311,9 @@ describe('dfdb: Administration tools', function () {
             .then(docs => {
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+                assert.strictEqual(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
 
-                assert.equal(docs.length, 0);
+                assert.strictEqual(docs.length, 0);
             })
             .then(done, done);
     });
@@ -359,7 +356,7 @@ describe('dfdb: Administration tools', function () {
             })
             .catch(err => {
                 assert.isNotNull(err);
-                assert.equal(err.indexOf(constants.Errors.DatabaseDoesntExist), 0);
+                assert.strictEqual(err.indexOf(constants.Errors.DatabaseDoesntExist), 0);
             })
             .then(done, done);
     });
@@ -379,7 +376,7 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.equal(err.indexOf(constants.Errors.DatabaseNotValid), 0);
+                assert.strictEqual(err.indexOf(constants.Errors.DatabaseNotValid), 0);
             })
             .then(done, done);
     });
@@ -399,7 +396,7 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.equal(err.indexOf(constants.Errors.DatabaseNotValid), 0);
+                assert.strictEqual(err.indexOf(constants.Errors.DatabaseNotValid), 0);
             })
             .then(done, done);
     });

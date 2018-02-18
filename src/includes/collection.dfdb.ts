@@ -5,6 +5,8 @@
 
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
+import * as md5 from 'md5';
+import * as Ajv from 'ajv';
 
 import { BasicConstants, Errors } from './constants.dfdb';
 import { IResource } from './interface.resource.dfdb';
@@ -46,11 +48,15 @@ export class Collection implements IResource {
     protected _indexes: { [name: string]: Index } = {};
     protected _lastError: string = null;
     protected _manifest: { [name: string]: any } = {
-        indexes: {}
+        indexes: {},
+        schema: null,
+        schemaMD5: null
     };
     protected _manifestPath: string = null;
     protected _name: string = null;
     protected _resourcePath: string = null;
+    protected _schemaApplier: any = null;
+    protected _schemaValidator: any = null;
     protected _sequence: Sequence = null;
     //
     // Constructor.
@@ -169,6 +175,10 @@ export class Collection implements IResource {
                         //
                         // At this point, this collection is considered connected.
                         this._connected = true;
+                        //
+                        // Loading schema validators if necessary.
+                        this.loadSchemaHandlers();
+
                         resolve();
                     })
                     .catch(reject);
@@ -435,6 +445,15 @@ export class Collection implements IResource {
         return typeof this._manifest.indexes[name] !== 'undefined';
     }
     /**
+     * Checks if this collection has a schema defined for its documents.
+     *
+     * @method hasSchema
+     * @returns {boolean} Returns TRUE when it has a schema defined.
+     */
+    public hasSchema(): boolean {
+        return this._manifest.schema !== null;
+    }
+    /**
      * List all indexes of this collection
      *
      * @method indexes
@@ -469,37 +488,56 @@ export class Collection implements IResource {
                 reject(this._lastError);
             } else {
                 //
-                // Skiping sequence physical update, this will be done
-                // automatically later.
-                this._sequence.skipSave();
-                //
-                // Getting a new and unique id.
-                const newID = this._sequence.next();
-                //
-                // Setting main internal value.
-                const newDate = new Date();
-                doc._id = newID;
-                doc._created = newDate;
-                doc._updated = newDate;
-                //
-                // Inserting document.
-                this._data[newID] = doc;
-                //
-                // Indexing document in all field indexes.
-                this.addDocToIndexes(doc)
-                    .then(() => {
+                // Should check the schema?
+                if (this.hasSchema()) {
+                    //
+                    // Is it valid?
+                    if (this._schemaValidator(doc)) {
                         //
-                        // Physically saving all changes.
-                        this.save()
-                            .then(() => {
-                                //
-                                // Finishing and returning document as it was
-                                // inserted.
-                                resolve(this._data[newID]);
-                            })
-                            .catch(reject);
-                    })
-                    .catch(reject);
+                        // Fixing default fields.
+                        this._schemaApplier(doc);
+                    } else {
+                        this._lastError = `${Errors.SchemaDoesntApply}. '\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`;
+                    }
+                }
+                //
+                // Did it fail validating the schema?
+                if (!this.error()) {
+                    //
+                    // Skiping sequence physical update, this will be done
+                    // automatically later.
+                    this._sequence.skipSave();
+                    //
+                    // Getting a new and unique id.
+                    const newID = this._sequence.next();
+                    //
+                    // Setting main internal value.
+                    const newDate = new Date();
+                    doc._id = newID;
+                    doc._created = newDate;
+                    doc._updated = newDate;
+                    //
+                    // Inserting document.
+                    this._data[newID] = doc;
+                    //
+                    // Indexing document in all field indexes.
+                    this.addDocToIndexes(doc)
+                        .then(() => {
+                            //
+                            // Physically saving all changes.
+                            this.save()
+                                .then(() => {
+                                    //
+                                    // Finishing and returning document as it was
+                                    // inserted.
+                                    resolve(this._data[newID]);
+                                })
+                                .catch(reject);
+                        })
+                        .catch(reject);
+                } else {
+                    reject(this.lastError());
+                }
             }
         });
     }
@@ -646,6 +684,58 @@ export class Collection implements IResource {
         });
     }
     /**
+     * This method removes a the assigned schema for document validaton on this
+     * collection.
+     *
+     * @method removeSchema
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    public removeSchema(): Promise<void> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
+            if (this._connected) {
+                //
+                // Does it have a schema?
+                if (this.hasSchema()) {
+                    //
+                    // Cleaning schema.
+                    this._manifest.schema = null;
+                    this._manifest.schemaMD5 = null;
+                    //
+                    // Cleaning internal schema validation objects.
+                    this._schemaValidator = null;
+                    this._schemaApplier = null;
+                    //
+                    // Saving changes.
+                    this.save()
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    resolve();
+                }
+            } else {
+                this._lastError = Errors.CollectionNotConnected;
+                reject(this.lastError());
+            }
+        });
+    }
+    /**
+     * Provides a copy of the assigned schema for document validaton.
+     *
+     * @method removeSchema
+     * @returns {any} Return a deep-copy of current collection's schema.
+     */
+    public schema(): any {
+        return Tools.DeepCopy(this._manifest.schema);
+    }
+    /**
      * This method searches for documents that match certain criteria. Conditions
      * may include indexed and unindexed fields.
      *
@@ -771,6 +861,69 @@ export class Collection implements IResource {
         });
     }
     /**
+     * Assignes or replaces the schema for document validaton on this collection.
+     *
+     * @method setSchema
+     * @param {any} schema Schema to be assigned.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    public setSchema(schema: any): Promise<void> {
+        //
+        // Restarting error messages.
+        this.resetError();
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Is it connected?
+            if (this._connected) {
+                const schemaAsString = JSON.stringify(schema);
+                const schemaMD5 = md5(schemaAsString);
+                //
+                // Is it a new one?
+                if (schemaMD5 !== this._manifest.schemaMD5) {
+                    //
+                    // Checking schema.
+                    let valid = false;
+                    let ajv = new Ajv();
+                    try {
+                        let validator = ajv.compile(schema);
+                        valid = true;
+                    } catch (e) {
+                        this._lastError = `${Errors.InvalidSchema}. '\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`;
+                    }
+                    //
+                    // Is it valid?
+                    if (valid) {
+                        //
+                        // Building a list of loading asynchronous operations to perform.
+                        let steps: CollectionStep[] = [];
+                        steps.push({ params: { schema, schemaMD5 }, stepFunction: (params: any) => this.applySchema(params) });
+                        steps.push({ params: {}, stepFunction: (params: any) => this.rebuildAllIndexes(params) });
+                        //
+                        // Loading everything.
+                        Collection.ProcessStepsSequence(steps)
+                            .then(() => {
+                                this.save()
+                                    .then(resolve)
+                                    .catch(reject);
+                            }).catch(reject);
+                    } else {
+                        reject(this._lastError);
+                    }
+                } else {
+                    //
+                    // If it's not a new one, nothing is done.
+                    resolve();
+                }
+            } else {
+                this._lastError = Errors.CollectionNotConnected;
+                reject(this._lastError);
+            }
+        });
+    }
+    /**
      * This method removes all data of this collection and also its indexes.
      *
      * @method truncate
@@ -839,39 +992,58 @@ export class Collection implements IResource {
                 reject(this._lastError);
             } else {
                 //
-                // Known document shortcut.
-                const currentDoc = this._data[id];
-                //
-                // Setting main internal value.
-                doc._id = currentDoc._id;
-                doc._created = currentDoc._created;
-                doc._updated = new Date();
-                //
-                // Updating document.
-                this._data[id] = doc;
-                //
-                // Removing document from all field indexes because it may be
-                // outdated.
-                this.removeDocFromIndexes(id)
-                    .then(() => {
+                // Should check the schema?
+                if (this.hasSchema()) {
+                    //
+                    // Is it valid?
+                    if (this._schemaValidator(doc)) {
                         //
-                        // Reading document to all field indexes.
-                        this.addDocToIndexes(doc).
-                            then(() => {
-                                //
-                                // Physically saving all changes.
-                                this.save()
-                                    .then(() => {
-                                        //
-                                        // Finishing and returning document as it
-                                        // was updated.
-                                        resolve(this._data[id]);
-                                    })
-                                    .catch(reject);
-                            })
-                            .catch(reject);
-                    })
-                    .catch(reject);
+                        // Fixing default fields.
+                        this._schemaApplier(doc);
+                    } else {
+                        this._lastError = `${Errors.SchemaDoesntApply}. '\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`;
+                    }
+                }
+                //
+                // Did it fail validating the schema?
+                if (!this.error()) {
+                    //
+                    // Known document shortcut.
+                    const currentDoc = this._data[id];
+                    //
+                    // Setting main internal value.
+                    doc._id = currentDoc._id;
+                    doc._created = currentDoc._created;
+                    doc._updated = new Date();
+                    //
+                    // Updating document.
+                    this._data[id] = doc;
+                    //
+                    // Removing document from all field indexes because it may be
+                    // outdated.
+                    this.removeDocFromIndexes(id)
+                        .then(() => {
+                            //
+                            // Reading document to all field indexes.
+                            this.addDocToIndexes(doc).
+                                then(() => {
+                                    //
+                                    // Physically saving all changes.
+                                    this.save()
+                                        .then(() => {
+                                            //
+                                            // Finishing and returning document as it
+                                            // was updated.
+                                            resolve(this._data[id]);
+                                        })
+                                        .catch(reject);
+                                })
+                                .catch(reject);
+                        })
+                        .catch(reject);
+                } else {
+                    reject(this.lastError());
+                }
             }
         });
     }
@@ -930,6 +1102,59 @@ export class Collection implements IResource {
             Collection.ProcessStepsSequence(steps)
                 .then(resolve)
                 .catch(reject);
+        });
+    }
+    /**
+     * This method validates and replaces this collection's schema for document
+     * validation.
+     *
+     * @protected
+     * @method applySchema
+     * @param {{ [name: string]: any }} params List of required parameters to
+     * perform this operation ('schema', 'schemaMD5').
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected applySchema(params: { [name: string]: any }): Promise<void> {
+        //
+        // Parsing parameters.
+        const { schema, schemaMD5 } = params;
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // Creating a few temporary validators.
+            let auxAjv = new Ajv();
+            let validator = auxAjv.compile(schema);
+            //
+            // Checking current data against schema.
+            Object.keys(this._data).forEach((id: string) => {
+                if (!this.error()) {
+                    if (!validator(this._data[id])) {
+                        this._lastError = `${Errors.SchemaDoesntApply}. Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`;
+                    }
+                }
+            });
+            //
+            // Can it be applied.
+            if (!this.error()) {
+                //
+                // Updating manifest.
+                this._manifest.schema = schema;
+                this._manifest.schemaMD5 = schemaMD5;
+                //
+                // Reloading schema validators.
+                this.loadSchemaHandlers();
+                //
+                // Fixing current data using the new schema.
+                Object.keys(this._data).forEach((id: string) => {
+                    this._schemaApplier(this._data[id]);
+                });
+
+                resolve();
+            } else {
+                reject(this._lastError);
+            }
         });
     }
     /**
@@ -1297,6 +1522,11 @@ export class Collection implements IResource {
                         //
                         // Parsing information:
                         this._manifest = JSON.parse(results.data);
+                        //
+                        // Fixing manifest in case it's outdated or broken.
+                        this._manifest.schema = typeof this._manifest.schema === 'undefined' ? null : this._manifest.schema;
+                        this._manifest.schemaMD5 = typeof this._manifest.schemaMD5 === 'undefined' ? null : this._manifest.schemaMD5;
+
                         resolve();
                     }
                 })
@@ -1362,6 +1592,28 @@ export class Collection implements IResource {
         });
     }
     /**
+     * This method loads internal schema validation objects.
+     *
+     * @protected
+     * @method loadSchemaHandlers
+     */
+    protected loadSchemaHandlers(): void {
+        //
+        // Is it connected and does it have a schema?
+        if (this._connected && this.hasSchema()) {
+            //
+            // Creating a simple validator.
+            let auxAjv = new Ajv();
+            this._schemaValidator = auxAjv.compile(this._manifest.schema);
+            //
+            // Creating a validator to add default values.
+            auxAjv = new Ajv({
+                useDefaults: true
+            });
+            this._schemaApplier = auxAjv.compile(this._manifest.schema);
+        }
+    }
+    /**
      * This method loads the associated collection sequence.
      *
      * @protected
@@ -1381,6 +1633,38 @@ export class Collection implements IResource {
             //
             // Connection sequence object with physical information.
             this._sequence.connect()
+                .then(resolve)
+                .catch(reject);
+        });
+    }
+    /**
+     * This method removes a document from a specific index.
+     *
+     * @protected
+     * @method rebuildAllIndexes
+     * @param {any} params This parameter is provided for compatibility, but it's
+     * not used.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    protected rebuildAllIndexes(params: any): Promise<void> {
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+            //
+            // List of operations.
+            let steps: any[] = [];
+            //
+            // Generating a step for each field index.
+            Object.keys(this._indexes).forEach(name => {
+                steps.push({
+                    params: name,
+                    stepFunction: (params: any) => this.rebuildFieldIndex(params)
+                });
+            });
+            //
+            // Closing.
+            Collection.ProcessStepsSequence(steps)
                 .then(resolve)
                 .catch(reject);
         });

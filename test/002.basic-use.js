@@ -28,7 +28,7 @@ describe('dfdb: Basic use', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
@@ -148,7 +148,7 @@ describe('dfdb: Basic use', function () {
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
                 assert.isString(collection.lastError());
-                assert.equal(collection.lastError(), '[E-0002] The requested document does not exist');
+                assert.strictEqual(collection.lastError(), '[E-0002] The requested document does not exist');
             })
             .then(done, done);
     });

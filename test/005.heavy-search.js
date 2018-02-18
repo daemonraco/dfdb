@@ -29,14 +29,11 @@ describe('dfdb: Heavy search', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
                 connection = db;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -53,9 +50,6 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(col.error());
 
                 collection = col;
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });
@@ -97,9 +91,6 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
             })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
-            })
             .then(done, done);
     });
 
@@ -113,13 +104,11 @@ describe('dfdb: Heavy search', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '7');
+            assert.strictEqual(docs[0].name, 'Lakisha Puckett');
+            assert.strictEqual(docs[0].company, 'ISOPLEX');
+            assert.strictEqual(docs[0].email, 'lakishapuckett@isoplex.com');
         }).then(done, done);
     });
 
@@ -133,13 +122,11 @@ describe('dfdb: Heavy search', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '7');
+            assert.strictEqual(docs[0].name, 'Lakisha Puckett');
+            assert.strictEqual(docs[0].company, 'ISOPLEX');
+            assert.strictEqual(docs[0].email, 'lakishapuckett@isoplex.com');
         }).then(done, done);
     });
 
@@ -152,13 +139,11 @@ describe('dfdb: Heavy search', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
-            assert.equal(docs[0].company, 'ISOPLEX');
-            assert.equal(docs[0].email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '7');
+            assert.strictEqual(docs[0].name, 'Lakisha Puckett');
+            assert.strictEqual(docs[0].company, 'ISOPLEX');
+            assert.strictEqual(docs[0].email, 'lakishapuckett@isoplex.com');
         }).then(done, done);
     });
 
@@ -171,12 +156,10 @@ describe('dfdb: Heavy search', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(doc._id, 7);
-            assert.equal(doc.name, 'Lakisha Puckett');
-            assert.equal(doc.company, 'ISOPLEX');
-            assert.equal(doc.email, 'lakishapuckett@isoplex.com');
-        }).catch(err => {
-            assert.isTrue(false, `a rejection was not expected at this point.`);
+            assert.strictEqual(doc._id, '7');
+            assert.strictEqual(doc.name, 'Lakisha Puckett');
+            assert.strictEqual(doc.company, 'ISOPLEX');
+            assert.strictEqual(doc.email, 'lakishapuckett@isoplex.com');
         }).then(done, done);
     });
 
@@ -188,9 +171,6 @@ describe('dfdb: Heavy search', function () {
                 assert.isFalse(connection.connected());
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
-            })
-            .catch(err => {
-                assert.isTrue(false, `a rejection was not expected at this point.`);
             })
             .then(done, done);
     });

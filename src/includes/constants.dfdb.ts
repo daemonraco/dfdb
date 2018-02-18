@@ -62,6 +62,8 @@ export class Errors {
     public static readonly DatabaseNotValid: string = `[E-0010] Requested database is not valid`;
     public static readonly UnknownIndex: string = `[E-0011] Requested index is not present on current collection`;
     public static readonly DatabaseNotConnected: string = '[E-0012] Database not connected';
+    public static readonly SchemaDoesntApply: string = `[E-0013] Document doesn't follow the given schema`;
+    public static readonly InvalidSchema: string = `[E-0014] Given schema is not valid`;
 
     private constructor() { }
 }
