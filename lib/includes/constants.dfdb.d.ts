@@ -55,5 +55,7 @@ export declare class Errors {
     static readonly DatabaseNotValid: string;
     static readonly UnknownIndex: string;
     static readonly DatabaseNotConnected: string;
+    static readonly SchemaDoesntApply: string;
+    static readonly InvalidSchema: string;
     private constructor();
 }

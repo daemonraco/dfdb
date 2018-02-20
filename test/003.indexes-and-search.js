@@ -29,7 +29,7 @@ describe('dfdb: Indexes and Searches', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
@@ -108,11 +108,11 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.equal(err.indexOf(constants.Errors.DuplicatedIndex), 0);
+                assert.strictEqual(err.indexOf(constants.Errors.DuplicatedIndex), 0);
 
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.equal(collection.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
+                assert.strictEqual(collection.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
             })
             .then(done, done);
     });
@@ -174,7 +174,7 @@ describe('dfdb: Indexes and Searches', function () {
             .then(docs => {
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.equal(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+                assert.strictEqual(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
             })
             .then(done, done);
     });
@@ -187,9 +187,9 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0]._id, 102);
-                assert.equal(docs[0].name, 'Kristine Perry');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '102');
+                assert.strictEqual(docs[0].name, 'Kristine Perry');
             })
             .then(done, done);
     });
@@ -202,9 +202,9 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 1);
-                assert.equal(docs[0]._id, 6);
-                assert.equal(docs[0].name, 'Lola Parks');
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '6');
+                assert.strictEqual(docs[0].name, 'Lola Parks');
             })
             .then(done, done);
     });
@@ -217,13 +217,13 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 2);
+                assert.strictEqual(docs.length, 2);
 
-                assert.equal(docs[0]._id, 7);
-                assert.equal(docs[0].name, 'Lakisha Puckett');
+                assert.strictEqual(docs[0]._id, '7');
+                assert.strictEqual(docs[0].name, 'Lakisha Puckett');
 
-                assert.equal(docs[1]._id, 147);
-                assert.equal(docs[1].name, 'Ann Mayo');
+                assert.strictEqual(docs[1]._id, '147');
+                assert.strictEqual(docs[1].name, 'Ann Mayo');
             })
             .then(done, done);
     });
@@ -236,7 +236,7 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.equal(docs.length, 0);
+                assert.strictEqual(docs.length, 0);
             })
             .then(done, done);
     });
@@ -250,8 +250,8 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isNull(collection.lastError());
 
                 assert.isNotNull(doc.length);
-                assert.equal(doc._id, 10);
-                assert.equal(doc.name, 'Blanchard Chen');
+                assert.strictEqual(doc._id, '10');
+                assert.strictEqual(doc.name, 'Blanchard Chen');
             })
             .then(done, done);
     });
@@ -266,9 +266,9 @@ describe('dfdb: Indexes and Searches', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 7);
-            assert.equal(docs[0].name, 'Lakisha Puckett');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '7');
+            assert.strictEqual(docs[0].name, 'Lakisha Puckett');
         }).then(done, done);
     });
 

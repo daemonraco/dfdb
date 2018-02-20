@@ -51,7 +51,7 @@ describe('dfdb: Require', function () {
         const resutls = Tools.DeepMergeObjects(left, right);
 
         assert.isArray(resutls);
-        assert.equal(resutls.length, 8);
+        assert.strictEqual(resutls.length, 8);
 
         assert.strictEqual(resutls[0], 1);
         assert.strictEqual(resutls[1], 10);
@@ -73,7 +73,7 @@ describe('dfdb: Require', function () {
         const right = [2, 40, 50.5, ' 60 '];
         const resutls = Tools.DeepMergeObjects(left, right);
 
-        assert.equal(Object.keys(resutls).length, 4);
+        assert.strictEqual(Object.keys(resutls).length, 4);
 
         assert.property(resutls, '1');
         assert.property(resutls, 'a');
@@ -97,7 +97,7 @@ describe('dfdb: Require', function () {
         const resutls = Tools.DeepMergeObjects(left, right);
 
         assert.isArray(resutls, 4);
-        assert.equal(resutls.length, 4);
+        assert.strictEqual(resutls.length, 4);
 
         assert.strictEqual(resutls[0], 1);
         assert.strictEqual(resutls[1], 10);
@@ -173,7 +173,7 @@ describe('dfdb: Require', function () {
         assert.strictEqual(resutls.aa.y.beta, '333');
         assert.strictEqual(resutls.aa.y.delta, 444.4);
 
-        assert.equal(resutls.aa.z.length, 3);
+        assert.strictEqual(resutls.aa.z.length, 3);
 
         assert.strictEqual(resutls.aa.z[0], 55);
         assert.strictEqual(resutls.aa.z[1], 66.6);
@@ -211,7 +211,7 @@ describe('dfdb: Require', function () {
             assert.strictEqual(copy.aa.y.alfa, 111);
             assert.strictEqual(copy.aa.y.beta, '222');
 
-            assert.equal(copy.aa.z.length, 2);
+            assert.strictEqual(copy.aa.z.length, 2);
 
             assert.strictEqual(copy.aa.z[0], 55);
             assert.strictEqual(copy.aa.z[1], 66.6);

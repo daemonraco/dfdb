@@ -29,7 +29,7 @@ describe('dfdb: Indexing fields that are lists', function () {
             .then(db => {
                 assert.instanceOf(db, types.Connection);
                 assert.typeOf(db.connected, 'function');
-                assert.equal(db.connected(), true);
+                assert.strictEqual(db.connected(), true);
 
                 assert.isFalse(db.error());
 
@@ -99,11 +99,11 @@ describe('dfdb: Indexing fields that are lists', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 46);
-            assert.equal(docs[0].name, 'Bruce Lott');
-            assert.equal(docs[0].company, 'IMMUNICS');
-            assert.equal(docs[0].email, 'brucelott@immunics.com');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '46');
+            assert.strictEqual(docs[0].name, 'Bruce Lott');
+            assert.strictEqual(docs[0].company, 'IMMUNICS');
+            assert.strictEqual(docs[0].email, 'brucelott@immunics.com');
             assert.notEqual(docs[0].tags.indexOf('some-unique-tag-string'), -1);
         }).then(done, done);
     });
@@ -117,11 +117,11 @@ describe('dfdb: Indexing fields that are lists', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 81);
-            assert.equal(docs[0].name, 'Lorna Martin');
-            assert.equal(docs[0].company, 'CINASTER');
-            assert.equal(docs[0].email, 'lornamartin@cinaster.com');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '81');
+            assert.strictEqual(docs[0].name, 'Lorna Martin');
+            assert.strictEqual(docs[0].company, 'CINASTER');
+            assert.strictEqual(docs[0].email, 'lornamartin@cinaster.com');
             assert.notEqual(docs[0].tags.indexOf(123456), -1);
         }).then(done, done);
     });
@@ -135,11 +135,11 @@ describe('dfdb: Indexing fields that are lists', function () {
             assert.isFalse(collection.error());
             assert.isNull(collection.lastError());
 
-            assert.equal(docs.length, 1);
-            assert.equal(docs[0]._id, 30);
-            assert.equal(docs[0].name, 'Sawyer Weiss');
-            assert.equal(docs[0].company, 'DELPHIDE');
-            assert.equal(docs[0].email, 'sawyerweiss@delphide.com');
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0]._id, '30');
+            assert.strictEqual(docs[0].name, 'Sawyer Weiss');
+            assert.strictEqual(docs[0].company, 'DELPHIDE');
+            assert.strictEqual(docs[0].email, 'sawyerweiss@delphide.com');
             assert.notEqual(docs[0].tags.indexOf(10.37), -1);
         }).then(done, done);
     });
