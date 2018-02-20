@@ -9,6 +9,25 @@ __Warning__: This module is not intended for heavy usage, but rather a simple
 solution for quick application in which you need a noSQL database, but you don't
 want use a complete solution like MongoDB or others like it.
 
+# Contents
+<!-- TOC updateOnSave:true -->
+
+- [DocsOnFileDB](#docsonfiledb)
+- [Contents](#contents)
+- [Installation](#installation)
+- [How to use](#how-to-use)
+    - [Connection](#connection)
+    - [Collection](#collection)
+    - [Insert a document](#insert-a-document)
+    - [Update a document](#update-a-document)
+    - [Remove document](#remove-document)
+    - [Adding a field index](#adding-a-field-index)
+    - [Search](#search)
+- [More documentation](#more-documentation)
+- [Licence](#licence)
+
+<!-- /TOC -->
+
 # Installation
 To install this module you may run:
 ```
@@ -114,6 +133,12 @@ myCollection.searchOne({ name: 'Jane Doe' }).then(doc => {
 When searching for mixed index and unindexed fields, __DocsOnFileDB__ will first
 look for documents that match indexed field conditions, and then filter by
 unindexed conditions.
+
+# More documentation
+Here's some other documentation you may want to visit:
+* [Manager](docs/manager.md)
+* [Connections](docs/connections.md)
+* [Collections](docs/collections.md)
 
 # Licence
 MIT &copy; 2018 [Alejandro Dario Simi](http://daemonraco.com)
