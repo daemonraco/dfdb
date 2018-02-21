@@ -168,6 +168,19 @@ myCollection.findOne({
 
 Remember that using `find()` and `findOne()` with unindexed fields, this will cause a promise rejection.
 
+And if you want, you may use deep-fields:
+```js
+collection.find({ 'address.street': 'Lawrence Street' })
+    .then(docs => {
+        console.log(`Found documents: ${docs.length}`);
+        console.log(`Findings:`);
+        console.log(JSON.stringify(docs, null, 2));
+    })
+    .catch(err => {
+        console.err(`There was an error. ${err}`);
+    });
+```
+
 # Indexes
 ## Checking a field index
 ```js
@@ -189,6 +202,18 @@ myCollection.addFieldIndex('age')
         console.err(`There was an error. ${err}`);
     });
 ```
+
+If you want to index a deep-field, you can do this:
+```js
+myCollection.addFieldIndex('address.street')
+    .then(() => {
+        console.log('Index added.');
+    })
+    .catch(err => {
+        console.err(`There was an error. ${err}`);
+    });
+```
+
 __Note__: This usually takes a moment because it auto index current documents.
 
 ## Removing a field's index

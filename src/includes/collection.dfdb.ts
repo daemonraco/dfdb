@@ -7,6 +7,7 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 import * as md5 from 'md5';
 import * as Ajv from 'ajv';
+import * as jsonpath from 'jsonpath-plus';
 
 import { BasicConstants, Errors } from './constants.dfdb';
 import { IResource } from './interface.resource.dfdb';
@@ -771,7 +772,7 @@ export class Collection implements IResource {
                 //
                 // Conditions sanitization. Values should be search un lower case
                 // format.
-                unindexedConditionsKeys.forEach((key: string) => unindexedConditions[key] = unindexedConditions[key].toLowerCase());
+                unindexedConditionsKeys.forEach((key: string) => unindexedConditions[key] = `${unindexedConditions[key]}`.toLowerCase());
                 //
                 // Returning documents that match unindexed conditions.
                 resolve(findings.filter((datum: any) => {
@@ -780,16 +781,19 @@ export class Collection implements IResource {
                     // Checking each conditions.
                     unindexedConditionsKeys.forEach((key: string) => {
                         //
+                        // Parsing object for the right field.
+                        const jsonPathValues = jsonpath({ json: datum, path: `\$.${key}` });
+                        //
                         // Does current document have the field being checked. If
                         // not, it's filtered out.
-                        if (typeof datum[key] === 'undefined') {
-                            accept = false;
-                        } else {
+                        if (typeof jsonPathValues[0] !== 'undefined') {
                             //
                             // Does it match?
-                            if (`${datum[key]}`.toLowerCase().indexOf(unindexedConditions[key]) < 0) {
+                            if (`${jsonPathValues[0]}`.toLowerCase().indexOf(unindexedConditions[key]) < 0) {
                                 accept = false;
                             }
+                        } else {
+                            accept = false;
                         }
                     });
 
