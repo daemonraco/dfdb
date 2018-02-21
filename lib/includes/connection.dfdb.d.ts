@@ -159,6 +159,13 @@ export declare class Connection implements IResource {
      */
     removeFile(zPath: string): Promise<ConnectionSavingQueueResult>;
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this connection.
+     */
+    toString: () => string;
+    /**
      * This method centralizes all calls to update contents of a file inside the
      * database zip file.
      *

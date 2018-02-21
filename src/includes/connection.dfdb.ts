@@ -424,6 +424,15 @@ export class Connection implements IResource {
         });
     }
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this connection.
+     */
+    public toString = (): string => {
+        return `connection:${this._dbName}[${this._dbPath}]`;
+    }
+    /**
      * This method centralizes all calls to update contents of a file inside the
      * database zip file.
      *

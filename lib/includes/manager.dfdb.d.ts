@@ -49,6 +49,13 @@ export declare class DocsOnFileDB {
      */
     forgetConnection(dbname: string, dbpath: string): boolean;
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this manager.
+     */
+    toString: () => string;
+    /**
      * This class method provides access to this manager's single instance.
      *
      * @static

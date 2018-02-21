@@ -1,0 +1,42 @@
+GENERATOR:
+    https://www.json-generator.com/
+
+DATASET: 001 & 002
+    [
+      '{{repeat(100)}}',
+      {
+        isActive: '{{bool()}}',
+        age: '{{integer(20, 40)}}',
+        name: '{{firstName()}} {{surname()}}',
+        gender: '{{gender()}}',
+        company: '{{company().toUpperCase()}}',
+        email: '{{email()}}',
+        about: '{{lorem(1, "paragraphs")}}',
+        tags: [
+          '{{repeat(7)}}',
+          '{{lorem(1, "words")}}'
+        ]
+      }
+    ]
+
+DATASET: 003
+    [
+      '{{repeat(100)}}',
+      {
+        isActive: '{{bool()}}',
+        age: '{{integer(20, 40)}}',
+        name: '{{firstName()}} {{surname()}}',
+        gender: '{{gender()}}',
+        company: '{{company().toUpperCase()}}',
+        email: '{{email()}}',
+        about: '{{lorem(1, "paragraphs")}}',
+        address: {
+          street: '{{street()}}',
+          number: '{{integer(100, 999)}}'
+        },
+        tags: [
+          '{{repeat(7)}}',
+          '{{lorem(1, "words")}}'
+        ]
+      }
+    ]

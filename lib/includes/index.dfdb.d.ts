@@ -110,6 +110,13 @@ export declare class Index implements IResource, IDelayedResource {
      */
     skipSave(): void;
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this index.
+     */
+    toString: () => string;
+    /**
      * This method removes all data of this index.
      *
      * @method truncate

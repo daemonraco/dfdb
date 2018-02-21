@@ -5,6 +5,7 @@
 
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
+import * as jsonpath from 'jsonpath-plus';
 
 import { Errors } from './constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
@@ -85,14 +86,17 @@ export class Index implements IResource, IDelayedResource {
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
             //
+            // Parsing object for the right field.
+            const jsonPathValues = jsonpath({ json: doc, path: `\$.${this._field}` });
+            //
             // Is it connected and is it the required field present?
-            if (this._connected && typeof doc[this._field] !== 'undefined') {
+            if (this._connected && typeof jsonPathValues[0] !== 'undefined') {
                 //
                 // If it's an array, each element should be indexes separately.
-                if (Array.isArray(doc[this._field])) {
+                if (Array.isArray(jsonPathValues[0])) {
                     //
                     // Indexing each value.
-                    doc[this._field].forEach((value: any) => {
+                    jsonPathValues[0].forEach((value: any) => {
                         if (typeof value !== 'object') {
                             addValue(value);
                         }
@@ -102,7 +106,7 @@ export class Index implements IResource, IDelayedResource {
                     this.save()
                         .then(resolve)
                         .catch(reject);
-                } else if (typeof doc[this._field] === 'object' && doc[this._field] !== null) {
+                } else if (typeof jsonPathValues[0] === 'object' && jsonPathValues[0] !== null) {
                     //
                     // At this point, if the value is an object, it cannot be
                     // indexed and should be treated as an error.
@@ -111,7 +115,7 @@ export class Index implements IResource, IDelayedResource {
                 } else {
                     //
                     // Indexing field's value.
-                    addValue(doc[this._field]);
+                    addValue(jsonPathValues[0]);
                     //
                     // Saving data on file.
                     this.save()
@@ -375,6 +379,15 @@ export class Index implements IResource, IDelayedResource {
      */
     public skipSave(): void {
         this._skipSave = true;
+    }
+    /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this index.
+     */
+    public toString = (): string => {
+        return `index:${this._field}`;
     }
     /**
      * This method removes all data of this index.

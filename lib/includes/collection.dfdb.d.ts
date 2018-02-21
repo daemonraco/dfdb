@@ -267,6 +267,13 @@ export declare class Collection implements IResource {
      */
     setSchema(schema: any): Promise<void>;
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this collection.
+     */
+    toString: () => string;
+    /**
      * This method removes all data of this collection and also its indexes.
      *
      * @method truncate
