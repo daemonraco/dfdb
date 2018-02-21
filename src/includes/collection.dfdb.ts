@@ -924,6 +924,15 @@ export class Collection implements IResource {
         });
     }
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this collection.
+     */
+    public toString = (): string => {
+        return `collection:${this.name()}`;
+    }
+    /**
      * This method removes all data of this collection and also its indexes.
      *
      * @method truncate

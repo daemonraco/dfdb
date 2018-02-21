@@ -84,6 +84,13 @@ export declare class Sequence implements IResource, IDelayedResource {
      */
     skipSave(): void;
     /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this sequence.
+     */
+    toString: () => string;
+    /**
      * This method cleans up current error messages.
      *
      * @protected

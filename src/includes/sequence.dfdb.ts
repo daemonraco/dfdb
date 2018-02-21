@@ -230,6 +230,15 @@ export class Sequence implements IResource, IDelayedResource {
     public skipSave(): void {
         this._skipSave = true;
     }
+    /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this sequence.
+     */
+    public toString = (): string => {
+        return `sequence:${this._name}`;
+    }
     //
     // Protected methods.
     /**
