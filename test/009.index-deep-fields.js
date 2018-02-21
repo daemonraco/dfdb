@@ -94,6 +94,29 @@ describe('dfdb: Indexing deep-fields', function () {
             }).then(done, done);
     });
 
+    it(`checking index for field 'address.street'`, () => {
+        assert.typeOf(collection.hasIndex, 'function');
+        assert.typeOf(collection.indexes, 'function');
+
+        const indexName = 'address.street';
+        const indexes = collection.indexes();
+
+        assert.isTrue(collection.hasIndex(indexName));
+
+        assert.isObject(indexes);
+        assert.property(indexes, indexName);
+        assert.typeOf(indexes[indexName], 'object');
+
+        assert.property(indexes[indexName], 'name');
+        assert.property(indexes[indexName], 'field');
+
+        assert.typeOf(indexes[indexName].name, 'string');
+        assert.typeOf(indexes[indexName].field, 'string');
+
+        assert.strictEqual(indexes[indexName].name, indexName);
+        assert.strictEqual(indexes[indexName].field, indexName);
+    });
+
     it(`searches for an indexed string on field 'address.street'`, done => {
         assert.typeOf(collection.search, 'function');
 
@@ -120,7 +143,28 @@ describe('dfdb: Indexing deep-fields', function () {
             assert.isObject(docs[1].address);
             assert.strictEqual(docs[1].address.street, 'Lawrence Street');
             assert.strictEqual(docs[1].address.number, 913);
+        }).then(done, done);
+    });
 
+    it(`searches for indexed and unindexed deep-fields`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({
+            'address.street': 'Lawrence Street',
+            'address.number': 913
+        }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 1);
+
+            assert.strictEqual(docs[0]._id, '28');
+            assert.strictEqual(docs[0].name, 'Christina Ewing');
+            assert.strictEqual(docs[0].company, 'MICROLUXE');
+            assert.strictEqual(docs[0].email, 'christinaewing@microluxe.com');
+            assert.isObject(docs[0].address);
+            assert.strictEqual(docs[0].address.street, 'Lawrence Street');
+            assert.strictEqual(docs[0].address.number, 913);
         }).then(done, done);
     });
 
