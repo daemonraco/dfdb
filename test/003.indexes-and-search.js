@@ -17,6 +17,7 @@ describe('dfdb: Indexes and Searches', function () {
     this.timeout(6000);
 
     const { constants, DocsOnFileDB, types } = require('..');
+    const { RejectionCodes } = constants;
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -108,11 +109,12 @@ describe('dfdb: Indexes and Searches', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.strictEqual(err.indexOf(constants.Errors.DuplicatedIndex), 0);
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.DuplicatedIndex, true);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
 
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.strictEqual(collection.lastError().indexOf(constants.Errors.DuplicatedIndex), 0);
+                assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });
@@ -172,9 +174,11 @@ describe('dfdb: Indexes and Searches', function () {
 
         collection.find({ name: 'something' })
             .then(docs => {
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.NotIndexedField, true);
+
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.strictEqual(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+                assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });

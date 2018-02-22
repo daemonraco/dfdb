@@ -3,9 +3,10 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { Collection } from './collection.dfdb';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Collection } from './collection.dfdb';
+import { Rejection } from './rejection.dfdb';
 /**
  * This class represents a document's field index associated to a collection.
  *
@@ -19,6 +20,7 @@ export declare class Index implements IResource, IDelayedResource {
     };
     protected _field: string;
     protected _lastError: string;
+    protected _lastRejection: Rejection;
     protected _resourcePath: string;
     protected _skipSave: boolean;
     protected _collection: Collection;
@@ -140,4 +142,12 @@ export declare class Index implements IResource, IDelayedResource {
      * operation finishes.
      */
     protected save(): Promise<void>;
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void;
 }

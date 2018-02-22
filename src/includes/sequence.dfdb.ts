@@ -6,9 +6,11 @@
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 
+import { Collection } from './collection.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Collection } from './collection.dfdb';
+import { Rejection } from './rejection.dfdb';
+import { RejectionCodes } from './rejection-codes.dfdb';
 
 /**
  * This class represents a sequence of ids associated to a collection.
@@ -21,6 +23,7 @@ export class Sequence implements IResource, IDelayedResource {
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _lastError: string = null;
+    protected _lastRejection: Rejection = null;
     protected _name: string = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
@@ -61,7 +64,7 @@ export class Sequence implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (!this._connected) {
@@ -118,7 +121,7 @@ export class Sequence implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -157,7 +160,7 @@ export class Sequence implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -249,6 +252,7 @@ export class Sequence implements IResource, IDelayedResource {
      */
     protected resetError(): void {
         this._lastError = null;
+        this._lastRejection = null;
     }
     /**
      * This method triggers the physical saving of this sequence file.
@@ -261,7 +265,7 @@ export class Sequence implements IResource, IDelayedResource {
     protected save(): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Saving file.
             this._connection.updateFile(this._resourcePath, `${this._value}`, this._skipSave)
@@ -274,5 +278,16 @@ export class Sequence implements IResource, IDelayedResource {
                 })
                 .catch(reject);
         });
+    }
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void {
+        this._lastError = `${rejection}`;
+        this._lastRejection = rejection;
     }
 }

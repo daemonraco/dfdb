@@ -7,8 +7,10 @@ import { Promise } from 'es6-promise';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Connection, ConnectionDBValidationResult } from './connection.dfdb';
 import { BasicConstants } from './constants.dfdb';
+import { Connection, ConnectionDBValidationResult } from './connection.dfdb';
+import { Rejection } from './rejection.dfdb';
+import { RejectionCodes } from './rejection-codes.dfdb';
 
 /**
  * Central manager for all connection.
@@ -49,7 +51,7 @@ export class DocsOnFileDB {
         }
         //
         // Building promise to return.
-        return new Promise<Connection>((resolve: (conn: Connection) => void, reject: (err: string) => void) => {
+        return new Promise<Connection>((resolve: (conn: Connection) => void, reject: (err: Rejection) => void) => {
             //
             // Getting a key to identify the requested connection.
             const key = DocsOnFileDB.BuildKey(dbpath, dbname);
@@ -85,7 +87,7 @@ export class DocsOnFileDB {
     public dropDatabase(dbname: string, dbpath: string): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             let validation: any = null;
             let errors: string = null;
             //
@@ -114,7 +116,7 @@ export class DocsOnFileDB {
                         // Resolving promise.
                         resolve();
                     } else {
-                        reject(results.error);
+                        reject(new Rejection(results.errorCode, results));
                     }
                 })
                 .catch(reject);
