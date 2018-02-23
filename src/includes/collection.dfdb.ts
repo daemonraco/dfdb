@@ -9,10 +9,12 @@ import * as md5 from 'md5';
 import * as Ajv from 'ajv';
 import * as jsonpath from 'jsonpath-plus';
 
-import { BasicConstants, Errors } from './constants.dfdb';
+import { BasicConstants } from './constants.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { Index } from './index.dfdb';
+import { Rejection } from './rejection.dfdb';
+import { RejectionCodes } from './rejection-codes.dfdb';
 import { Sequence } from './sequence.dfdb';
 import { Tools } from './tools.dfdb';
 
@@ -48,6 +50,7 @@ export class Collection implements IResource {
     protected _data: { [name: string]: any } = {};
     protected _indexes: { [name: string]: Index } = {};
     protected _lastError: string = null;
+    protected _lastRejection: Rejection = null;
     protected _manifest: { [name: string]: any } = {
         indexes: {},
         schema: null,
@@ -93,7 +96,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected and is it a new index?
             if (this._connected && typeof this._indexes[name] === 'undefined') {
@@ -134,11 +137,11 @@ export class Collection implements IResource {
                     })
                     .catch(reject);
             } else if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else {
-                this._lastError = `${Errors.DuplicatedIndex}. Index: '${name}'`;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DuplicatedIndex, { index: name }));
+                reject(this._lastRejection);
             }
         });
     }
@@ -158,7 +161,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it already connected?
             if (!this._connected) {
@@ -204,7 +207,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -216,7 +219,7 @@ export class Collection implements IResource {
                 steps.push({
                     params: {},
                     stepFunction: (params: any) => {
-                        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+                        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
                             //
                             // Skipping physical save, that will be dealt with later.
                             this._sequence.skipSave();
@@ -279,7 +282,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -329,7 +332,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected and does it have the requested index?
             if (this._connected && typeof this._indexes[name] !== 'undefined') {
@@ -388,7 +391,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: string) => void) => {
+        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: Rejection) => void) => {
             //
             // Initializing an empty list of findings.
             const findings: any[] = [];
@@ -419,7 +422,7 @@ export class Collection implements IResource {
     public findOne(conditions: any): Promise<any> {
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
             //
             // Forwading search.
             this.find(conditions)
@@ -477,16 +480,16 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<{ [name: string]: any }>((resolve: (res: { [name: string]: any }) => void, reject: (err: string) => void) => {
+        return new Promise<{ [name: string]: any }>((resolve: (res: { [name: string]: any }) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
             //  and is it connected?
             if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this._lastError = Errors.DocIsNotObject;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._lastRejection);
             } else if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else {
                 //
                 // Should check the schema?
@@ -498,7 +501,7 @@ export class Collection implements IResource {
                         // Fixing default fields.
                         this._schemaApplier(doc);
                     } else {
-                        this._lastError = `${Errors.SchemaDoesntApply}. '\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`;
+                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`));
                     }
                 }
                 //
@@ -537,7 +540,7 @@ export class Collection implements IResource {
                         })
                         .catch(reject);
                 } else {
-                    reject(this.lastError());
+                    reject(this._lastRejection);
                 }
             }
         });
@@ -578,20 +581,20 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
             //      Is it a known document?
             //          Is it connected?
             if (typeof partialDoc !== 'object' || Array.isArray(partialDoc)) {
-                this._lastError = Errors.DocIsNotObject;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._lastRejection);
             } else if (typeof this._data[id] === 'undefined') {
-                this._lastError = Errors.DocNotFound;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._lastRejection);
             } else if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else {
                 //
                 // Merging.
@@ -618,7 +621,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected and is it a known field index.
             if (this._connected && typeof this._indexes[name] !== 'undefined') {
@@ -634,11 +637,11 @@ export class Collection implements IResource {
                     })
                     .catch(reject);
             } else if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else {
-                this._lastError = `${Errors.UnknownIndex}. Index: '${name}'`;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.UnknownIndex, { index: name }));
+                reject(this._lastRejection);
             }
         });
     }
@@ -656,16 +659,16 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected.
             //      Does the document is present?
             if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else if (typeof this._data[id] === 'undefined') {
-                this._lastError = Errors.DocNotFound;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._lastRejection);
             } else {
                 //
                 // Removing the document.
@@ -698,7 +701,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -722,8 +725,8 @@ export class Collection implements IResource {
                     resolve();
                 }
             } else {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this.lastError());
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -756,7 +759,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: string) => void) => {
+        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: Rejection) => void) => {
             //
             // Default values.
             let findings: any[] = [];
@@ -848,7 +851,7 @@ export class Collection implements IResource {
     public searchOne(conditions: { [name: string]: any }): Promise<any> {
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
             //
             // Forwarding call.
             this.search(conditions)
@@ -878,7 +881,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -895,7 +898,7 @@ export class Collection implements IResource {
                         let validator = ajv.compile(schema);
                         valid = true;
                     } catch (e) {
-                        this._lastError = `${Errors.InvalidSchema}. '\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`;
+                        this.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
                     }
                     //
                     // Is it valid?
@@ -914,7 +917,7 @@ export class Collection implements IResource {
                                     .catch(reject);
                             }).catch(reject);
                     } else {
-                        reject(this._lastError);
+                        reject(this._lastRejection);
                     }
                 } else {
                     //
@@ -922,8 +925,8 @@ export class Collection implements IResource {
                     resolve();
                 }
             } else {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -949,7 +952,7 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -989,20 +992,20 @@ export class Collection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: string) => void) => {
+        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
             //      Is it a known document?
             //          Is it connected?
             if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this._lastError = Errors.DocIsNotObject;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._lastRejection);
             } else if (typeof this._data[id] === 'undefined') {
-                this._lastError = Errors.DocNotFound;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._lastRejection);
             } else if (!this._connected) {
-                this._lastError = Errors.CollectionNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._lastRejection);
             } else {
                 //
                 // Should check the schema?
@@ -1014,7 +1017,7 @@ export class Collection implements IResource {
                         // Fixing default fields.
                         this._schemaApplier(doc);
                     } else {
-                        this._lastError = `${Errors.SchemaDoesntApply}. '\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`;
+                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`));
                     }
                 }
                 //
@@ -1055,7 +1058,7 @@ export class Collection implements IResource {
                         })
                         .catch(reject);
                 } else {
-                    reject(this.lastError());
+                    reject(this._lastRejection);
                 }
             }
         });
@@ -1075,7 +1078,7 @@ export class Collection implements IResource {
     protected addDocToIndex(params: { [name: string]: any }): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Skipping physical save, that will be dealt with later.
             this._indexes[params.name].skipSave();
@@ -1098,7 +1101,7 @@ export class Collection implements IResource {
     protected addDocToIndexes(doc: { [name: string]: any }): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1134,7 +1137,7 @@ export class Collection implements IResource {
         const { schema, schemaMD5 } = params;
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Creating a few temporary validators.
             let auxAjv = new Ajv();
@@ -1144,7 +1147,7 @@ export class Collection implements IResource {
             Object.keys(this._data).forEach((id: string) => {
                 if (!this.error()) {
                     if (!validator(this._data[id])) {
-                        this._lastError = `${Errors.SchemaDoesntApply}. Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`;
+                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
                     }
                 }
             });
@@ -1166,7 +1169,7 @@ export class Collection implements IResource {
 
                 resolve();
             } else {
-                reject(this._lastError);
+                reject(this._lastRejection);
             }
         });
     }
@@ -1183,7 +1186,7 @@ export class Collection implements IResource {
     protected closeIndex(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Skipping physical save, that will be dealt with later.
             this._indexes[params.name].skipSave();
@@ -1212,7 +1215,7 @@ export class Collection implements IResource {
     protected closeIndexes(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1244,7 +1247,7 @@ export class Collection implements IResource {
     protected dropIndex(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Forgetting index.
             delete this._manifest.indexes[params.name];
@@ -1273,7 +1276,7 @@ export class Collection implements IResource {
     protected dropIndexes(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1305,7 +1308,7 @@ export class Collection implements IResource {
     protected dropManifest(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Removing manifest from the zip file.
             this._connection.removeFile(this._manifestPath)
@@ -1329,7 +1332,7 @@ export class Collection implements IResource {
     protected dropResource(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Removing all data from the zip file.
             this._connection.removeFile(this._resourcePath)
@@ -1353,7 +1356,7 @@ export class Collection implements IResource {
     protected dropSequence(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Ask sequence to get dropped.
             this._sequence.drop()
@@ -1383,7 +1386,7 @@ export class Collection implements IResource {
         }
         //
         // Building promise to return.
-        return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: string) => void) => {
+        return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
             //
             // Initializing a list of indexes to involve.
             const indexesToUse: string[] = [];
@@ -1393,7 +1396,7 @@ export class Collection implements IResource {
                 //
                 // Is current field on conditions indexed?
                 if (typeof this._indexes[key] === 'undefined') {
-                    this._lastError = `${Errors.NotIndexedField}. Field: '${key}'.`
+                    this.setLastRejection(new Rejection(RejectionCodes.NotIndexedField, { field: key }));
                 } else {
                     indexesToUse.push(key);
                 }
@@ -1462,7 +1465,7 @@ export class Collection implements IResource {
     protected loadIndex(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             if (typeof this._indexes[params.name] === 'undefined') {
                 this._indexes[params.name] = new Index(this, params.field, this._connection);
                 this._indexes[params.name].connect()
@@ -1486,7 +1489,7 @@ export class Collection implements IResource {
     protected loadIndexes(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1518,7 +1521,7 @@ export class Collection implements IResource {
     protected loadManifest(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Retrieving information from file.
             this._connection.loadFile(this._manifestPath)
@@ -1559,7 +1562,7 @@ export class Collection implements IResource {
     protected loadResource(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Initializing memory cached data as empty.
             this._data = {};
@@ -1639,7 +1642,7 @@ export class Collection implements IResource {
     protected loadSequence(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Creating a new object to handle the sequence.
             this._sequence = new Sequence(this, BasicConstants.DefaultSequence, this._connection);
@@ -1663,7 +1666,7 @@ export class Collection implements IResource {
     protected rebuildAllIndexes(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1695,7 +1698,7 @@ export class Collection implements IResource {
     protected removeDocFromIndex(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Skipping physical save, that will be dealt with later.
             this._indexes[params.name].skipSave();
@@ -1718,7 +1721,7 @@ export class Collection implements IResource {
     protected removeDocFromIndexes(id: string): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1745,6 +1748,7 @@ export class Collection implements IResource {
      */
     protected resetError(): void {
         this._lastError = null;
+        this._lastRejection = null;
     }
     /**
      * This method truncates a specific index.
@@ -1759,7 +1763,7 @@ export class Collection implements IResource {
     protected truncateIndex(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Skipping physical save, that will be dealt with later.
             this._indexes[params.name].skipSave();
@@ -1781,7 +1785,7 @@ export class Collection implements IResource {
     protected truncateIndexes(params: any): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // List of operations.
             let steps: any[] = [];
@@ -1813,7 +1817,7 @@ export class Collection implements IResource {
     protected save(): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             let data: any = [];
             //
             // Converting data into a list of strings that can be physically
@@ -1837,6 +1841,17 @@ export class Collection implements IResource {
                 .catch(reject);
         });
     }
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void {
+        this._lastError = `${rejection}`;
+        this._lastRejection = rejection;
+    }
     //
     // Protected class methods.
     /**
@@ -1853,7 +1868,7 @@ export class Collection implements IResource {
     protected static ProcessStepsSequence(steps: CollectionStep[]): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Are there steps to process.
             if (steps.length > 0) {

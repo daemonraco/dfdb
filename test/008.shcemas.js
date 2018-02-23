@@ -68,6 +68,7 @@ describe('dfdb: Collection schemas', function () {
     this.timeout(12000);
 
     const { DocsOnFileDB, types, constants } = require('..');
+    const { RejectionCodes } = constants;
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -355,9 +356,11 @@ describe('dfdb: Collection schemas', function () {
             about: 'SOME DATA ABOUT IT',
             tags: ['tag1', 'tag2']
         }).catch(err => {
+            const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.SchemaDoesntApply, true);
+
             assert.isNotNull(collection.lastError());
-            assert.strictEqual(err.indexOf(constants.Errors.SchemaDoesntApply), 0);
-            assert.strictEqual(collection.lastError().indexOf(constants.Errors.SchemaDoesntApply), 0);
+            assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
+            assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
         }).then(done, done);
     });
 
@@ -484,9 +487,11 @@ describe('dfdb: Collection schemas', function () {
             tags: ['qui', 'nostrud', 'cillum', 'nulla', 'deserunt', 'reprehenderit', 'adipisicing'],
             extradata: 'somedata'
         }).catch(err => {
+            const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.SchemaDoesntApply, true);
+
             assert.isNotNull(collection.lastError());
-            assert.strictEqual(err.indexOf(constants.Errors.SchemaDoesntApply), 0);
-            assert.strictEqual(collection.lastError().indexOf(constants.Errors.SchemaDoesntApply), 0);
+            assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
+            assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
         }).then(done, done);
     });
 
@@ -494,9 +499,11 @@ describe('dfdb: Collection schemas', function () {
         assert.typeOf(collection.setSchema, 'function');
 
         collection.setSchema(wrongSchema).catch(err => {
+            const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.SchemaDoesntApply, true);
+
             assert.isNotNull(collection.lastError());
-            assert.strictEqual(err.indexOf(constants.Errors.SchemaDoesntApply), 0);
-            assert.strictEqual(collection.lastError().indexOf(constants.Errors.SchemaDoesntApply), 0);
+            assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
+            assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
         }).then(done, done);
     });
 

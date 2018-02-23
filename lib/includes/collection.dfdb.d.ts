@@ -6,6 +6,7 @@ import { Promise } from 'es6-promise';
 import { IResource } from './interface.resource.dfdb';
 import { Connection } from './connection.dfdb';
 import { Index } from './index.dfdb';
+import { Rejection } from './rejection.dfdb';
 import { Sequence } from './sequence.dfdb';
 /**
  * Internal interfase that standardize recursive asynchronous calls to multiple
@@ -40,6 +41,7 @@ export declare class Collection implements IResource {
         [name: string]: Index;
     };
     protected _lastError: string;
+    protected _lastRejection: Rejection;
     protected _manifest: {
         [name: string]: any;
     };
@@ -569,6 +571,14 @@ export declare class Collection implements IResource {
      * operation finishes.
      */
     protected save(): Promise<void>;
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void;
     /**
      * This method is a generic iterator of recursive asynchronous calls to
      * multiple tasks.

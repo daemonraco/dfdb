@@ -5,8 +5,9 @@
  */
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
-import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
+import { IResource } from './interface.resource.dfdb';
+import { Rejection } from './rejection.dfdb';
 /**
  * Internal class to handle physical interaction responses with the database.
  *
@@ -25,6 +26,7 @@ export declare class ConnectionDBValidationResult {
     exists: boolean;
     valid: boolean;
     error: string;
+    errorCode: string;
 }
 /**
  * This class represents an active connection to a database on file.
@@ -42,6 +44,7 @@ export declare class Connection implements IResource {
     protected _dbPath: string;
     protected _fileAccessQueue: any;
     protected _lastError: string;
+    protected _lastRejection: Rejection;
     protected _manifest: {
         [name: string]: any;
     };
@@ -228,6 +231,14 @@ export declare class Connection implements IResource {
      * @method setSavingQueue
      */
     protected setFileAccessQueue(): void;
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void;
     /**
      * This method takes the basic values that represent a database and checks if
      * it exists and if it's valid or not.

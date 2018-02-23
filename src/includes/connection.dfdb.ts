@@ -9,10 +9,12 @@ import * as JSZip from 'jszip';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { BasicConstants, CollectionTypes, ConnectionSaveConstants, Errors } from './constants.dfdb';
+import { BasicConstants, CollectionTypes, ConnectionSaveConstants } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
-import { IResource } from './interface.resource.dfdb';
 import { Collection } from './collection.dfdb';
+import { IResource } from './interface.resource.dfdb';
+import { Rejection } from './rejection.dfdb';
+import { RejectionCodes } from './rejection-codes.dfdb';
 import { Tools } from './tools.dfdb';
 
 /**
@@ -34,6 +36,7 @@ export class ConnectionDBValidationResult {
     public exists: boolean = false;
     public valid: boolean = false;
     public error: string = null;
+    public errorCode: string = null;
 }
 
 /**
@@ -52,6 +55,7 @@ export class Connection implements IResource {
     protected _dbPath: string = null;
     protected _fileAccessQueue: any = null;
     protected _lastError: string = null;
+    protected _lastRejection: Rejection = null;
     protected _manifest: { [name: string]: any } = {
         collections: {}
     };
@@ -90,7 +94,7 @@ export class Connection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<Collection>((resolve: (res: Collection) => void, reject: (err: string) => void) => {
+        return new Promise<Collection>((resolve: (res: Collection) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a known collection?
             if (typeof this._collections[name] !== 'undefined') {
@@ -159,7 +163,7 @@ export class Connection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Does it exist?
             if (this.doesExist()) {
@@ -206,7 +210,7 @@ export class Connection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is is connected?
             if (this._connected) {
@@ -281,7 +285,7 @@ export class Connection implements IResource {
     public forgetCollection(name: string, drop: boolean = false): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it tracked?
             if (typeof this._collections[name] !== 'undefined') {
@@ -340,7 +344,7 @@ export class Connection implements IResource {
     public loadFile(zPath: string): Promise<ConnectionSavingQueueResult> {
         //
         // Building promise to return.
-        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: Rejection) => void) => {
             //
             // is it connected?
             if (this._connected) {
@@ -353,8 +357,8 @@ export class Connection implements IResource {
             } else {
                 //
                 // It should be connected to actually save.
-                this._lastError = Errors.DatabaseNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -371,7 +375,7 @@ export class Connection implements IResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -388,8 +392,8 @@ export class Connection implements IResource {
             } else {
                 //
                 // It should be connected to actually save.
-                this._lastError = Errors.DatabaseNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -405,7 +409,7 @@ export class Connection implements IResource {
     public removeFile(zPath: string): Promise<ConnectionSavingQueueResult> {
         //
         // Building promise to return.
-        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -418,8 +422,8 @@ export class Connection implements IResource {
             } else {
                 //
                 // It should be connected to actually save.
-                this._lastError = Errors.DatabaseNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -447,7 +451,7 @@ export class Connection implements IResource {
     public updateFile(zPath: string, data: any, skipPhysicalSave: boolean = false): Promise<ConnectionSavingQueueResult> {
         //
         // Building promise to return.
-        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: string) => void) => {
+        return new Promise<ConnectionSavingQueueResult>((resolve: (res: ConnectionSavingQueueResult) => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -459,8 +463,8 @@ export class Connection implements IResource {
             } else {
                 //
                 // It should be connected to actually save.
-                this._lastError = Errors.DatabaseNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._lastRejection);
             }
         });
     }
@@ -478,7 +482,7 @@ export class Connection implements IResource {
         /** @todo check this method because it's too similar to 'save()' */
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Creating a zip object to manipulate physically store information.
             const zip = new JSZip();
@@ -514,7 +518,7 @@ export class Connection implements IResource {
         this._connected = false;
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Physically reading the file.
             fs.readFile(this._dbFullPath, (error: any, data: any) => {
@@ -523,8 +527,8 @@ export class Connection implements IResource {
                 if (error) {
                     //
                     // Rejecting promise.
-                    this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
-                    reject(this._lastError);
+                    this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._dbFullPath }));
+                    reject(this._lastRejection);
                 } else {
                     //
                     // Parsing data as a zip file.
@@ -542,8 +546,8 @@ export class Connection implements IResource {
                             .then(resolve)
                             .catch(reject);
                     }).catch((error: any) => {
-                        this._lastError = `${Errors.DatabaseNotValid}. Path: '${this._dbFullPath}'. ${error}`;
-                        reject(this._lastError);
+                        this.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._dbFullPath }));
+                        reject(this._lastRejection);
                     });
                 }
             });
@@ -560,7 +564,7 @@ export class Connection implements IResource {
     protected loadManifest(): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Retrieving information from file.
             this.loadFile(this._manifestPath)
@@ -591,6 +595,7 @@ export class Connection implements IResource {
      */
     protected resetError(): void {
         this._lastError = null;
+        this._lastRejection = null;
     }
     /**
      * This method creates a queue to centralize all zip file access.
@@ -660,6 +665,17 @@ export class Connection implements IResource {
             }
         }, 1);
     }
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void {
+        this._lastError = `${rejection}`;
+        this._lastRejection = rejection;
+    }
     //
     // Public class methods.
     /**
@@ -675,7 +691,7 @@ export class Connection implements IResource {
     public static IsValidDatabase(dbname: string, dbpath: string): Promise<ConnectionDBValidationResult> {
         //
         // Building promise to return.
-        return new Promise<ConnectionDBValidationResult>((resolve: (res: ConnectionDBValidationResult) => void, reject: (err: string) => void) => {
+        return new Promise<ConnectionDBValidationResult>((resolve: (res: ConnectionDBValidationResult) => void, reject: (err: Rejection) => void) => {
             //
             // Default values.
             const results: ConnectionDBValidationResult = new ConnectionDBValidationResult();
@@ -696,7 +712,8 @@ export class Connection implements IResource {
                     //
                     // Was it read?
                     if (error) {
-                        results.error = Errors.DatabaseDoesntExist;
+                        results.errorCode = RejectionCodes.DatabaseDoesntExist;
+                        results.error = RejectionCodes.Message(results.errorCode);
                         resolve(results);
                     } else {
                         //
@@ -704,13 +721,15 @@ export class Connection implements IResource {
                         if (data.toString().substring(0, 2) === 'PK') {
                             results.valid = true;
                         } else {
-                            results.error = Errors.DatabaseNotValid;
+                            results.errorCode = RejectionCodes.DatabaseNotValid;
+                            results.error = RejectionCodes.Message(results.errorCode);
                         }
                         resolve(results);
                     }
                 });
             } else {
-                results.error = Errors.DatabaseDoesntExist;
+                results.errorCode = RejectionCodes.DatabaseDoesntExist;
+                results.error = RejectionCodes.Message(results.errorCode);
                 resolve(results);
             }
         });

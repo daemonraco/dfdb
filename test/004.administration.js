@@ -18,6 +18,7 @@ describe('dfdb: Administration tools', function () {
     this.timeout(6000);
 
     const { constants, DocsOnFileDB, types } = require('..');
+    const { RejectionCodes } = constants;
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -167,11 +168,12 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.strictEqual(err.indexOf(constants.Errors.UnknownIndex), 0);
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.UnknownIndex, true);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
 
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.strictEqual(collection.lastError().indexOf(constants.Errors.UnknownIndex), 0);
+                assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });
@@ -309,9 +311,11 @@ describe('dfdb: Administration tools', function () {
 
         collection.find({ name: 'Lawanda Guzman' })
             .then(docs => {
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.NotIndexedField, true);
+
                 assert.isTrue(collection.error());
                 assert.isNotNull(collection.lastError());
-                assert.strictEqual(collection.lastError().indexOf(constants.Errors.NotIndexedField), 0);
+                assert.strictEqual(collection.lastError().indexOf(expectedErrorMessage), 0);
 
                 assert.strictEqual(docs.length, 0);
             })
@@ -355,8 +359,10 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.DatabaseDoesntExist, true);
+
                 assert.isNotNull(err);
-                assert.strictEqual(err.indexOf(constants.Errors.DatabaseDoesntExist), 0);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });
@@ -376,7 +382,8 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.strictEqual(err.indexOf(constants.Errors.DatabaseNotValid), 0);
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.DatabaseNotValid, true);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });
@@ -396,7 +403,8 @@ describe('dfdb: Administration tools', function () {
                 assert.isTrue(false, `a success was not expected at this point.`);
             })
             .catch(err => {
-                assert.strictEqual(err.indexOf(constants.Errors.DatabaseNotValid), 0);
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.DatabaseNotValid, true);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
             })
             .then(done, done);
     });

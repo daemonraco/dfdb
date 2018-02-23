@@ -7,10 +7,11 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 import * as jsonpath from 'jsonpath-plus';
 
-import { Errors } from './constants.dfdb';
+import { Collection } from './collection.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
-import { Collection } from './collection.dfdb';
+import { Rejection } from './rejection.dfdb';
+import { RejectionCodes } from './rejection-codes.dfdb';
 
 /**
  * This class represents a document's field index associated to a collection.
@@ -25,6 +26,7 @@ export class Index implements IResource, IDelayedResource {
     protected _data: { [name: string]: any } = {};
     protected _field: string = null;
     protected _lastError: string = null;
+    protected _lastRejection: Rejection = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
     protected _collection: Collection = null;
@@ -84,7 +86,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Parsing object for the right field.
             const jsonPathValues = jsonpath({ json: doc, path: `\$.${this._field}` });
@@ -110,8 +112,8 @@ export class Index implements IResource, IDelayedResource {
                     //
                     // At this point, if the value is an object, it cannot be
                     // indexed and should be treated as an error.
-                    this._lastError = Errors.NotIndexableValue;
-                    reject(this._lastError);
+                    this.setLastRejection(new Rejection(RejectionCodes.NotIndexableValue));
+                    reject(this._lastRejection);
                 } else {
                     //
                     // Indexing field's value.
@@ -123,8 +125,8 @@ export class Index implements IResource, IDelayedResource {
                         .catch(reject);
                 }
             } else if (!this._connected) {
-                this._lastError = Errors.IndexNotConnected;
-                reject(this._lastError);
+                this.setLastRejection(new Rejection(RejectionCodes.IndexNotConnected));
+                reject(this._lastRejection);
             } else {
                 //
                 // IF the required field isn't present, the given document is
@@ -148,7 +150,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (!this._connected) {
@@ -213,7 +215,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -252,7 +254,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -297,7 +299,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: string) => void) => {
+        return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
             //
             // Searches should be done case insensitively
             value = value.toLowerCase();
@@ -347,7 +349,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Checking each indexed value because it may point to the document
             // to remove.
@@ -402,7 +404,7 @@ export class Index implements IResource, IDelayedResource {
         this.resetError();
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
             if (this._connected) {
@@ -431,6 +433,7 @@ export class Index implements IResource, IDelayedResource {
      */
     protected resetError(): void {
         this._lastError = null;
+        this._lastRejection = null;
     }
     /**
      * This method triggers the physical saving of this index file.
@@ -443,7 +446,7 @@ export class Index implements IResource, IDelayedResource {
     protected save(): Promise<void> {
         //
         // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: string) => void) => {
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             let data: any = [];
             //
             // Converting data into a list of strings that can be physically
@@ -463,5 +466,16 @@ export class Index implements IResource, IDelayedResource {
                 })
                 .catch(reject);
         });
+    }
+    /**
+     * Updates internal error values and messages.
+     *
+     * @protected
+     * @method setLastRejection
+     * @param {Rejection} rejection Rejection object to store as last error.
+     */
+    protected setLastRejection(rejection: Rejection): void {
+        this._lastError = `${rejection}`;
+        this._lastRejection = rejection;
     }
 }

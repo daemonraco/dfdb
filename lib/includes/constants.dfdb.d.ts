@@ -37,25 +37,3 @@ export declare class ConnectionSaveConstants {
     static readonly UpdateFile: string;
     private constructor();
 }
-/**
- * This class collects the list of known errors thrown in DocsOnFileDB assets.
- *
- * @class Errors
- */
-export declare class Errors {
-    static readonly DocIsNotObject: string;
-    static readonly DocNotFound: string;
-    static readonly NotIndexableValue: string;
-    static readonly DuplicatedIndex: string;
-    static readonly NotIndexedField: string;
-    static readonly CollectionNotConnected: string;
-    static readonly IndexNotConnected: string;
-    static readonly SequenceNotConnected: string;
-    static readonly DatabaseDoesntExist: string;
-    static readonly DatabaseNotValid: string;
-    static readonly UnknownIndex: string;
-    static readonly DatabaseNotConnected: string;
-    static readonly SchemaDoesntApply: string;
-    static readonly InvalidSchema: string;
-    private constructor();
-}
