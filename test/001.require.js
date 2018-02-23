@@ -106,4 +106,59 @@ describe('dfdb: Require', function () {
         assert.isString(dfdb.constants.RejectionCodes.InvalidSchema);
         assert.isString(dfdb.constants.RejectionCodes.UnknownError);
     });
+
+    it(`builds a simple rejection object`, () => {
+        const { Rejection } = dfdb.types;
+        const { RejectionCodes } = dfdb.constants;
+
+        const rejection = new Rejection(RejectionCodes.UnknownError);
+
+        assert.typeOf(rejection.code, 'function');
+        assert.typeOf(rejection.data, 'function');
+        assert.typeOf(rejection.message, 'function');
+
+        assert.strictEqual(rejection.code(), RejectionCodes.UnknownError);
+        assert.strictEqual(rejection.data(), null);
+        assert.strictEqual(rejection.message(), RejectionCodes.Message(RejectionCodes.UnknownError));
+        assert.strictEqual(`${rejection}`, `[${RejectionCodes.UnknownError}] ${RejectionCodes.Message(RejectionCodes.UnknownError)}`);
+    });
+
+    it(`builds a rejection object with extra information in a string`, () => {
+        const { Rejection } = dfdb.types;
+        const { RejectionCodes } = dfdb.constants;
+
+        const rejection = new Rejection(RejectionCodes.UnknownError, 'SOME MESSAGE');
+
+        assert.typeOf(rejection.code, 'function');
+        assert.typeOf(rejection.data, 'function');
+        assert.typeOf(rejection.message, 'function');
+
+        assert.strictEqual(rejection.code(), RejectionCodes.UnknownError);
+        assert.strictEqual(rejection.data(), 'SOME MESSAGE');
+        assert.strictEqual(rejection.message(), `${RejectionCodes.Message(RejectionCodes.UnknownError)}. SOME MESSAGE.`);
+        assert.strictEqual(`${rejection}`, `[${RejectionCodes.UnknownError}] ${RejectionCodes.Message(RejectionCodes.UnknownError)}. SOME MESSAGE.`);
+    });
+
+    it(`builds a rejection object with extra information in an object`, () => {
+        const { Rejection } = dfdb.types;
+        const { RejectionCodes } = dfdb.constants;
+        const data = {
+            integer: 11,
+            float: 22.2,
+            string: ' 33 '
+        };
+
+        const rejection = new Rejection(RejectionCodes.UnknownError, data);
+
+        assert.typeOf(rejection.code, 'function');
+        assert.typeOf(rejection.data, 'function');
+        assert.typeOf(rejection.message, 'function');
+
+        assert.strictEqual(rejection.code(), RejectionCodes.UnknownError);
+        assert.strictEqual(rejection.data().integer, 11);
+        assert.strictEqual(rejection.data().float, 22.2);
+        assert.strictEqual(rejection.data().string, ' 33 ');
+        assert.strictEqual(rejection.message(), `${RejectionCodes.Message(RejectionCodes.UnknownError)}. Integer: '11'. Float: '22.2'. String: ' 33 '.`);
+        assert.strictEqual(`${rejection}`, `[${RejectionCodes.UnknownError}] ${RejectionCodes.Message(RejectionCodes.UnknownError)}. Integer: '11'. Float: '22.2'. String: ' 33 '.`);
+    });
 });

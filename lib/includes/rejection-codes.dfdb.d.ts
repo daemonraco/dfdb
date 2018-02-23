@@ -28,5 +28,16 @@ export declare class RejectionCodes {
      * @constructor
      */
     private constructor();
+    /**
+     * This method generates a simple rejection message based on a error code.
+     *
+     * @public
+     * @static
+     * @method Message
+     * @param {string} code Error code identifying a rejection case.
+     * @param {boolean} full Should the generated message include the rejection
+     * code.
+     * @returns {string} Retruns a simple error message.
+     */
     static Message(code: string, full?: boolean): string;
 }

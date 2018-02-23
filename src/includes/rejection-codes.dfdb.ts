@@ -43,8 +43,7 @@ export class RejectionCodes {
         'E-0012': 'Database not connected',
         'E-0013': `Document doesn't follow the given schema`,
         'E-0014': `Given schema is not valid`,
-        'E-0015': `Un unknown error has been triggered`,
-        'E-0016': `Given database is not valid`
+        'E-0015': `An unknown error has been triggered`
     };
     //
     // Constructor.
@@ -54,13 +53,25 @@ export class RejectionCodes {
     private constructor() { }
     //
     // Public class methods.
+    /**
+     * This method generates a simple rejection message based on a error code.
+     *
+     * @public
+     * @static
+     * @method Message
+     * @param {string} code Error code identifying a rejection case.
+     * @param {boolean} full Should the generated message include the rejection
+     * code.
+     * @returns {string} Retruns a simple error message.
+     */
     public static Message(code: string, full: boolean = false): string {
+        //
+        // Is it a valid code?
         if (typeof RejectionCodes._messages[code] === 'undefined') {
             throw `Unknown rejection code '${code}'`;
         }
-
+        //
+        // Building and returning a message.
         return `${full ? `[${code}] ` : ''}${RejectionCodes._messages[code]}`;
     }
-    //
-    // Private class methods.
 }
