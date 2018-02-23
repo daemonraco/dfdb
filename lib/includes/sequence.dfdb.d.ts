@@ -3,7 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { Collection } from './collection.dfdb';
+import { Collection } from './collection/collection.dfdb';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './interface.resource.dfdb';
 import { Rejection } from './rejection.dfdb';

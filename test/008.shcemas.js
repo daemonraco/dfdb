@@ -64,7 +64,7 @@ const wrongSchema = {
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Collection schemas', function () {
+describe('dfdb: Collection schemas [008]', function () {
     this.timeout(12000);
 
     const { DocsOnFileDB, types, constants } = require('..');

@@ -3,28 +3,14 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { IResource } from './interface.resource.dfdb';
-import { Connection } from './connection.dfdb';
-import { Index } from './index.dfdb';
-import { Rejection } from './rejection.dfdb';
-import { Sequence } from './sequence.dfdb';
-/**
- * Internal interfase that standardize recursive asynchronous calls to multiple
- * tasks.
- *
- * @interface CollectionStep
- */
-export interface CollectionStep {
-    /**
-     * @property {any} params Data to use when a step is executed.
-     */
-    params: any;
-    /**
-     * @property {any} function Function to call on execution of this step. It
-     * should returns a promise so it can be chained with other steps.
-     */
-    stepFunction: (params: any) => Promise<any>;
-}
+import { Connection } from '../connection.dfdb';
+import { FindSubLogic } from './find.sb.dfb';
+import { SearchSubLogic } from './search.sb.dfdb';
+import { ICollectionStep } from './collection-step.dfdb';
+import { Index } from '../index.dfdb';
+import { IResource } from '../interface.resource.dfdb';
+import { Rejection } from '../rejection.dfdb';
+import { Sequence } from '../sequence.dfdb';
 /**
  * This class represents a collection and provides access to all its information
  * and associated objects.
@@ -37,6 +23,7 @@ export declare class Collection implements IResource {
     protected _data: {
         [name: string]: any;
     };
+    protected _findSubLogic: FindSubLogic;
     protected _indexes: {
         [name: string]: Index;
     };
@@ -50,6 +37,7 @@ export declare class Collection implements IResource {
     protected _resourcePath: string;
     protected _schemaApplier: any;
     protected _schemaValidator: any;
+    protected _searchSubLogic: SearchSubLogic;
     protected _sequence: Sequence;
     /**
      * @constructor
@@ -412,32 +400,6 @@ export declare class Collection implements IResource {
      */
     protected dropSequence(params: any): Promise<void>;
     /**
-     * This method takes a list of conditions and uses them to search ids inside
-     * indexes. Once all involved indexes had been checked, it returns those that
-     * match in all conditions.
-     *
-     * @protected
-     * @method findIds
-     * @param {{ [name: string]: any }} conditions Filtering conditions.
-     * @returns {Promise<string[]>} Returns a promise that gets resolve when all
-     * operations had finished. In the promise it returns a list of indexes.
-     */
-    protected findIds(conditions: {
-        [name: string]: any;
-    }): Promise<string[]>;
-    /**
-     * This method takes a list of IDs and returns a list of documents with those
-     * IDs.
-     *
-     * @protected
-     * @method idsToData
-     * @param {string[]} ids List of IDs.
-     * @returns {{ [name: string]: any}[]} Returns a list of documents.
-     */
-    protected idsToData(ids: string[]): {
-        [name: string]: any;
-    }[];
-    /**
      * This closes a specific index.
      *
      * @protected
@@ -586,9 +548,9 @@ export declare class Collection implements IResource {
      * @protected
      * @static
      * @method ProcessStepsSequence
-     * @param {CollectionStep[]} steps List of steps to take.
+     * @param {ICollectionStep[]} steps List of steps to take.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected static ProcessStepsSequence(steps: CollectionStep[]): Promise<void>;
+    protected static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void>;
 }

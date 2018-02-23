@@ -12,7 +12,7 @@ const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Basic use', function () {
+describe('dfdb: Basic use [002]', function () {
     this.timeout(6000);
 
     const { DocsOnFileDB, types, constants } = require('..');

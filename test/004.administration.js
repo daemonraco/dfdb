@@ -14,7 +14,7 @@ const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Administration tools', function () {
+describe('dfdb: Administration tools [004]', function () {
     this.timeout(6000);
 
     const { constants, DocsOnFileDB, types } = require('..');

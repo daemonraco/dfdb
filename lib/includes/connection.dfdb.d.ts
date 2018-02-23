@@ -5,7 +5,7 @@
  */
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
-import { Collection } from './collection.dfdb';
+import { Collection } from './collection/collection.dfdb';
 import { IResource } from './interface.resource.dfdb';
 import { Rejection } from './rejection.dfdb';
 /**

@@ -13,7 +13,7 @@ const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Indexing fields that are lists', function () {
+describe('dfdb: Indexing fields that are lists [006]', function () {
     this.timeout(6000);
 
     const { DocsOnFileDB, types } = require('..');
