@@ -4,7 +4,7 @@
  */
 import { DocsOnFileDB } from './includes/manager.dfdb';
 import { BasicConstants, CollectionTypes, ConnectionSaveConstants } from './includes/constants.dfdb';
-import { Collection } from './includes/collection.dfdb';
+import { Collection } from './includes/collection/collection.dfdb';
 import { Connection } from './includes/connection.dfdb';
 import { Index } from './includes/index.dfdb';
 import { Rejection } from './includes/rejection.dfdb';

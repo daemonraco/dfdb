@@ -7,7 +7,7 @@ const path = require('path');
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Require', function () {
+describe('dfdb: Require [001]', function () {
     const dfdb = require('..');
 
     it(`loads a valid object`, () => {

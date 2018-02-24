@@ -5,8 +5,8 @@
  */
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
-import { Collection } from './collection.dfdb';
-import { IResource } from './interface.resource.dfdb';
+import { Collection } from './collection/collection.dfdb';
+import { IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 /**
  * Internal class to handle physical interaction responses with the database.

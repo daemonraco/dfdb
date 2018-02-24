@@ -13,7 +13,7 @@ const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Indexing deep-fields', function () {
+describe('dfdb: Indexing deep-fields [009]', function () {
     this.timeout(6000);
 
     const { DocsOnFileDB, types } = require('..');

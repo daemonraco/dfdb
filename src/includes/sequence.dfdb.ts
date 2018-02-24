@@ -6,9 +6,9 @@
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 
-import { Collection } from './collection.dfdb';
+import { Collection } from './collection/collection.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
-import { IDelayedResource, IResource } from './interface.resource.dfdb';
+import { IDelayedResource, IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';
 

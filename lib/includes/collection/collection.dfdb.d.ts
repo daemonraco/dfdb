@@ -3,28 +3,17 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { IResource } from './interface.resource.dfdb';
-import { Connection } from './connection.dfdb';
-import { Index } from './index.dfdb';
-import { Rejection } from './rejection.dfdb';
-import { Sequence } from './sequence.dfdb';
-/**
- * Internal interfase that standardize recursive asynchronous calls to multiple
- * tasks.
- *
- * @interface CollectionStep
- */
-export interface CollectionStep {
-    /**
-     * @property {any} params Data to use when a step is executed.
-     */
-    params: any;
-    /**
-     * @property {any} function Function to call on execution of this step. It
-     * should returns a promise so it can be chained with other steps.
-     */
-    stepFunction: (params: any) => Promise<any>;
-}
+import { Connection } from '../connection.dfdb';
+import { ICollectionStep } from './collection-step.i.dfdb';
+import { Index } from '../index.dfdb';
+import { IResource } from '../resource.i.dfdb';
+import { Rejection } from '../rejection.dfdb';
+import { SubLogicCRUD } from './crud.sl.dfdb';
+import { SubLogicFind } from './find.sl.dfdb';
+import { SubLogicIndex } from './index.sl.dfdb';
+import { SubLogicSchema } from './schema.sl.dfdb';
+import { SubLogicSearch } from './search.sl.dfdb';
+import { Sequence } from '../sequence.dfdb';
 /**
  * This class represents a collection and provides access to all its information
  * and associated objects.
@@ -50,6 +39,11 @@ export declare class Collection implements IResource {
     protected _resourcePath: string;
     protected _schemaApplier: any;
     protected _schemaValidator: any;
+    protected _subLogicCRUD: SubLogicCRUD;
+    protected _subLogicFind: SubLogicFind;
+    protected _subLogicIndex: SubLogicIndex;
+    protected _subLogicSchema: SubLogicSchema;
+    protected _subLogicSearch: SubLogicSearch;
     protected _sequence: Sequence;
     /**
      * @constructor
@@ -296,89 +290,6 @@ export declare class Collection implements IResource {
         [name: string]: any;
     }): Promise<any>;
     /**
-     * This method adds a document to a specific index.
-     *
-     * @protected
-     * @method addDocToIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name', 'doc').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndex(params: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
-     * This method adds certain document to all field indexes.
-     *
-     * @protected
-     * @method addDocToIndexes
-     * @param {{ [name: string]: any }} doc Document to be added.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndexes(doc: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
-     * This method validates and replaces this collection's schema for document
-     * validation.
-     *
-     * @protected
-     * @method applySchema
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('schema', 'schemaMD5').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected applySchema(params: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method closeIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndex(params: any): Promise<void>;
-    /**
-     * This method closes all field indexes.
-     *
-     * @protected
-     * @method closeIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndexes(params: any): Promise<void>;
-    /**
-     * This method drops a specific index.
-     *
-     * @protected
-     * @method dropIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndex(params: any): Promise<void>;
-    /**
-     * This method drops all field indexes.
-     *
-     * @protected
-     * @method dropIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndexes(params: any): Promise<void>;
-    /**
      * This method drops the internal manifest file from zip.
      *
      * @protected
@@ -412,54 +323,6 @@ export declare class Collection implements IResource {
      */
     protected dropSequence(params: any): Promise<void>;
     /**
-     * This method takes a list of conditions and uses them to search ids inside
-     * indexes. Once all involved indexes had been checked, it returns those that
-     * match in all conditions.
-     *
-     * @protected
-     * @method findIds
-     * @param {{ [name: string]: any }} conditions Filtering conditions.
-     * @returns {Promise<string[]>} Returns a promise that gets resolve when all
-     * operations had finished. In the promise it returns a list of indexes.
-     */
-    protected findIds(conditions: {
-        [name: string]: any;
-    }): Promise<string[]>;
-    /**
-     * This method takes a list of IDs and returns a list of documents with those
-     * IDs.
-     *
-     * @protected
-     * @method idsToData
-     * @param {string[]} ids List of IDs.
-     * @returns {{ [name: string]: any}[]} Returns a list of documents.
-     */
-    protected idsToData(ids: string[]): {
-        [name: string]: any;
-    }[];
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method loadIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndex(params: any): Promise<void>;
-    /**
-     * This method loads all associated field indexes.
-     *
-     * @protected
-     * @method loadIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndexes(params: any): Promise<void>;
-    /**
      * This method loads the internal manifest file from zip.
      *
      * @protected
@@ -482,13 +345,6 @@ export declare class Collection implements IResource {
      */
     protected loadResource(params: any): Promise<void>;
     /**
-     * This method loads internal schema validation objects.
-     *
-     * @protected
-     * @method loadSchemaHandlers
-     */
-    protected loadSchemaHandlers(): void;
-    /**
      * This method loads the associated collection sequence.
      *
      * @protected
@@ -500,66 +356,12 @@ export declare class Collection implements IResource {
      */
     protected loadSequence(params: any): Promise<void>;
     /**
-     * This method removes a document from a specific index.
-     *
-     * @protected
-     * @method rebuildAllIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected rebuildAllIndexes(params: any): Promise<void>;
-    /**
-     * This method removes a document from a specific index.
-     *
-     * @protected
-     * @method removeDocFromIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('id', 'name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndex(params: any): Promise<void>;
-    /**
-     * This method a document from all field indexes.
-     *
-     * @protected
-     * @method removeDocFromIndexes
-     * @param {string} id ID of the document to be removed.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndexes(id: string): Promise<void>;
-    /**
      * This method cleans up current error messages.
      *
      * @protected
      * @method resetError
      */
     protected resetError(): void;
-    /**
-     * This method truncates a specific index.
-     *
-     * @protected
-     * @method truncateIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndex(params: any): Promise<void>;
-    /**
-     * This method truncates all field indexes.
-     *
-     * @protected
-     * @method truncateIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndexes(params: any): Promise<void>;
     /**
      * This method triggers the physical saving of all files.
      *
@@ -586,9 +388,9 @@ export declare class Collection implements IResource {
      * @protected
      * @static
      * @method ProcessStepsSequence
-     * @param {CollectionStep[]} steps List of steps to take.
+     * @param {ICollectionStep[]} steps List of steps to take.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected static ProcessStepsSequence(steps: CollectionStep[]): Promise<void>;
+    static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void>;
 }

@@ -7,7 +7,7 @@ const path = require('path');
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Require', function () {
+describe('dfdb: Tools [007]', function () {
     const dfdb = require('..');
     const Tools = dfdb.types.Tools;
 

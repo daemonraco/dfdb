@@ -13,7 +13,7 @@ const collectionName = 'test_collection';
 
 // ---------------------------------------------------------------------------- //
 // Testing.
-describe('dfdb: Indexes and Searches', function () {
+describe('dfdb: Indexes and Searches [003]', function () {
     this.timeout(6000);
 
     const { constants, DocsOnFileDB, types } = require('..');
