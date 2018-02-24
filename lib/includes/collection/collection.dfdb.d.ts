@@ -5,9 +5,10 @@
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
 import { FindSubLogic } from './find.sb.dfb';
-import { ICollectionStep } from './i.collection-step.dfdb';
+import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
-import { IResource } from '../interface.resource.dfdb';
+import { IndexSubLogic } from './index.sb.dfdb';
+import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { SchemaSubLogic } from './schema.sb.dfdb';
 import { SearchSubLogic } from './search.sb.dfdb';
@@ -38,6 +39,7 @@ export declare class Collection implements IResource {
     protected _schemaApplier: any;
     protected _schemaValidator: any;
     protected _subLogicFind: FindSubLogic;
+    protected _subLogicIndex: IndexSubLogic;
     protected _subLogicSchema: SchemaSubLogic;
     protected _subLogicSearch: SearchSubLogic;
     protected _sequence: Sequence;
@@ -286,75 +288,6 @@ export declare class Collection implements IResource {
         [name: string]: any;
     }): Promise<any>;
     /**
-     * This method adds a document to a specific index.
-     *
-     * @protected
-     * @method addDocToIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name', 'doc').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndex(params: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
-     * This method adds certain document to all field indexes.
-     *
-     * @protected
-     * @method addDocToIndexes
-     * @param {{ [name: string]: any }} doc Document to be added.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndexes(doc: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method closeIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndex(params: any): Promise<void>;
-    /**
-     * This method closes all field indexes.
-     *
-     * @protected
-     * @method closeIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndexes(params: any): Promise<void>;
-    /**
-     * This method drops a specific index.
-     *
-     * @protected
-     * @method dropIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndex(params: any): Promise<void>;
-    /**
-     * This method drops all field indexes.
-     *
-     * @protected
-     * @method dropIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndexes(params: any): Promise<void>;
-    /**
      * This method drops the internal manifest file from zip.
      *
      * @protected
@@ -387,28 +320,6 @@ export declare class Collection implements IResource {
      * operation finishes.
      */
     protected dropSequence(params: any): Promise<void>;
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method loadIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndex(params: any): Promise<void>;
-    /**
-     * This method loads all associated field indexes.
-     *
-     * @protected
-     * @method loadIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndexes(params: any): Promise<void>;
     /**
      * This method loads the internal manifest file from zip.
      *
@@ -454,55 +365,12 @@ export declare class Collection implements IResource {
      */
     protected rebuildAllIndexes(params: any): Promise<void>;
     /**
-     * This method removes a document from a specific index.
-     *
-     * @protected
-     * @method removeDocFromIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('id', 'name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndex(params: any): Promise<void>;
-    /**
-     * This method a document from all field indexes.
-     *
-     * @protected
-     * @method removeDocFromIndexes
-     * @param {string} id ID of the document to be removed.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndexes(id: string): Promise<void>;
-    /**
      * This method cleans up current error messages.
      *
      * @protected
      * @method resetError
      */
     protected resetError(): void;
-    /**
-     * This method truncates a specific index.
-     *
-     * @protected
-     * @method truncateIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndex(params: any): Promise<void>;
-    /**
-     * This method truncates all field indexes.
-     *
-     * @protected
-     * @method truncateIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndexes(params: any): Promise<void>;
     /**
      * This method triggers the physical saving of all files.
      *

@@ -3,7 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { IOpenCollectionSchema } from './i.open-collection.dfdb';
+import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 export declare class SchemaSubLogic extends SubLogic<IOpenCollectionSchema> {
     /**

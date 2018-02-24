@@ -9,8 +9,8 @@ import * as jsonpath from 'jsonpath-plus';
 import * as md5 from 'md5';
 
 import { Collection } from './collection.dfdb';
-import { ICollectionStep } from './i.collection-step.dfdb';
-import { IOpenCollectionSchema } from './i.open-collection.dfdb';
+import { ICollectionStep } from './collection-step.i.dfdb';
+import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
@@ -18,7 +18,7 @@ import { Tools } from '../tools.dfdb';
 
 export class SchemaSubLogic extends SubLogic<IOpenCollectionSchema> {
     //
-    // Protected methods.
+    // Public methods.
     /**
      * Checks if this collection has a schema defined for its documents.
      *
@@ -166,7 +166,6 @@ export class SchemaSubLogic extends SubLogic<IOpenCollectionSchema> {
     }
     //
     // Protected methods.
-
     /**
      * This method validates and replaces this collection's schema for document
      * validation.

@@ -3,8 +3,31 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { Connection } from '../connection.dfdb';
 import { Index } from '../index.dfdb';
 import { Rejection } from '../rejection.dfdb';
+/**
+ * @todo DOC
+ *
+ * @interface IOpenCollectionIndex
+ */
+export interface IOpenCollectionIndex {
+    _connected: boolean;
+    _connection: Connection;
+    _data: {
+        [name: string]: any;
+    };
+    _indexes: {
+        [name: string]: Index;
+    };
+    _lastRejection: Rejection;
+    _manifest: {
+        [name: string]: any;
+    };
+    resetError(): void;
+    save(): Promise<void>;
+    setLastRejection(rejection: Rejection): void;
+}
 /**
  * @todo DOC
  *

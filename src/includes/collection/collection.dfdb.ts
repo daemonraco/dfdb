@@ -12,9 +12,10 @@ import * as md5 from 'md5';
 import { BasicConstants } from '../constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
 import { FindSubLogic } from './find.sb.dfb';
-import { ICollectionStep } from './i.collection-step.dfdb';
+import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
-import { IResource } from '../interface.resource.dfdb';
+import { IndexSubLogic } from './index.sb.dfdb';
+import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SchemaSubLogic } from './schema.sb.dfdb';
@@ -48,6 +49,7 @@ export class Collection implements IResource {
     protected _schemaApplier: any = null;
     protected _schemaValidator: any = null;
     protected _subLogicFind: FindSubLogic = null;
+    protected _subLogicIndex: IndexSubLogic = null;
     protected _subLogicSchema: SchemaSubLogic = null;
     protected _subLogicSearch: SearchSubLogic = null;
     protected _sequence: Sequence = null;
@@ -70,6 +72,7 @@ export class Collection implements IResource {
         //
         // Sub-logics.
         this._subLogicFind = new FindSubLogic(this);
+        this._subLogicIndex = new IndexSubLogic(this);
         this._subLogicSchema = new SchemaSubLogic(this);
         this._subLogicSearch = new SearchSubLogic(this);
     }
@@ -86,58 +89,8 @@ export class Collection implements IResource {
      */
     public addFieldIndex(name: string): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected and is it a new index?
-            if (this._connected && typeof this._indexes[name] === 'undefined') {
-                //
-                // Adding index to the internal manifest.
-                this._manifest.indexes[name] = { name, field: name };
-                //
-                // Reloading all indexes into memory to include the new one.
-                this.loadIndexes(null)
-                    .then(() => {
-                        // Adding all documents.
-                        //
-                        // List of ids to analyse.
-                        let ids = Object.keys(this._data);
-                        //
-                        // Recursive add-and-wait of all documents to the new
-                        // index.
-                        const processIds = () => {
-                            const id = ids.shift();
-                            if (id) {
-                                //
-                                // Skiping physical save, that will be done when
-                                // all documents are added.
-                                this._indexes[name].skipSave();
-                                this._indexes[name].addDocument(this._data[id])
-                                    .then(processIds)
-                                    .catch(reject);
-                            } else {
-                                //
-                                // Saving all changes to this collection and also
-                                // saving all changes made on the new index.
-                                this.save()
-                                    .then(resolve)
-                                    .catch(reject);
-                            }
-                        };
-                        processIds();
-                    })
-                    .catch(reject);
-            } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else {
-                this.setLastRejection(new Rejection(RejectionCodes.DuplicatedIndex, { index: name }));
-                reject(this._lastRejection);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.addFieldIndex(name);
     }
     /**
      * Creating a collection object doesn't mean it is connected to physical
@@ -165,7 +118,7 @@ export class Collection implements IResource {
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadManifest(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadSequence(params) });
-                steps.push({ params: {}, stepFunction: (params: any) => this.loadIndexes(params) });
+                steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.loadIndexes(params) });
                 //
                 // Loading everything.
                 Collection.ProcessStepsSequence(steps)
@@ -226,7 +179,7 @@ export class Collection implements IResource {
                         });
                     }
                 });
-                steps.push({ params: {}, stepFunction: (params: any) => this.closeIndexes(params) });
+                steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.closeIndexes(params) });
                 //
                 // Closing everything.
                 Collection.ProcessStepsSequence(steps)
@@ -283,7 +236,7 @@ export class Collection implements IResource {
                 //
                 // Building a list of loading asynchronous operations to perform.
                 let steps: ICollectionStep[] = [];
-                steps.push({ params: {}, stepFunction: (params: any) => this.dropIndexes(params) });
+                steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.dropIndexes(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropSequence(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropManifest(params) });
@@ -322,39 +275,8 @@ export class Collection implements IResource {
      */
     public dropFieldIndex(name: string): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected and does it have the requested index?
-            if (this._connected && typeof this._indexes[name] !== 'undefined') {
-                //
-                // Ask index to get dropped.
-                this._indexes[name].drop()
-                    .then(() => {
-                        //
-                        // Updates the information inside the zip file.
-                        this.save()
-                            .then(() => {
-                                //
-                                // Forgets everything about this index.
-                                delete this._manifest.indexes[name];
-                                delete this._indexes[name];
-
-                                resolve();
-                            })
-                            .catch(reject);
-                    })
-                    .catch(reject);
-            } else {
-                //
-                // If it's not connected or it's not a known index, nothing is
-                // done.
-                resolve();
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.dropFieldIndex(name);
     }
     /**
      * Provides a way to know if there was an error in the last operation.
@@ -401,7 +323,9 @@ export class Collection implements IResource {
      * @returns {boolean} Returns TRUE when it's a known index.
      */
     public hasIndex(name: string): boolean {
-        return typeof this._manifest.indexes[name] !== 'undefined';
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.hasIndex(name);
     }
     /**
      * Checks if this collection has a schema defined for its documents.
@@ -421,7 +345,9 @@ export class Collection implements IResource {
      * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
      */
     public indexes(): { [name: string]: any } {
-        return Tools.DeepCopy(this._manifest.indexes);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.indexes();
     }
     /**
      * Inserts a new document and updates this collection's indexes with it.
@@ -482,7 +408,7 @@ export class Collection implements IResource {
                     this._data[newID] = doc;
                     //
                     // Indexing document in all field indexes.
-                    this.addDocToIndexes(doc)
+                    this._subLogicIndex.addDocToIndexes(doc)
                         .then(() => {
                             //
                             // Physically saving all changes.
@@ -574,33 +500,8 @@ export class Collection implements IResource {
      */
     public rebuildFieldIndex(name: string): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected and is it a known field index.
-            if (this._connected && typeof this._indexes[name] !== 'undefined') {
-                //
-                // Dropping index as a way to drop any error.
-                this.dropFieldIndex(name)
-                    .then(() => {
-                        //
-                        // Readding index so it starts from scratch.
-                        this.addFieldIndex(name)
-                            .then(resolve)
-                            .catch(reject);
-                    })
-                    .catch(reject);
-            } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else {
-                this.setLastRejection(new Rejection(RejectionCodes.UnknownIndex, { index: name }));
-                reject(this._lastRejection);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.rebuildFieldIndex(name);
     }
     /**
      * This method removes a document from this collection based on an ID.
@@ -632,7 +533,7 @@ export class Collection implements IResource {
                 delete this._data[id];
                 //
                 // Removing the document from all indexes.
-                this.removeDocFromIndexes(id)
+                this._subLogicIndex.removeDocFromIndexes(id)
                     .then(() => {
                         //
                         // Physically saving all changes.
@@ -740,7 +641,7 @@ export class Collection implements IResource {
                 this._data = {};
                 //
                 // Truncating all indexes.
-                this.truncateIndexes(null)
+                this._subLogicIndex.truncateIndexes(null)
                     .then(() => {
                         //
                         // Physically saving all data.
@@ -816,11 +717,11 @@ export class Collection implements IResource {
                     //
                     // Removing document from all field indexes because it may be
                     // outdated.
-                    this.removeDocFromIndexes(id)
+                    this._subLogicIndex.removeDocFromIndexes(id)
                         .then(() => {
                             //
                             // Reading document to all field indexes.
-                            this.addDocToIndexes(doc).
+                            this._subLogicIndex.addDocToIndexes(doc).
                                 then(() => {
                                     //
                                     // Physically saving all changes.
@@ -844,183 +745,6 @@ export class Collection implements IResource {
     }
     //
     // Protected methods.
-    /**
-     * This method adds a document to a specific index.
-     *
-     * @protected
-     * @method addDocToIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name', 'doc').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndex(params: { [name: string]: any }): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Skipping physical save, that will be dealt with later.
-            this._indexes[params.name].skipSave();
-            //
-            // Adding document.
-            this._indexes[params.name].addDocument(params.doc)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This method adds certain document to all field indexes.
-     *
-     * @protected
-     * @method addDocToIndexes
-     * @param {{ [name: string]: any }} doc Document to be added.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected addDocToIndexes(doc: { [name: string]: any }): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: { doc, name },
-                    stepFunction: (params: any) => this.addDocToIndex(params)
-                });
-            });
-            //
-            // Indexing.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method closeIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndex(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Skipping physical save, that will be dealt with later.
-            this._indexes[params.name].skipSave();
-            //
-            // Closing index.
-            this._indexes[params.name].close()
-                .then(() => {
-                    //
-                    // Forgetting index object so, in any case, it's reloaded.
-                    delete this._indexes[params.name];
-                    resolve();
-                })
-                .catch(reject);
-        });
-    }
-    /**
-     * This method closes all field indexes.
-     *
-     * @protected
-     * @method closeIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected closeIndexes(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: { name },
-                    stepFunction: (params: any) => this.closeIndex(params)
-                });
-            });
-            //
-            // Closing.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This method drops a specific index.
-     *
-     * @protected
-     * @method dropIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndex(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Forgetting index.
-            delete this._manifest.indexes[params.name];
-            //
-            // Asking index to get dropped.
-            this._indexes[params.name].drop()
-                .then(() => {
-                    //
-                    // Forgetting index object.
-                    delete this._indexes[params.name];
-                    resolve();
-                })
-                .catch(reject);
-        });
-    }
-    /**
-     * This method drops all field indexes.
-     *
-     * @protected
-     * @method dropIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected dropIndexes(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: { name },
-                    stepFunction: (params: any) => this.dropIndex(params)
-                });
-            });
-            //
-            // Dropping.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
     /**
      * This method drops the internal manifest file from zip.
      *
@@ -1090,62 +814,6 @@ export class Collection implements IResource {
                     this._sequence = null;
                     resolve();
                 })
-                .catch(reject);
-        });
-    }
-    /**
-     * This closes a specific index.
-     *
-     * @protected
-     * @method loadIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndex(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            if (typeof this._indexes[params.name] === 'undefined') {
-                this._indexes[params.name] = new Index(this, params.field, this._connection);
-                this._indexes[params.name].connect()
-                    .then(resolve)
-                    .catch(reject);
-            } else {
-                resolve();
-            }
-        });
-    }
-    /**
-     * This method loads all associated field indexes.
-     *
-     * @protected
-     * @method loadIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected loadIndexes(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._manifest.indexes).forEach(key => {
-                steps.push({
-                    params: this._manifest.indexes[key],
-                    stepFunction: (params: any) => this.loadIndex(params)
-                });
-            })
-            //
-            // Loading.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
                 .catch(reject);
         });
     }
@@ -1284,80 +952,8 @@ export class Collection implements IResource {
      */
     protected rebuildAllIndexes(params: any): Promise<void> {
         //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: name,
-                    stepFunction: (params: any) => this.rebuildFieldIndex(params)
-                });
-            });
-            //
-            // Closing.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This method removes a document from a specific index.
-     *
-     * @protected
-     * @method removeDocFromIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('id', 'name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndex(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Skipping physical save, that will be dealt with later.
-            this._indexes[params.name].skipSave();
-            //
-            // Removing document based on its ID.
-            this._indexes[params.name].removeDocument(params.id)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This method a document from all field indexes.
-     *
-     * @protected
-     * @method removeDocFromIndexes
-     * @param {string} id ID of the document to be removed.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected removeDocFromIndexes(id: string): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: { id, name },
-                    stepFunction: (params: any) => this.removeDocFromIndex(params)
-                });
-            })
-            //
-            // Removing document.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicIndex.rebuildAllIndexes(params);
     }
     /**
      * This method cleans up current error messages.
@@ -1368,60 +964,6 @@ export class Collection implements IResource {
     protected resetError(): void {
         this._lastError = null;
         this._lastRejection = null;
-    }
-    /**
-     * This method truncates a specific index.
-     *
-     * @protected
-     * @method truncateIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndex(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Skipping physical save, that will be dealt with later.
-            this._indexes[params.name].skipSave();
-            this._indexes[params.name].truncate()
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-    /**
-     * This method truncates all field indexes.
-     *
-     * @protected
-     * @method truncateIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected truncateIndexes(params: any): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // List of operations.
-            let steps: any[] = [];
-            //
-            // Generating a step for each field index.
-            Object.keys(this._indexes).forEach(name => {
-                steps.push({
-                    params: { name },
-                    stepFunction: (params: any) => this.truncateIndex(params)
-                });
-            })
-            //
-            // Truncating.
-            Collection.ProcessStepsSequence(steps)
-                .then(resolve)
-                .catch(reject);
-        });
     }
     /**
      * This method triggers the physical saving of all files.

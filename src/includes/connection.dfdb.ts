@@ -12,7 +12,7 @@ import * as path from 'path';
 import { BasicConstants, CollectionTypes, ConnectionSaveConstants } from './constants.dfdb';
 import { DocsOnFileDB } from './manager.dfdb';
 import { Collection } from './collection/collection.dfdb';
-import { IResource } from './interface.resource.dfdb';
+import { IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';
 import { Tools } from './tools.dfdb';

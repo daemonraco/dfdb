@@ -6,7 +6,7 @@
 import { Promise } from 'es6-promise';
 import * as jsonpath from 'jsonpath-plus';
 
-import { IOpenCollectionSeeker } from './i.open-collection.dfdb';
+import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
