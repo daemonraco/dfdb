@@ -12,12 +12,13 @@ import * as md5 from 'md5';
 import { BasicConstants } from '../constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
 import { FindSubLogic } from './find.sb.dfb';
-import { SearchSubLogic } from './search.sb.dfdb';
-import { ICollectionStep } from './collection-step.dfdb';
+import { ICollectionStep } from './i.collection-step.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../interface.resource.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
+import { SchemaSubLogic } from './schema.sb.dfdb';
+import { SearchSubLogic } from './search.sb.dfdb';
 import { Sequence } from '../sequence.dfdb';
 import { Tools } from '../tools.dfdb';
 
@@ -33,7 +34,6 @@ export class Collection implements IResource {
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _data: { [name: string]: any } = {};
-    protected _findSubLogic: FindSubLogic = null;
     protected _indexes: { [name: string]: Index } = {};
     protected _lastError: string = null;
     protected _lastRejection: Rejection = null;
@@ -47,7 +47,9 @@ export class Collection implements IResource {
     protected _resourcePath: string = null;
     protected _schemaApplier: any = null;
     protected _schemaValidator: any = null;
-    protected _searchSubLogic: SearchSubLogic = null;
+    protected _subLogicFind: FindSubLogic = null;
+    protected _subLogicSchema: SchemaSubLogic = null;
+    protected _subLogicSearch: SearchSubLogic = null;
     protected _sequence: Sequence = null;
     //
     // Constructor.
@@ -67,8 +69,9 @@ export class Collection implements IResource {
         this._resourcePath = `${this._name}/data.col`;
         //
         // Sub-logics.
-        this._findSubLogic = new FindSubLogic(this);
-        this._searchSubLogic = new SearchSubLogic(this);
+        this._subLogicFind = new FindSubLogic(this);
+        this._subLogicSchema = new SchemaSubLogic(this);
+        this._subLogicSearch = new SearchSubLogic(this);
     }
     //
     // Public methods.
@@ -172,7 +175,7 @@ export class Collection implements IResource {
                         this._connected = true;
                         //
                         // Loading schema validators if necessary.
-                        this.loadSchemaHandlers();
+                        this._subLogicSchema.loadSchemaHandlers();
 
                         resolve();
                     })
@@ -372,7 +375,9 @@ export class Collection implements IResource {
      * search completes. In the promise it returns the list of found documents.
      */
     public find(conditions: { [name: string]: any }): Promise<any[]> {
-        return this._findSubLogic.find(conditions);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicFind.find(conditions);
     }
     /**
      * This is the same than 'find()', but it returns only the first found
@@ -384,7 +389,9 @@ export class Collection implements IResource {
      * search completes. In the promise it returns a found documents.
      */
     public findOne(conditions: any): Promise<any> {
-        return this._findSubLogic.findOne(conditions);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicFind.findOne(conditions);
     }
     /**
      * Checks if this collection has a specific index.
@@ -403,7 +410,9 @@ export class Collection implements IResource {
      * @returns {boolean} Returns TRUE when it has a schema defined.
      */
     public hasSchema(): boolean {
-        return this._manifest.schema !== null;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicSchema.hasSchema();
     }
     /**
      * List all indexes of this collection
@@ -645,38 +654,8 @@ export class Collection implements IResource {
      */
     public removeSchema(): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected?
-            if (this._connected) {
-                //
-                // Does it have a schema?
-                if (this.hasSchema()) {
-                    //
-                    // Cleaning schema.
-                    this._manifest.schema = null;
-                    this._manifest.schemaMD5 = null;
-                    //
-                    // Cleaning internal schema validation objects.
-                    this._schemaValidator = null;
-                    this._schemaApplier = null;
-                    //
-                    // Saving changes.
-                    this.save()
-                        .then(resolve)
-                        .catch(reject);
-                } else {
-                    resolve();
-                }
-            } else {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicSchema.removeSchema();
     }
     /**
      * Provides a copy of the assigned schema for document validaton.
@@ -685,7 +664,9 @@ export class Collection implements IResource {
      * @returns {any} Return a deep-copy of current collection's schema.
      */
     public schema(): any {
-        return Tools.DeepCopy(this._manifest.schema);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicSchema.schema();
     }
     /**
      * This method searches for documents that match certain criteria. Conditions
@@ -697,7 +678,9 @@ export class Collection implements IResource {
      * search completes. In the promise it returns the list of found documents.
      */
     public search(conditions: { [name: string]: any }): Promise<any[]> {
-        return this._searchSubLogic.search(conditions);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicSearch.search(conditions);
     }
     /**
      * This is the same than 'searchOne()', but it returns only the first found
@@ -709,7 +692,9 @@ export class Collection implements IResource {
      * search completes. In the promise it returns a found documents.
      */
     public searchOne(conditions: { [name: string]: any }): Promise<any> {
-        return this._searchSubLogic.searchOne(conditions);
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicSearch.searchOne(conditions);
     }
     /**
      * Assignes or replaces the schema for document validaton on this collection.
@@ -721,58 +706,8 @@ export class Collection implements IResource {
      */
     public setSchema(schema: any): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected?
-            if (this._connected) {
-                const schemaAsString = JSON.stringify(schema);
-                const schemaMD5 = md5(schemaAsString);
-                //
-                // Is it a new one?
-                if (schemaMD5 !== this._manifest.schemaMD5) {
-                    //
-                    // Checking schema.
-                    let valid = false;
-                    let ajv = new Ajv();
-                    try {
-                        let validator = ajv.compile(schema);
-                        valid = true;
-                    } catch (e) {
-                        this.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
-                    }
-                    //
-                    // Is it valid?
-                    if (valid) {
-                        //
-                        // Building a list of loading asynchronous operations to perform.
-                        let steps: ICollectionStep[] = [];
-                        steps.push({ params: { schema, schemaMD5 }, stepFunction: (params: any) => this.applySchema(params) });
-                        steps.push({ params: {}, stepFunction: (params: any) => this.rebuildAllIndexes(params) });
-                        //
-                        // Loading everything.
-                        Collection.ProcessStepsSequence(steps)
-                            .then(() => {
-                                this.save()
-                                    .then(resolve)
-                                    .catch(reject);
-                            }).catch(reject);
-                    } else {
-                        reject(this._lastRejection);
-                    }
-                } else {
-                    //
-                    // If it's not a new one, nothing is done.
-                    resolve();
-                }
-            } else {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicSchema.setSchema(schema);
     }
     /**
      * This methods provides a proper value for string auto-castings.
@@ -962,59 +897,6 @@ export class Collection implements IResource {
             Collection.ProcessStepsSequence(steps)
                 .then(resolve)
                 .catch(reject);
-        });
-    }
-    /**
-     * This method validates and replaces this collection's schema for document
-     * validation.
-     *
-     * @protected
-     * @method applySchema
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('schema', 'schemaMD5').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected applySchema(params: { [name: string]: any }): Promise<void> {
-        //
-        // Parsing parameters.
-        const { schema, schemaMD5 } = params;
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Creating a few temporary validators.
-            let auxAjv = new Ajv();
-            let validator = auxAjv.compile(schema);
-            //
-            // Checking current data against schema.
-            Object.keys(this._data).forEach((id: string) => {
-                if (!this.error()) {
-                    if (!validator(this._data[id])) {
-                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
-                    }
-                }
-            });
-            //
-            // Can it be applied.
-            if (!this.error()) {
-                //
-                // Updating manifest.
-                this._manifest.schema = schema;
-                this._manifest.schemaMD5 = schemaMD5;
-                //
-                // Reloading schema validators.
-                this.loadSchemaHandlers();
-                //
-                // Fixing current data using the new schema.
-                Object.keys(this._data).forEach((id: string) => {
-                    this._schemaApplier(this._data[id]);
-                });
-
-                resolve();
-            } else {
-                reject(this._lastRejection);
-            }
         });
     }
     /**
@@ -1367,28 +1249,6 @@ export class Collection implements IResource {
         });
     }
     /**
-     * This method loads internal schema validation objects.
-     *
-     * @protected
-     * @method loadSchemaHandlers
-     */
-    protected loadSchemaHandlers(): void {
-        //
-        // Is it connected and does it have a schema?
-        if (this._connected && this.hasSchema()) {
-            //
-            // Creating a simple validator.
-            let auxAjv = new Ajv();
-            this._schemaValidator = auxAjv.compile(this._manifest.schema);
-            //
-            // Creating a validator to add default values.
-            auxAjv = new Ajv({
-                useDefaults: true
-            });
-            this._schemaApplier = auxAjv.compile(this._manifest.schema);
-        }
-    }
-    /**
      * This method loads the associated collection sequence.
      *
      * @protected
@@ -1612,7 +1472,7 @@ export class Collection implements IResource {
         this._lastRejection = rejection;
     }
     //
-    // Protected class methods.
+    // Public class methods.
     /**
      * This method is a generic iterator of recursive asynchronous calls to
      * multiple tasks.
@@ -1624,7 +1484,7 @@ export class Collection implements IResource {
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void> {
+    public static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void> {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {

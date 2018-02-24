@@ -5,11 +5,12 @@
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
 import { FindSubLogic } from './find.sb.dfb';
-import { SearchSubLogic } from './search.sb.dfdb';
-import { ICollectionStep } from './collection-step.dfdb';
+import { ICollectionStep } from './i.collection-step.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../interface.resource.dfdb';
 import { Rejection } from '../rejection.dfdb';
+import { SchemaSubLogic } from './schema.sb.dfdb';
+import { SearchSubLogic } from './search.sb.dfdb';
 import { Sequence } from '../sequence.dfdb';
 /**
  * This class represents a collection and provides access to all its information
@@ -23,7 +24,6 @@ export declare class Collection implements IResource {
     protected _data: {
         [name: string]: any;
     };
-    protected _findSubLogic: FindSubLogic;
     protected _indexes: {
         [name: string]: Index;
     };
@@ -37,7 +37,9 @@ export declare class Collection implements IResource {
     protected _resourcePath: string;
     protected _schemaApplier: any;
     protected _schemaValidator: any;
-    protected _searchSubLogic: SearchSubLogic;
+    protected _subLogicFind: FindSubLogic;
+    protected _subLogicSchema: SchemaSubLogic;
+    protected _subLogicSearch: SearchSubLogic;
     protected _sequence: Sequence;
     /**
      * @constructor
@@ -309,20 +311,6 @@ export declare class Collection implements IResource {
         [name: string]: any;
     }): Promise<void>;
     /**
-     * This method validates and replaces this collection's schema for document
-     * validation.
-     *
-     * @protected
-     * @method applySchema
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('schema', 'schemaMD5').
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected applySchema(params: {
-        [name: string]: any;
-    }): Promise<void>;
-    /**
      * This closes a specific index.
      *
      * @protected
@@ -444,13 +432,6 @@ export declare class Collection implements IResource {
      */
     protected loadResource(params: any): Promise<void>;
     /**
-     * This method loads internal schema validation objects.
-     *
-     * @protected
-     * @method loadSchemaHandlers
-     */
-    protected loadSchemaHandlers(): void;
-    /**
      * This method loads the associated collection sequence.
      *
      * @protected
@@ -552,5 +533,5 @@ export declare class Collection implements IResource {
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void>;
+    static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void>;
 }
