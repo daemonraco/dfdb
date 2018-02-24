@@ -141,7 +141,7 @@ export class SchemaSubLogic extends SubLogic<IOpenCollectionSchema> {
                         // Building a list of loading asynchronous operations to perform.
                         let steps: ICollectionStep[] = [];
                         steps.push({ params: { schema, schemaMD5 }, stepFunction: (params: any) => this.applySchema(params) });
-                        steps.push({ params: {}, stepFunction: (params: any) => this._mainObject.rebuildAllIndexes(params) });
+                        steps.push({ params: {}, stepFunction: (params: any) => this._mainObject._subLogicIndex.rebuildAllIndexes(params) });
                         //
                         // Loading everything.
                         Collection.ProcessStepsSequence(steps)

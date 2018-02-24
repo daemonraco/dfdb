@@ -5,6 +5,7 @@
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
 import { Index } from '../index.dfdb';
+import { IndexSubLogic } from './index.sb.dfdb';
 import { Rejection } from '../rejection.dfdb';
 /**
  * @todo DOC
@@ -44,8 +45,8 @@ export interface IOpenCollectionSchema {
     };
     _schemaApplier: any;
     _schemaValidator: any;
+    _subLogicIndex: IndexSubLogic;
     error(): boolean;
-    rebuildAllIndexes(params: any): Promise<void>;
     resetError(): void;
     save(): Promise<void>;
     setLastRejection(rejection: Rejection): void;

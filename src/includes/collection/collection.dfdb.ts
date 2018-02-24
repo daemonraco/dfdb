@@ -941,21 +941,6 @@ export class Collection implements IResource {
         });
     }
     /**
-     * This method removes a document from a specific index.
-     *
-     * @protected
-     * @method rebuildAllIndexes
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    protected rebuildAllIndexes(params: any): Promise<void> {
-        //
-        // Forwarding to sub-logic.
-        return this._subLogicIndex.rebuildAllIndexes(params);
-    }
-    /**
      * This method cleans up current error messages.
      *
      * @protected
