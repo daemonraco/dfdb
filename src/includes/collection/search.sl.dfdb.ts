@@ -1,5 +1,5 @@
 /**
- * @file search.sb.dfdb.ts
+ * @file search.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 
@@ -8,7 +8,7 @@ import * as jsonpath from 'jsonpath-plus';
 import { Promise } from 'es6-promise';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
-import { SeekerSubLogic } from './seeker.sb.dfdb';
+import { SeekerSubLogic } from './seeker.sl.dfdb';
 
 export class SearchSubLogic extends SeekerSubLogic {
     //

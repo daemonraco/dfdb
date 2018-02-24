@@ -11,15 +11,16 @@ import * as md5 from 'md5';
 
 import { BasicConstants } from '../constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
-import { FindSubLogic } from './find.sb.dfb';
+import { CRUDSubLogic } from './crud.sl.dfdb';
+import { FindSubLogic } from './find.sl.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
-import { IndexSubLogic } from './index.sb.dfdb';
+import { IndexSubLogic } from './index.sl.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
-import { SchemaSubLogic } from './schema.sb.dfdb';
-import { SearchSubLogic } from './search.sb.dfdb';
+import { SchemaSubLogic } from './schema.sl.dfdb';
+import { SearchSubLogic } from './search.sl.dfdb';
 import { Sequence } from '../sequence.dfdb';
 import { Tools } from '../tools.dfdb';
 
@@ -48,6 +49,7 @@ export class Collection implements IResource {
     protected _resourcePath: string = null;
     protected _schemaApplier: any = null;
     protected _schemaValidator: any = null;
+    protected _subLogicCRUD: CRUDSubLogic = null;
     protected _subLogicFind: FindSubLogic = null;
     protected _subLogicIndex: IndexSubLogic = null;
     protected _subLogicSchema: SchemaSubLogic = null;
@@ -71,6 +73,7 @@ export class Collection implements IResource {
         this._resourcePath = `${this._name}/data.col`;
         //
         // Sub-logics.
+        this._subLogicCRUD = new CRUDSubLogic(this);
         this._subLogicFind = new FindSubLogic(this);
         this._subLogicIndex = new IndexSubLogic(this);
         this._subLogicSchema = new SchemaSubLogic(this);
@@ -359,74 +362,8 @@ export class Collection implements IResource {
      */
     public insert(doc: { [name: string]: any }): Promise<{ [name: string]: any }> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<{ [name: string]: any }>((resolve: (res: { [name: string]: any }) => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it a valid document?
-            //  and is it connected?
-            if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._lastRejection);
-            } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else {
-                //
-                // Should check the schema?
-                if (this.hasSchema()) {
-                    //
-                    // Is it valid?
-                    if (this._schemaValidator(doc)) {
-                        //
-                        // Fixing default fields.
-                        this._schemaApplier(doc);
-                    } else {
-                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`));
-                    }
-                }
-                //
-                // Did it fail validating the schema?
-                if (!this.error()) {
-                    //
-                    // Skiping sequence physical update, this will be done
-                    // automatically later.
-                    this._sequence.skipSave();
-                    //
-                    // Getting a new and unique id.
-                    const newID = this._sequence.next();
-                    //
-                    // Setting main internal value.
-                    const newDate = new Date();
-                    doc._id = newID;
-                    doc._created = newDate;
-                    doc._updated = newDate;
-                    //
-                    // Inserting document.
-                    this._data[newID] = doc;
-                    //
-                    // Indexing document in all field indexes.
-                    this._subLogicIndex.addDocToIndexes(doc)
-                        .then(() => {
-                            //
-                            // Physically saving all changes.
-                            this.save()
-                                .then(() => {
-                                    //
-                                    // Finishing and returning document as it was
-                                    // inserted.
-                                    resolve(this._data[newID]);
-                                })
-                                .catch(reject);
-                        })
-                        .catch(reject);
-                } else {
-                    reject(this._lastRejection);
-                }
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.insert(doc);
     }
     /**
      * Provides access to the error message registed by the last operation.
@@ -460,35 +397,8 @@ export class Collection implements IResource {
      */
     public partialUpdate(id: any, partialDoc: { [name: string]: any }): Promise<any> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it a valid document?
-            //      Is it a known document?
-            //          Is it connected?
-            if (typeof partialDoc !== 'object' || Array.isArray(partialDoc)) {
-                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._lastRejection);
-            } else if (typeof this._data[id] === 'undefined') {
-                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._lastRejection);
-            } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else {
-                //
-                // Merging.
-                const mergedDoc = Tools.DeepMergeObjects(this._data[id], partialDoc);
-                //
-                // Forwarding call.
-                this.update(id, mergedDoc)
-                    .then(resolve)
-                    .catch(reject);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.partialUpdate(id, partialDoc);
     }
     /**
      * This method forces a index to reload and reindex all documents.
@@ -513,37 +423,8 @@ export class Collection implements IResource {
      */
     public remove(id: any): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected.
-            //      Does the document is present?
-            if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else if (typeof this._data[id] === 'undefined') {
-                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._lastRejection);
-            } else {
-                //
-                // Removing the document.
-                delete this._data[id];
-                //
-                // Removing the document from all indexes.
-                this._subLogicIndex.removeDocFromIndexes(id)
-                    .then(() => {
-                        //
-                        // Physically saving all changes.
-                        this.save()
-                            .then(resolve)
-                            .catch(reject);
-                    })
-                    .catch(reject);
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.remove(id);
     }
     /**
      * This method removes a the assigned schema for document validaton on this
@@ -628,34 +509,8 @@ export class Collection implements IResource {
      */
     public truncate(): Promise<void> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it connected?
-            if (this._connected) {
-                //
-                // Forgetting all data.
-                this._data = {};
-                //
-                // Truncating all indexes.
-                this._subLogicIndex.truncateIndexes(null)
-                    .then(() => {
-                        //
-                        // Physically saving all data.
-                        this.save()
-                            .then(resolve)
-                            .catch(reject);
-                    })
-                    .catch(reject);
-            } else {
-                //
-                // If it's connected, nothing is done.
-                resolve();
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.truncate();
     }
     /**
      * Updates a document and updates this collection's indexes with it.
@@ -668,80 +523,8 @@ export class Collection implements IResource {
      */
     public update(id: any, doc: { [name: string]: any }): Promise<any> {
         //
-        // Restarting error messages.
-        this.resetError();
-        //
-        // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
-            //
-            // Is it a valid document?
-            //      Is it a known document?
-            //          Is it connected?
-            if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._lastRejection);
-            } else if (typeof this._data[id] === 'undefined') {
-                this.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._lastRejection);
-            } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._lastRejection);
-            } else {
-                //
-                // Should check the schema?
-                if (this.hasSchema()) {
-                    //
-                    // Is it valid?
-                    if (this._schemaValidator(doc)) {
-                        //
-                        // Fixing default fields.
-                        this._schemaApplier(doc);
-                    } else {
-                        this.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._schemaValidator.errors[0].dataPath}' ${this._schemaValidator.errors[0].message}`));
-                    }
-                }
-                //
-                // Did it fail validating the schema?
-                if (!this.error()) {
-                    //
-                    // Known document shortcut.
-                    const currentDoc = this._data[id];
-                    //
-                    // Setting main internal value.
-                    doc._id = currentDoc._id;
-                    doc._created = currentDoc._created;
-                    doc._updated = new Date();
-                    //
-                    // Updating document.
-                    this._data[id] = doc;
-                    //
-                    // Removing document from all field indexes because it may be
-                    // outdated.
-                    this._subLogicIndex.removeDocFromIndexes(id)
-                        .then(() => {
-                            //
-                            // Reading document to all field indexes.
-                            this._subLogicIndex.addDocToIndexes(doc).
-                                then(() => {
-                                    //
-                                    // Physically saving all changes.
-                                    this.save()
-                                        .then(() => {
-                                            //
-                                            // Finishing and returning document as it
-                                            // was updated.
-                                            resolve(this._data[id]);
-                                        })
-                                        .catch(reject);
-                                })
-                                .catch(reject);
-                        })
-                        .catch(reject);
-                } else {
-                    reject(this._lastRejection);
-                }
-            }
-        });
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.update(id, doc);
     }
     //
     // Protected methods.

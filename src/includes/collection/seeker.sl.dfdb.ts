@@ -4,7 +4,6 @@
  */
 
 import { Promise } from 'es6-promise';
-import * as jsonpath from 'jsonpath-plus';
 
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';

@@ -1,5 +1,5 @@
 import { Promise } from 'es6-promise';
-import { SeekerSubLogic } from './seeker.sb.dfdb';
+import { SeekerSubLogic } from './seeker.sl.dfdb';
 export declare class SearchSubLogic extends SeekerSubLogic {
     /**
      * This method searches for documents that match certain criteria. Conditions

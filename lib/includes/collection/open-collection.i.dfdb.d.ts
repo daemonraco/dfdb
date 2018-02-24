@@ -5,8 +5,34 @@
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
 import { Index } from '../index.dfdb';
-import { IndexSubLogic } from './index.sb.dfdb';
+import { IndexSubLogic } from './index.sl.dfdb';
+import { SchemaSubLogic } from './schema.sl.dfdb';
 import { Rejection } from '../rejection.dfdb';
+import { Sequence } from '../sequence.dfdb';
+/**
+ * @todo DOC
+ *
+ * @interface IOpenCollectionCRUD
+ */
+export interface IOpenCollectionCRUD {
+    _connected: boolean;
+    _data: {
+        [name: string]: any;
+    };
+    _lastRejection: Rejection;
+    _schemaApplier: any;
+    _schemaValidator: any;
+    _subLogicIndex: IndexSubLogic;
+    _subLogicSchema: SchemaSubLogic;
+    _sequence: Sequence;
+    error(): boolean;
+    resetError(): void;
+    save(): Promise<void>;
+    setLastRejection(rejection: Rejection): void;
+    update(id: any, doc: {
+        [name: string]: any;
+    }): Promise<any>;
+}
 /**
  * @todo DOC
  *
