@@ -1,11 +1,11 @@
 /**
- * @file index.sb.dfdb.ts
+ * @file index.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
 import { IOpenCollectionIndex } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-export declare class IndexSubLogic extends SubLogic<IOpenCollectionIndex> {
+export declare class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     /**
      * This method adds certain document to all field indexes.
      *

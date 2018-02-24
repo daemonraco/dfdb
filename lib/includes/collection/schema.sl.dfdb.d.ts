@@ -1,11 +1,11 @@
 /**
- * @file schema.sb.dfdb.ts
+ * @file schema.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-export declare class SchemaSubLogic extends SubLogic<IOpenCollectionSchema> {
+export declare class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     /**
      * Checks if this collection has a schema defined for its documents.
      *

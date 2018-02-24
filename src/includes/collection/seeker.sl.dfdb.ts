@@ -1,5 +1,5 @@
 /**
- * @file seeker.sb.dfdb.ts
+ * @file seeker.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 
@@ -10,7 +10,7 @@ import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 
-export class SeekerSubLogic extends SubLogic<IOpenCollectionSeeker> {
+export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
     //
     // Protected methods.
     /**

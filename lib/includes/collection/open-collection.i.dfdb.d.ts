@@ -1,14 +1,14 @@
 /**
- * @file open-collection.interface.dfdb.ts
+ * @file open-collection.i.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
 import { Index } from '../index.dfdb';
-import { IndexSubLogic } from './index.sl.dfdb';
-import { SchemaSubLogic } from './schema.sl.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { Sequence } from '../sequence.dfdb';
+import { SubLogicIndex } from './index.sl.dfdb';
+import { SubLogicSchema } from './schema.sl.dfdb';
 /**
  * @todo DOC
  *
@@ -22,8 +22,8 @@ export interface IOpenCollectionCRUD {
     _lastRejection: Rejection;
     _schemaApplier: any;
     _schemaValidator: any;
-    _subLogicIndex: IndexSubLogic;
-    _subLogicSchema: SchemaSubLogic;
+    _subLogicIndex: SubLogicIndex;
+    _subLogicSchema: SubLogicSchema;
     _sequence: Sequence;
     error(): boolean;
     resetError(): void;
@@ -71,7 +71,7 @@ export interface IOpenCollectionSchema {
     };
     _schemaApplier: any;
     _schemaValidator: any;
-    _subLogicIndex: IndexSubLogic;
+    _subLogicIndex: SubLogicIndex;
     error(): boolean;
     resetError(): void;
     save(): Promise<void>;

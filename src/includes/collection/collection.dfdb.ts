@@ -4,25 +4,20 @@
  */
 
 import { Promise } from 'es6-promise';
-import * as Ajv from 'ajv';
-import * as jsonpath from 'jsonpath-plus';
-import * as JSZip from 'jszip';
-import * as md5 from 'md5';
 
 import { BasicConstants } from '../constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
-import { CRUDSubLogic } from './crud.sl.dfdb';
-import { FindSubLogic } from './find.sl.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
-import { IndexSubLogic } from './index.sl.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
-import { SchemaSubLogic } from './schema.sl.dfdb';
-import { SearchSubLogic } from './search.sl.dfdb';
+import { SubLogicCRUD } from './crud.sl.dfdb';
+import { SubLogicFind } from './find.sl.dfdb';
+import { SubLogicIndex } from './index.sl.dfdb';
+import { SubLogicSchema } from './schema.sl.dfdb';
+import { SubLogicSearch } from './search.sl.dfdb';
 import { Sequence } from '../sequence.dfdb';
-import { Tools } from '../tools.dfdb';
 
 /**
  * This class represents a collection and provides access to all its information
@@ -49,11 +44,11 @@ export class Collection implements IResource {
     protected _resourcePath: string = null;
     protected _schemaApplier: any = null;
     protected _schemaValidator: any = null;
-    protected _subLogicCRUD: CRUDSubLogic = null;
-    protected _subLogicFind: FindSubLogic = null;
-    protected _subLogicIndex: IndexSubLogic = null;
-    protected _subLogicSchema: SchemaSubLogic = null;
-    protected _subLogicSearch: SearchSubLogic = null;
+    protected _subLogicCRUD: SubLogicCRUD = null;
+    protected _subLogicFind: SubLogicFind = null;
+    protected _subLogicIndex: SubLogicIndex = null;
+    protected _subLogicSchema: SubLogicSchema = null;
+    protected _subLogicSearch: SubLogicSearch = null;
     protected _sequence: Sequence = null;
     //
     // Constructor.
@@ -73,11 +68,11 @@ export class Collection implements IResource {
         this._resourcePath = `${this._name}/data.col`;
         //
         // Sub-logics.
-        this._subLogicCRUD = new CRUDSubLogic(this);
-        this._subLogicFind = new FindSubLogic(this);
-        this._subLogicIndex = new IndexSubLogic(this);
-        this._subLogicSchema = new SchemaSubLogic(this);
-        this._subLogicSearch = new SearchSubLogic(this);
+        this._subLogicCRUD = new SubLogicCRUD(this);
+        this._subLogicFind = new SubLogicFind(this);
+        this._subLogicIndex = new SubLogicIndex(this);
+        this._subLogicSchema = new SubLogicSchema(this);
+        this._subLogicSearch = new SubLogicSearch(this);
     }
     //
     // Public methods.

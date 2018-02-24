@@ -3,14 +3,14 @@
  * @author Alejandro D. Simi
  */
 
+import { Promise } from 'es6-promise';
 import * as jsonpath from 'jsonpath-plus';
 
-import { Promise } from 'es6-promise';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
-import { SeekerSubLogic } from './seeker.sl.dfdb';
+import { SubLogicSeeker } from './seeker.sl.dfdb';
 
-export class SearchSubLogic extends SeekerSubLogic {
+export class SubLogicSearch extends SubLogicSeeker {
     //
     // Public methods.
     /**

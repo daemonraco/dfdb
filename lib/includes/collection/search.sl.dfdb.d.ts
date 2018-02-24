@@ -1,6 +1,10 @@
+/**
+ * @file search.sl.dfdb.ts
+ * @author Alejandro D. Simi
+ */
 import { Promise } from 'es6-promise';
-import { SeekerSubLogic } from './seeker.sl.dfdb';
-export declare class SearchSubLogic extends SeekerSubLogic {
+import { SubLogicSeeker } from './seeker.sl.dfdb';
+export declare class SubLogicSearch extends SubLogicSeeker {
     /**
      * This method searches for documents that match certain criteria. Conditions
      * may include indexed and unindexed fields.

@@ -1,12 +1,9 @@
 /**
- * @file index.sb.dfdb.ts
+ * @file index.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 
 import { Promise } from 'es6-promise';
-// import * as Ajv from 'ajv';
-// import * as jsonpath from 'jsonpath-plus';
-// import * as md5 from 'md5';
 
 import { Collection } from './collection.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
@@ -17,7 +14,7 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
-export class IndexSubLogic extends SubLogic<IOpenCollectionIndex> {
+export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     //
     // Public methods.
     /**

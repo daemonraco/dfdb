@@ -1,5 +1,5 @@
 /**
- * @file seeker.sb.dfdb.ts
+ * @file crud.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 
@@ -11,7 +11,7 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
-export class CRUDSubLogic extends SubLogic<IOpenCollectionCRUD> {
+export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     //
     // Public methods.
     /**

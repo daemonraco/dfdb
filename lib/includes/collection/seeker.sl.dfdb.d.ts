@@ -1,11 +1,11 @@
 /**
- * @file seeker.sb.dfdb.ts
+ * @file seeker.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-export declare class SeekerSubLogic extends SubLogic<IOpenCollectionSeeker> {
+export declare class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
     /**
      * This method takes a list of conditions and uses them to search ids inside
      * indexes. Once all involved indexes had been checked, it returns those that

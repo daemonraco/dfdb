@@ -1,5 +1,5 @@
 /**
- * @file collection.dfdb.ts
+ * @file collection-step.i.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';

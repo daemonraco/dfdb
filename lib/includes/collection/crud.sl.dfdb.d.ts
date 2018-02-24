@@ -1,11 +1,11 @@
 /**
- * @file seeker.sb.dfdb.ts
+ * @file crud.sl.dfdb.ts
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
 import { IOpenCollectionCRUD } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-export declare class CRUDSubLogic extends SubLogic<IOpenCollectionCRUD> {
+export declare class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     /**
      * Inserts a new document and updates this collection's indexes with it.
      *

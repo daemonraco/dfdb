@@ -4,15 +4,15 @@
  */
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection.dfdb';
-import { CRUDSubLogic } from './crud.sl.dfdb';
-import { FindSubLogic } from './find.sl.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
-import { IndexSubLogic } from './index.sl.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
-import { SchemaSubLogic } from './schema.sl.dfdb';
-import { SearchSubLogic } from './search.sl.dfdb';
+import { SubLogicCRUD } from './crud.sl.dfdb';
+import { SubLogicFind } from './find.sl.dfdb';
+import { SubLogicIndex } from './index.sl.dfdb';
+import { SubLogicSchema } from './schema.sl.dfdb';
+import { SubLogicSearch } from './search.sl.dfdb';
 import { Sequence } from '../sequence.dfdb';
 /**
  * This class represents a collection and provides access to all its information
@@ -39,11 +39,11 @@ export declare class Collection implements IResource {
     protected _resourcePath: string;
     protected _schemaApplier: any;
     protected _schemaValidator: any;
-    protected _subLogicCRUD: CRUDSubLogic;
-    protected _subLogicFind: FindSubLogic;
-    protected _subLogicIndex: IndexSubLogic;
-    protected _subLogicSchema: SchemaSubLogic;
-    protected _subLogicSearch: SearchSubLogic;
+    protected _subLogicCRUD: SubLogicCRUD;
+    protected _subLogicFind: SubLogicFind;
+    protected _subLogicIndex: SubLogicIndex;
+    protected _subLogicSchema: SubLogicSchema;
+    protected _subLogicSearch: SubLogicSearch;
     protected _sequence: Sequence;
     /**
      * @constructor
