@@ -14,6 +14,11 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
+/**
+ * This class holds Collection's logic related to its indexes.
+ *
+ * @class SubLogicIndex
+ */
 export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     //
     // Public methods.

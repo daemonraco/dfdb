@@ -5,6 +5,11 @@
 import { Promise } from 'es6-promise';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Collection's logic related to its schema.
+ *
+ * @class SubLogicSchema
+ */
 export declare class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     /**
      * Checks if this collection has a schema defined for its documents.

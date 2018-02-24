@@ -10,6 +10,12 @@ import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
 
+/**
+ * This class holds Collection's specific logic to find unindexed document field
+ * values.
+ *
+ * @class SubLogicSearch
+ */
 export class SubLogicSearch extends SubLogicSeeker {
     //
     // Public methods.

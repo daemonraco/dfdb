@@ -4,6 +4,12 @@
  */
 import { Promise } from 'es6-promise';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
+/**
+ * This class holds Collection's specific logic to find indexed document field
+ * values.
+ *
+ * @class SubLogicFind
+ */
 export declare class SubLogicFind extends SubLogicSeeker {
     /**
      * This method searches for documents that match certain criteria. Conditions

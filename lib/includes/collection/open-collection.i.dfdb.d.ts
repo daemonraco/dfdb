@@ -10,7 +10,8 @@ import { Sequence } from '../sequence.dfdb';
 import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionCRUD
  */
@@ -34,7 +35,8 @@ export interface IOpenCollectionCRUD {
     }): Promise<any>;
 }
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionIndex
  */
@@ -56,7 +58,8 @@ export interface IOpenCollectionIndex {
     setLastRejection(rejection: Rejection): void;
 }
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionSchema
  */
@@ -78,7 +81,8 @@ export interface IOpenCollectionSchema {
     setLastRejection(rejection: Rejection): void;
 }
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionSeeker
  */

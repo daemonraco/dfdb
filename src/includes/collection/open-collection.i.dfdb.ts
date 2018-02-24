@@ -13,7 +13,8 @@ import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionCRUD
  */
@@ -35,7 +36,8 @@ export interface IOpenCollectionCRUD {
 }
 
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionIndex
  */
@@ -53,7 +55,8 @@ export interface IOpenCollectionIndex {
 }
 
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionSchema
  */
@@ -73,7 +76,8 @@ export interface IOpenCollectionSchema {
 }
 
 /**
- * @todo DOC
+ * This is a wprkarround to access public and protected methods and properties of
+ * a Collection object.
  *
  * @interface IOpenCollectionSeeker
  */

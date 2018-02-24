@@ -5,6 +5,11 @@
 import { Promise } from 'es6-promise';
 import { IOpenCollectionCRUD } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Collection's logic related to its CRUD operations.
+ *
+ * @class SubLogicCRUD
+ */
 export declare class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     /**
      * Inserts a new document and updates this collection's indexes with it.

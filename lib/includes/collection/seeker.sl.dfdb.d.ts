@@ -5,6 +5,11 @@
 import { Promise } from 'es6-promise';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Collection's generic logic related to document search.
+ *
+ * @class SubLogicSeeker
+ */
 export declare class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
     /**
      * This method takes a list of conditions and uses them to search ids inside

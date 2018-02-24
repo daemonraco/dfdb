@@ -10,6 +10,11 @@ import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 
+/**
+ * This class holds Collection's generic logic related to document search.
+ *
+ * @class SubLogicSeeker
+ */
 export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
     //
     // Protected methods.

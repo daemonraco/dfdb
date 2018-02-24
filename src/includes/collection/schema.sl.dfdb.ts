@@ -15,6 +15,11 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
+/**
+ * This class holds Collection's logic related to its schema.
+ *
+ * @class SubLogicSchema
+ */
 export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     //
     // Public methods.

@@ -11,6 +11,11 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
+/**
+ * This class holds Collection's logic related to its CRUD operations.
+ *
+ * @class SubLogicCRUD
+ */
 export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     //
     // Public methods.
