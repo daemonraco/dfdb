@@ -5,7 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
-import { Condition, ConditionsList } from '../condition.dfdb';
+import { Condition, ConditionsList, SimpleConditionsList } from '../condition.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -24,11 +24,11 @@ export class SubLogicFind extends SubLogicSeeker {
      * should only include indexed fields.
      *
      * @method find
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public find(conditions: { [name: string]: any }): Promise<any[]> {
+    public find(conditions: SimpleConditionsList): Promise<any[]> {
         //
         // Fixing conditions object.
         if (typeof conditions !== 'object' || Array.isArray(conditions)) {
@@ -64,11 +64,11 @@ export class SubLogicFind extends SubLogicSeeker {
      * document.
      *
      * @method findOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns a found documents.
      */
-    public findOne(conditions: any): Promise<any> {
+    public findOne(conditions: SimpleConditionsList): Promise<any> {
         //
         // Building promise to return.
         return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {

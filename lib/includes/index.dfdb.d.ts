@@ -4,7 +4,7 @@
  */
 import { Promise } from 'es6-promise';
 import { Collection } from './collection/collection.dfdb';
-import { Condition } from './condition.dfdb';
+import { ConditionsList } from './condition.dfdb';
 import { Connection } from './connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
@@ -84,11 +84,11 @@ export declare class Index implements IResource, IDelayedResource {
      * piece of value.
      *
      * @method find
-     * @param {Condition} cond Value to look for.
+     * @param {ConditionsList} conditions List of conditions to check.
      * @returns {Promise<string[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found document IDs.
      */
-    find(cond: Condition): Promise<string[]>;
+    find(conditions: ConditionsList): Promise<string[]>;
     /**
      * Provides access to the error message registed by the last operation.
      *

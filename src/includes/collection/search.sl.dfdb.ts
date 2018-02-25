@@ -6,7 +6,7 @@
 import { Promise } from 'es6-promise';
 import * as jsonpath from 'jsonpath-plus';
 
-import { Condition, ConditionsList } from '../condition.dfdb';
+import { Condition, ConditionsList, SimpleConditionsList } from '../condition.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -25,11 +25,11 @@ export class SubLogicSearch extends SubLogicSeeker {
      * may include indexed and unindexed fields.
      *
      * @method search
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public search(conditions: { [name: string]: any }): Promise<any[]> {
+    public search(conditions: SimpleConditionsList): Promise<any[]> {
         //
         // Fixing conditions object.
         if (typeof conditions !== 'object' || Array.isArray(conditions)) {
@@ -46,31 +46,30 @@ export class SubLogicSearch extends SubLogicSeeker {
             // Default values.
             let findings: any[] = [];
             let foundIds: string[] = [];
-            let indexedConditions: ConditionsList = new ConditionsList();
-            let unindexedConditions: ConditionsList = new ConditionsList();
+            let indexedConditions: ConditionsList = [];
+            let unindexedConditions: ConditionsList = [];
             //
             // Anonymous function to filter findings based on unindexed fields.
             const unindexedSearch = () => {
                 //
-                // List of unindexed fields.
-                const unindexedConditionsKeys = Object.keys(unindexedConditions);
-                //
                 // Returning documents that match unindexed conditions.
                 resolve(findings.filter((datum: any) => {
-                    let accept = false;
+                    let accept = true;
                     //
                     // Checking each conditions.
-                    unindexedConditionsKeys.forEach((key: string) => {
+                    unindexedConditions.forEach((cond: Condition) => {
                         //
                         // Parsing object for the right field.
-                        const jsonPathValues = jsonpath({ json: datum, path: `\$.${key}` });
+                        const jsonPathValues = jsonpath({ json: datum, path: `\$.${cond.field()}` });
                         //
                         // Does current document have the field being checked. If
                         // not, it's filtered out.
                         if (typeof jsonPathValues[0] !== 'undefined') {
                             //
                             // Does it match?
-                            accept = unindexedConditions[key].validate(jsonPathValues[0]);
+                            accept = accept && cond.validate(jsonPathValues[0]);
+                        } else {
+                            accept = false;
                         }
                     });
 
@@ -79,16 +78,16 @@ export class SubLogicSearch extends SubLogicSeeker {
             };
             //
             // Separating conditions for indexed fields from unindexed.
-            Object.keys(conditionsList).forEach(key => {
-                if (typeof this._mainObject._indexes[key] === 'undefined') {
-                    unindexedConditions[key] = conditionsList[key];
+            conditionsList.forEach(cond => {
+                if (typeof this._mainObject._indexes[cond.field()] === 'undefined') {
+                    unindexedConditions.push(cond);
                 } else {
-                    indexedConditions[key] = conditionsList[key];
+                    indexedConditions.push(cond);
                 }
             });
             //
             // Is there indexes conditions that can be used.
-            if (Object.keys(indexedConditions).length > 0) {
+            if (indexedConditions.length > 0) {
                 //
                 // Getting ID of documents that match all conditions of indexed
                 // fields.
@@ -118,11 +117,11 @@ export class SubLogicSearch extends SubLogicSeeker {
      * document.
      *
      * @method searchOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns a found documents.
      */
-    public searchOne(conditions: { [name: string]: any }): Promise<any> {
+    public searchOne(conditions: SimpleConditionsList): Promise<any> {
         //
         // Building promise to return.
         return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {

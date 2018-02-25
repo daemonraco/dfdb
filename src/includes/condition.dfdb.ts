@@ -12,14 +12,15 @@ export enum ConditionTypes { Exact, Ignored, In, NotIn, Position, Range, Wrong }
 
 /**
  * This simple class checks how a list of contitions should be specified.
- *
- * @class ConditionsList
+ * @type ConditionsList
  */
-export class ConditionsList {
-    //
-    // Simple signature.
-    [name: string]: Condition;
-}
+
+export type ConditionsList = Array<Condition>;
+/**
+ * Standard way to specify simple conditions.
+ * @type SimpleConditionsList
+ */
+export type SimpleConditionsList = { [name: string]: any };
 
 /**
  * This class represents all types of search conditions and how they evaluate
@@ -34,27 +35,33 @@ export class Condition {
     //
     // Protected class constants.
     protected static readonly Keywords: { [name: string]: ConditionTypes } = {
-        '$exact': ConditionTypes.Exact
+        '$exact': ConditionTypes.Exact,
+        '$in': ConditionTypes.In,
+        '$notIn': ConditionTypes.NotIn
     };
     //
     // Protected properties.
     protected _data: any = null;
+    protected _field: string = null;
     protected _type: ConditionTypes = null;
+    protected _typeName: string = null;
     //
     // Constructors
     /**
      * @protected
      * @constructor
      */
-    protected constructor(type: ConditionTypes, data: any) {
+    protected constructor(conditionType: ConditionTypes, field: string, data: any) {
         //
         // Shortcuts.
-        this._type = type;
+        this._type = conditionType;
+        this._field = field;
         this._data = data;
         //
         // Setting pointer methods.
-        this.cleanData = this[`cleanData${ConditionTypes[this._type]}`];
-        this.validate = this[`validate${ConditionTypes[this._type]}`];
+        this._typeName = ConditionTypes[this._type];
+        this.cleanData = this[`cleanData${this._typeName}`];
+        this.validate = this[`validate${this._typeName}`];
         //
         // Cleaning data.
         this.cleanData();
@@ -80,6 +87,26 @@ export class Condition {
      */
     protected cleanData: () => void;
     //
+    // Public methods.
+    /**
+     * Field name to which this condition is associated.
+     *
+     * @method field
+     * @returns {string} Returns a field name.
+     */
+    public field(): string {
+        return this._field;
+    }
+    /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this condition.
+     */
+    public toString = (): string => {
+        return `condition:${this._field}[${this._typeName}]`;
+    }
+    //
     // Protected methods.
     /**
      * This method holds the logic to prepare a condition's internal value to be
@@ -100,6 +127,28 @@ export class Condition {
      */
     protected cleanDataIgnored(): void {
         this._data = null;
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataIn
+     */
+    protected cleanDataIn(): void {
+        this._data = Array.isArray(this._data['$in']) ? this._data['$in'] : [];
+        this._data = this._data.map((v: any) => `${v}`.toLowerCase());
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataNotIn
+     */
+    protected cleanDataNotIn(): void {
+        this._data = Array.isArray(this._data['$notIn']) ? this._data['$notIn'] : [];
+        this._data = this._data.map((v: any) => `${v}`.toLowerCase());
     }
     /**
      * This method holds the logic to prepare a condition's internal value to be
@@ -145,6 +194,30 @@ export class Condition {
         return true;
     }
     /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateIn(value: any): boolean {
+        return this._data.indexOf(`${value}`.toLowerCase()) > -1;
+    }
+    /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateNotIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateNotIn(value: any): boolean {
+        return this._data.indexOf(`${value}`.toLowerCase()) < 0;
+    }
+    /**
      * This method holds the logic to validate if a value is on is inside another
      * (both values are interpreted as strings).
      *
@@ -175,10 +248,11 @@ export class Condition {
      *
      * @static
      * @method BuildCondition
+     * @param {string} field Field to which the condition will be associated to.
      * @param {any} conf Configuration to analyse while building a condition.
      * @returns {Condition} Return a condition object.
      */
-    public static BuildCondition(conf: any): Condition {
+    public static BuildCondition(field: string, conf: any): Condition {
         //
         // Default values.
         let type: ConditionTypes = ConditionTypes.Position;
@@ -202,8 +276,9 @@ export class Condition {
                 type = ConditionTypes.Ignored;
             }
         }
-
-        return new Condition(type, conf);
+        //
+        // Building the right condition.
+        return new Condition(type, field, conf);
     }
     /**
      * This method takes a simple list of conditions and builds a list of search
@@ -211,20 +286,34 @@ export class Condition {
      *
      * @static
      * @method BuildConditionsSet
-     * @param {{ [name: string]: any }} conds Simple list of conditions.
+     * @param {SimpleConditionsList} conditions Simple list of conditions.
      * @returns {ConditionsList} Returns a list of search conditions.
      */
-    public static BuildConditionsSet(conds: { [name: string]: any }): ConditionsList {
+    public static BuildConditionsSet(conditions: SimpleConditionsList): ConditionsList {
         //
         // Default values.
-        let out: ConditionsList = new ConditionsList();
+        let out: ConditionsList = [];
         //
         // Can it be used to build a list of conditions?
-        if (typeof conds === 'object' && !Array.isArray(conds)) {
+        if (typeof conditions === 'object' && !Array.isArray(conditions)) {
             //
             // Building and adding each condition.
-            Object.keys(conds).forEach((key: string) => {
-                out[key] = Condition.BuildCondition(conds[key]);
+            Object.keys(conditions).forEach((key: string) => {
+                //
+                // Is it a list of multiple conditions for the same field?
+                if (typeof conditions[key] === 'object' && !Array.isArray(conditions[key]) && Object.keys(conditions[key]).length > 0) {
+                    //
+                    // Separating each key as a different condition.
+                    Object.keys(conditions[key]).forEach((subKey: string) => {
+                        const subConf: any = {};
+                        subConf[subKey] = conditions[key][subKey];
+                        out.push(Condition.BuildCondition(key, subConf));
+                    });
+                } else {
+                    //
+                    // At this point it should be added as a single condition.
+                    out.push(Condition.BuildCondition(key, conditions[key]));
+                }
             });
         }
 

@@ -5,7 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
-import { ConditionsList } from '../condition.dfdb';
+import { ConditionsList, Condition } from '../condition.dfdb';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
@@ -39,13 +39,13 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
             const indexesToUse: string[] = [];
             //
             // Selecting indexes to use.
-            Object.keys(conditions).forEach(key => {
+            conditions.forEach((cond: Condition) => {
                 //
                 // Is current field on conditions indexed?
-                if (typeof this._mainObject._indexes[key] === 'undefined') {
-                    this._mainObject.setLastRejection(new Rejection(RejectionCodes.NotIndexedField, { field: key }));
+                if (typeof this._mainObject._indexes[cond.field()] === 'undefined') {
+                    this._mainObject.setLastRejection(new Rejection(RejectionCodes.NotIndexedField, { field: cond }));
                 } else {
-                    indexesToUse.push(key);
+                    indexesToUse.push(cond.field());
                 }
             });
             //
@@ -66,7 +66,7 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
                     if (idx) {
                         //
                         // Requesting IDs from current index.
-                        this._mainObject._indexes[idx].find(conditions[idx])
+                        this._mainObject._indexes[idx].find(conditions)
                             .then((foundIds: string[]) => {
                                 //
                                 // Filtering and leaving only IDs that are present

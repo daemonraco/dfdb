@@ -197,6 +197,72 @@ describe('dfdb: Search keywords [010]', function () {
             }).then(done, done);
     });
 
+    it(`searches for a value of an indexed field that matches another in a list`, done => {
+        assert.typeOf(collection.find, 'function');
+
+        collection.find({ company: { $in: ['ISOPLEX', 'VERBUS'] } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 3);
+                assert.strictEqual(docs[0]._id, '7');
+                assert.strictEqual(docs[1]._id, '10');
+                assert.strictEqual(docs[2]._id, '147');
+                assert.strictEqual(docs[0].company, 'ISOPLEX');
+                assert.strictEqual(docs[1].company, 'VERBUS');
+                assert.strictEqual(docs[2].company, 'ISOPLEX');
+            }).then(done, done);
+    });
+
+    it(`searches for a value of an unindexed field that matches another in a list`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: { $in: ['lakishapuckett@isoplex.com', 'navarrolevine@quiltigen.com'] } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 2);
+                assert.strictEqual(docs[0]._id, '7');
+                assert.strictEqual(docs[1]._id, '108');
+                assert.strictEqual(docs[0].email, 'lakishapuckett@isoplex.com');
+                assert.strictEqual(docs[1].email, 'navarrolevine@quiltigen.com');
+            }).then(done, done);
+    });
+
+    it(`searches for a value of an unindexed field that doesn't match another in a list`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: { $notIn: ['lakishapuckett@isoplex.com', 'navarrolevine@quiltigen.com'] } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 196);
+            }).then(done, done);
+    });
+
+    it(`searches values mixing 'in' and 'not-in'`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({
+            email: {
+                $notIn: ['mcdonaldrodriguez@telpod.com', 'lakishapuckett@isoplex.com'],
+                $in: ['lakishapuckett@isoplex.com', 'navarrolevine@quiltigen.com', 'roseannwade@skyplex.com']
+            }
+        }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 2);
+            assert.strictEqual(docs[0]._id, '108');
+            assert.strictEqual(docs[1]._id, '190');
+            assert.strictEqual(docs[0].email, 'navarrolevine@quiltigen.com');
+            assert.strictEqual(docs[1].email, 'roseannwade@skyplex.com');
+        }).then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
