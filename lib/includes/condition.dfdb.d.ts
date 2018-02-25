@@ -42,6 +42,7 @@ export declare class Condition {
     protected _data: any;
     protected _field: string;
     protected _type: ConditionTypes;
+    protected _typeName: string;
     /**
      * @protected
      * @constructor
@@ -63,7 +64,20 @@ export declare class Condition {
      * @method cleanData
      */
     protected cleanData: () => void;
+    /**
+     * Field name to which this condition is associated.
+     *
+     * @method field
+     * @returns {string} Returns a field name.
+     */
     field(): string;
+    /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this condition.
+     */
+    toString: () => string;
     /**
      * This method holds the logic to prepare a condition's internal value to be
      * matched exactly in later validations.
@@ -80,6 +94,22 @@ export declare class Condition {
      * @method cleanDataIgnored
      */
     protected cleanDataIgnored(): void;
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataIn
+     */
+    protected cleanDataIn(): void;
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataNotIn
+     */
+    protected cleanDataNotIn(): void;
     /**
      * This method holds the logic to prepare a condition's internal value to be
      * partially matched in later validations.
@@ -116,6 +146,26 @@ export declare class Condition {
      */
     protected validateIgnored(value: any): boolean;
     /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateIn(value: any): boolean;
+    /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateNotIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateNotIn(value: any): boolean;
+    /**
      * This method holds the logic to validate if a value is on is inside another
      * (both values are interpreted as strings).
      *
@@ -140,6 +190,7 @@ export declare class Condition {
      *
      * @static
      * @method BuildCondition
+     * @param {string} field Field to which the condition will be associated to.
      * @param {any} conf Configuration to analyse while building a condition.
      * @returns {Condition} Return a condition object.
      */

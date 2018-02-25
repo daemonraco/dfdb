@@ -54,7 +54,7 @@ export class SubLogicSearch extends SubLogicSeeker {
                 //
                 // Returning documents that match unindexed conditions.
                 resolve(findings.filter((datum: any) => {
-                    let accept = false;
+                    let accept = true;
                     //
                     // Checking each conditions.
                     unindexedConditions.forEach((cond: Condition) => {
@@ -67,7 +67,9 @@ export class SubLogicSearch extends SubLogicSeeker {
                         if (typeof jsonPathValues[0] !== 'undefined') {
                             //
                             // Does it match?
-                            accept = cond.validate(jsonPathValues[0]);
+                            accept = accept && cond.validate(jsonPathValues[0]);
+                        } else {
+                            accept = false;
                         }
                     });
 

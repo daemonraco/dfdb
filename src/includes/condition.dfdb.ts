@@ -35,13 +35,16 @@ export class Condition {
     //
     // Protected class constants.
     protected static readonly Keywords: { [name: string]: ConditionTypes } = {
-        '$exact': ConditionTypes.Exact
+        '$exact': ConditionTypes.Exact,
+        '$in': ConditionTypes.In,
+        '$notIn': ConditionTypes.NotIn
     };
     //
     // Protected properties.
     protected _data: any = null;
     protected _field: string = null;
     protected _type: ConditionTypes = null;
+    protected _typeName: string = null;
     //
     // Constructors
     /**
@@ -56,8 +59,9 @@ export class Condition {
         this._data = data;
         //
         // Setting pointer methods.
-        this.cleanData = this[`cleanData${ConditionTypes[this._type]}`];
-        this.validate = this[`validate${ConditionTypes[this._type]}`];
+        this._typeName = ConditionTypes[this._type];
+        this.cleanData = this[`cleanData${this._typeName}`];
+        this.validate = this[`validate${this._typeName}`];
         //
         // Cleaning data.
         this.cleanData();
@@ -84,8 +88,23 @@ export class Condition {
     protected cleanData: () => void;
     //
     // Public methods.
+    /**
+     * Field name to which this condition is associated.
+     *
+     * @method field
+     * @returns {string} Returns a field name.
+     */
     public field(): string {
         return this._field;
+    }
+    /**
+     * This methods provides a proper value for string auto-castings.
+     *
+     * @method toString
+     * @returns {string} Returns a simple string identifying this condition.
+     */
+    public toString = (): string => {
+        return `condition:${this._field}[${this._typeName}]`;
     }
     //
     // Protected methods.
@@ -108,6 +127,28 @@ export class Condition {
      */
     protected cleanDataIgnored(): void {
         this._data = null;
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataIn
+     */
+    protected cleanDataIn(): void {
+        this._data = Array.isArray(this._data['$in']) ? this._data['$in'] : [];
+        this._data = this._data.map((v: any) => `${v}`.toLowerCase());
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * used as pool in later validations.
+     *
+     * @protected
+     * @method cleanDataNotIn
+     */
+    protected cleanDataNotIn(): void {
+        this._data = Array.isArray(this._data['$notIn']) ? this._data['$notIn'] : [];
+        this._data = this._data.map((v: any) => `${v}`.toLowerCase());
     }
     /**
      * This method holds the logic to prepare a condition's internal value to be
@@ -153,6 +194,30 @@ export class Condition {
         return true;
     }
     /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateIn(value: any): boolean {
+        return this._data.indexOf(`${value}`.toLowerCase()) > -1;
+    }
+    /**
+     * This method holds the logic to validate if a value is among others in a
+     * list (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateNotIn
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateNotIn(value: any): boolean {
+        return this._data.indexOf(`${value}`.toLowerCase()) < 0;
+    }
+    /**
      * This method holds the logic to validate if a value is on is inside another
      * (both values are interpreted as strings).
      *
@@ -183,6 +248,7 @@ export class Condition {
      *
      * @static
      * @method BuildCondition
+     * @param {string} field Field to which the condition will be associated to.
      * @param {any} conf Configuration to analyse while building a condition.
      * @returns {Condition} Return a condition object.
      */
@@ -210,7 +276,8 @@ export class Condition {
                 type = ConditionTypes.Ignored;
             }
         }
-
+        //
+        // Building the right condition.
         return new Condition(type, field, conf);
     }
     /**
