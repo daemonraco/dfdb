@@ -121,12 +121,12 @@ myCollection.findOne({ name: 'Jane Doe' }).then(doc => {
 
 Searching for a document using indexed and unindexed fields:
 ```js
-myCollection.search({ name: 'Jane Doe' }).then(docs => {
+myCollection.search({ name: 'Jane Doe', age: { $gt: 37 } }).then(docs => {
     // . . .
 });
 
 // Or
-myCollection.searchOne({ name: 'Jane Doe' }).then(doc => {
+myCollection.searchOne({ name: 'Jane Doe', age: { $gt: 37 } }).then(doc => {
     // . . .
 });
 ```

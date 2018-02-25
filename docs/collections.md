@@ -15,6 +15,7 @@ collections in __DocsOnFileDB__.
     - [Deleting a document](#deleting-a-document)
     - [Deleting all documents](#deleting-all-documents)
 - [Searching documents](#searching-documents)
+    - [Search keywords](#search-keywords)
 - [Indexes](#indexes)
     - [Checking a field index](#checking-a-field-index)
     - [Listing indexes](#listing-indexes)
@@ -166,7 +167,8 @@ myCollection.findOne({
 });
 ```
 
-Remember that using `find()` and `findOne()` with unindexed fields, this will cause a promise rejection.
+Remember that using `find()` and `findOne()` with unindexed fields, this will
+cause a promise rejection.
 
 And if you want, you may use deep-fields:
 ```js
@@ -180,6 +182,37 @@ collection.find({ 'address.street': 'Lawrence Street' })
         console.err(`There was an error. ${err}`);
     });
 ```
+
+## Search keywords
+Methods `find()` and `search()` allow some key words that can be use in this way:
+```js
+collection.search({ age: { $ge: 18, $lt: 65 } })
+    .then(docs => {
+        console.log(`Found documents: ${docs.length}`);
+        console.log(`Findings:`);
+        console.log(JSON.stringify(docs, null, 2));
+    })
+    .catch(err => {
+        console.err(`There was an error. ${err}`);
+    });
+```
+As you may have guest it, this filters documents where age is `18` or more, but
+not ober `64`.
+
+Available keywords are:
+* `$exact`: By default, __DocsOnFileDB__ checks if a value is inside another. This
+forces the comparison to be exact.
+    * Alias: `=`
+* `$gt`: Greater than.
+    * Alias: `>`
+* `$ge`: Greater than or equal to.
+    * Alias: `>=`
+* `$lt`: Lower than.
+    * Alias: `<`
+* `$le`: Lower than or equal to.
+    * Alias: `<=`
+* `$in`: Takes a list of values and accepts values that are inside it.
+* `$notIn`: Takes a list of values and reject values that are inside it.
 
 # Indexes
 ## Checking a field index
