@@ -161,6 +161,42 @@ describe('dfdb: Search keywords [010]', function () {
             }).then(done, done);
     });
 
+    it(`searches an indexed field with an empty object as condition`, done => {
+        assert.typeOf(collection.find, 'function');
+
+        collection.find({ company: {} })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 200);
+            }).then(done, done);
+    });
+
+    it(`searches an unindexed field with an empty object as condition`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: {} })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 198);
+            }).then(done, done);
+    });
+
+    it(`searches an unindexed field with wrong condition keyword`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: { $bad_keyword: 'some value' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 0);
+            }).then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
