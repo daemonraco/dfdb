@@ -6,6 +6,7 @@
 import { Promise } from 'es6-promise';
 import * as jsonpath from 'jsonpath-plus';
 
+import { Condition, ConditionsList } from '../condition.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -31,9 +32,10 @@ export class SubLogicSearch extends SubLogicSeeker {
     public search(conditions: { [name: string]: any }): Promise<any[]> {
         //
         // Fixing conditions object.
-        if (typeof conditions !== 'object' || conditions === null) {
+        if (typeof conditions !== 'object' || Array.isArray(conditions)) {
             conditions = {};
         }
+        const conditionsList: ConditionsList = Condition.BuildConditionsSet(conditions);
         //
         // Restarting error messages.
         this._mainObject.resetError();
@@ -44,8 +46,8 @@ export class SubLogicSearch extends SubLogicSeeker {
             // Default values.
             let findings: any[] = [];
             let foundIds: string[] = [];
-            let indexedConditions: any = {};
-            let unindexedConditions: any = {};
+            let indexedConditions: ConditionsList = new ConditionsList();
+            let unindexedConditions: ConditionsList = new ConditionsList();
             //
             // Anonymous function to filter findings based on unindexed fields.
             const unindexedSearch = () => {
@@ -53,13 +55,9 @@ export class SubLogicSearch extends SubLogicSeeker {
                 // List of unindexed fields.
                 const unindexedConditionsKeys = Object.keys(unindexedConditions);
                 //
-                // Conditions sanitization. Values should be search un lower case
-                // format.
-                unindexedConditionsKeys.forEach((key: string) => unindexedConditions[key] = `${unindexedConditions[key]}`.toLowerCase());
-                //
                 // Returning documents that match unindexed conditions.
                 resolve(findings.filter((datum: any) => {
-                    let accept = true;
+                    let accept = false;
                     //
                     // Checking each conditions.
                     unindexedConditionsKeys.forEach((key: string) => {
@@ -72,11 +70,7 @@ export class SubLogicSearch extends SubLogicSeeker {
                         if (typeof jsonPathValues[0] !== 'undefined') {
                             //
                             // Does it match?
-                            if (`${jsonPathValues[0]}`.toLowerCase().indexOf(unindexedConditions[key]) < 0) {
-                                accept = false;
-                            }
-                        } else {
-                            accept = false;
+                            accept = unindexedConditions[key].validate(jsonPathValues[0]);
                         }
                     });
 
@@ -85,11 +79,11 @@ export class SubLogicSearch extends SubLogicSeeker {
             };
             //
             // Separating conditions for indexed fields from unindexed.
-            Object.keys(conditions).forEach(key => {
+            Object.keys(conditionsList).forEach(key => {
                 if (typeof this._mainObject._indexes[key] === 'undefined') {
-                    unindexedConditions[key] = conditions[key];
+                    unindexedConditions[key] = conditionsList[key];
                 } else {
-                    indexedConditions[key] = conditions[key];
+                    indexedConditions[key] = conditionsList[key];
                 }
             });
             //

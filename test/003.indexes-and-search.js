@@ -221,13 +221,16 @@ describe('dfdb: Indexes and Searches [003]', function () {
                 assert.isFalse(collection.error());
                 assert.isNull(collection.lastError());
 
-                assert.strictEqual(docs.length, 2);
+                assert.strictEqual(docs.length, 3);
 
                 assert.strictEqual(docs[0]._id, '7');
                 assert.strictEqual(docs[0].name, 'Lakisha Puckett');
 
                 assert.strictEqual(docs[1]._id, '147');
                 assert.strictEqual(docs[1].name, 'Ann Mayo');
+
+                assert.strictEqual(docs[2]._id, '152');
+                assert.strictEqual(docs[2].name, 'Grant Joyce');
             })
             .then(done, done);
     });

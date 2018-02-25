@@ -5,6 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
+import { ConditionsList } from '../condition.dfdb';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
@@ -25,16 +26,11 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
      *
      * @protected
      * @method findIds
-     * @param {{ [name: string]: any }} conditions Filtering conditions.
+     * @param {ConditionsList} conditions Filtering conditions.
      * @returns {Promise<string[]>} Returns a promise that gets resolve when all
      * operations had finished. In the promise it returns a list of indexes.
      */
-    protected findIds(conditions: { [name: string]: any }): Promise<string[]> {
-        //
-        // Fixing conditions object.
-        if (typeof conditions !== 'object' || conditions === null) {
-            conditions = {};
-        }
+    protected findIds(conditions: ConditionsList): Promise<string[]> {
         //
         // Building promise to return.
         return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
@@ -70,7 +66,7 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
                     if (idx) {
                         //
                         // Requesting IDs from current index.
-                        this._mainObject._indexes[idx].find(`${conditions[idx]}`)
+                        this._mainObject._indexes[idx].find(conditions[idx])
                             .then((foundIds: string[]) => {
                                 //
                                 // Filtering and leaving only IDs that are present

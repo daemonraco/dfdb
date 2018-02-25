@@ -4,6 +4,8 @@
  */
 
 import { Promise } from 'es6-promise';
+
+import { Condition, ConditionsList } from '../condition.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -29,9 +31,10 @@ export class SubLogicFind extends SubLogicSeeker {
     public find(conditions: { [name: string]: any }): Promise<any[]> {
         //
         // Fixing conditions object.
-        if (typeof conditions !== 'object' || conditions === null) {
+        if (typeof conditions !== 'object' || Array.isArray(conditions)) {
             conditions = {};
         }
+        const conditionsList: ConditionsList = Condition.BuildConditionsSet(conditions);
         //
         // Restarting error messages.
         this._mainObject.resetError();
@@ -44,7 +47,7 @@ export class SubLogicFind extends SubLogicSeeker {
             //
             // Forwarding the search to a method that searches and returns only
             // ids.
-            this.findIds(conditions)
+            this.findIds(conditionsList)
                 .then((ids: string[]) => {
                     //
                     // Converting the list of IDs into a list of documents.

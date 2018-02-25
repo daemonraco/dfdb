@@ -8,6 +8,7 @@ import * as JSZip from 'jszip';
 import * as jsonpath from 'jsonpath-plus';
 
 import { Collection } from './collection/collection.dfdb';
+import { Condition } from './condition.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
@@ -289,20 +290,17 @@ export class Index implements IResource, IDelayedResource {
      * piece of value.
      *
      * @method find
-     * @param {string} value Value to look for.
+     * @param {Condition} cond Value to look for.
      * @returns {Promise<string[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found document IDs.
      */
-    public find(value: string): Promise<string[]> {
+    public find(cond: Condition): Promise<string[]> {
         //
         // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
         return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
-            //
-            // Searches should be done case insensitively
-            value = value.toLowerCase();
             //
             // Initializing a list of findings.
             let findings: string[] = [];
@@ -311,8 +309,8 @@ export class Index implements IResource, IDelayedResource {
             // equal or contained in it.
             Object.keys(this._data).forEach((indexValue: string) => {
                 //
-                // Does current value contain the one being searched.
-                if (indexValue.indexOf(value) > -1) {
+                // Does current condition applies?
+                if (cond.validate(indexValue)) {
                     //
                     // Adding IDs.
                     findings = findings.concat(this._data[indexValue]);
