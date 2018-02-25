@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { ConditionsList } from '../condition.dfdb';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 /**
@@ -18,13 +19,11 @@ export declare class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
      *
      * @protected
      * @method findIds
-     * @param {{ [name: string]: any }} conditions Filtering conditions.
+     * @param {ConditionsList} conditions Filtering conditions.
      * @returns {Promise<string[]>} Returns a promise that gets resolve when all
      * operations had finished. In the promise it returns a list of indexes.
      */
-    protected findIds(conditions: {
-        [name: string]: any;
-    }): Promise<string[]>;
+    protected findIds(conditions: ConditionsList): Promise<string[]>;
     /**
      * This method takes a list of IDs and returns a list of documents with those
      * IDs.
