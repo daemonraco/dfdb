@@ -5,10 +5,20 @@
 
 /**
  * List of known types of conditions.
- *
  * @enum ConditionTypes
  */
-export enum ConditionTypes { Exact, Ignored, In, NotIn, Position, Range, Wrong };
+export enum ConditionTypes {
+    Exact,
+    GreaterOrEqual,
+    GreaterThan,
+    Ignored,
+    In,
+    LowerOrEqual,
+    LowerThan,
+    NotIn,
+    Position,
+    Wrong
+};
 
 /**
  * This simple class checks how a list of contitions should be specified.
@@ -36,8 +46,19 @@ export class Condition {
     // Protected class constants.
     protected static readonly Keywords: { [name: string]: ConditionTypes } = {
         '$exact': ConditionTypes.Exact,
+        '$ge': ConditionTypes.GreaterOrEqual,
+        '$gt': ConditionTypes.GreaterThan,
         '$in': ConditionTypes.In,
+        '$le': ConditionTypes.LowerOrEqual,
+        '$lt': ConditionTypes.LowerThan,
         '$notIn': ConditionTypes.NotIn
+    };
+    protected static readonly KeywordsAliases: { [name: string]: string } = {
+        '=': '$exact',
+        '>=': '$ge',
+        '>': '$gt',
+        '<=': '$le',
+        '<': '$lt'
     };
     //
     // Protected properties.
@@ -119,6 +140,26 @@ export class Condition {
         this._data = `${this._data['$exact']}`.toLowerCase();
     }
     /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'greater than or equal' validations.
+     *
+     * @protected
+     * @method cleanDataGreaterOrEqual
+     */
+    protected cleanDataGreaterOrEqual(): void {
+        this._data = `${this._data['$ge']}`.toLowerCase();
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'greater than' validations.
+     *
+     * @protected
+     * @method cleanDataGreaterThan
+     */
+    protected cleanDataGreaterThan(): void {
+        this._data = `${this._data['$gt']}`.toLowerCase();
+    }
+    /**
      * There's no need to prepare a condition's internal value when it always
      * returns TRUE.
      *
@@ -138,6 +179,26 @@ export class Condition {
     protected cleanDataIn(): void {
         this._data = Array.isArray(this._data['$in']) ? this._data['$in'] : [];
         this._data = this._data.map((v: any) => `${v}`.toLowerCase());
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'lower than or equal' validations.
+     *
+     * @protected
+     * @method cleanDataLowerOrEqual
+     */
+    protected cleanDataLowerOrEqual(): void {
+        this._data = `${this._data['$le']}`.toLowerCase();
+    }
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'lower than' validations.
+     *
+     * @protected
+     * @method cleanDataLowerThan
+     */
+    protected cleanDataLowerThan(): void {
+        this._data = `${this._data['$lt']}`.toLowerCase();
     }
     /**
      * This method holds the logic to prepare a condition's internal value to be
@@ -183,6 +244,30 @@ export class Condition {
         return this._data == `${value}`.toLowerCase();
     }
     /**
+     * This method holds the logic to validate if a value greater than or equal to
+     * the one configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateGreaterOrEqual
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateGreaterOrEqual(value: any): boolean {
+        return `${value}`.toLowerCase() >= this._data;
+    }
+    /**
+     * This method holds the logic to validate if a value greater than the one
+     * configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateGreaterThan
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateGreaterThan(value: any): boolean {
+        return `${value}`.toLowerCase() > this._data;
+    }
+    /**
      * This method is used to always accept values.
      *
      * @protected
@@ -204,6 +289,30 @@ export class Condition {
      */
     protected validateIn(value: any): boolean {
         return this._data.indexOf(`${value}`.toLowerCase()) > -1;
+    }
+    /**
+     * This method holds the logic to validate if a value lower than or equal to
+     * the one configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLowerOrEqual
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLowerOrEqual(value: any): boolean {
+        return `${value}`.toLowerCase() <= this._data;
+    }
+    /**
+     * This method holds the logic to validate if a value lower than the one
+     * configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLowerThan
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLowerThan(value: any): boolean {
+        return `${value}`.toLowerCase() < this._data;
     }
     /**
      * This method holds the logic to validate if a value is among others in a
@@ -259,10 +368,19 @@ export class Condition {
         //
         // Is it a complex specification?
         if (typeof conf === 'object' && !Array.isArray(conf)) {
-            const keys = Object.keys(conf);
+            //
+            // Cleaning aliases.
+            Object.keys(conf).forEach((key: string) => {
+                const newKey: string = typeof Condition.KeywordsAliases[key] !== 'undefined' ? Condition.KeywordsAliases[key] : null;
+                if (newKey) {
+                    conf[newKey] = conf[key];
+                    delete conf[key];
+                }
+            });
             //
             // Is there someting to use? Otherwise it's ignored and always
             // validates as valid.
+            const keys = Object.keys(conf);
             if (keys.length > 0) {
                 //
                 // First should say how to preceed. Does it? Otherwise it always
