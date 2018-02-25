@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { SimpleConditionsList } from '../condition.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
 /**
  * This class holds Collection's specific logic to find unindexed document field
@@ -16,23 +17,19 @@ export declare class SubLogicSearch extends SubLogicSeeker {
      * may include indexed and unindexed fields.
      *
      * @method search
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found documents.
      */
-    search(conditions: {
-        [name: string]: any;
-    }): Promise<any[]>;
+    search(conditions: SimpleConditionsList): Promise<any[]>;
     /**
      * This is the same than 'searchOne()', but it returns only the first found
      * document.
      *
      * @method searchOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
+     * @param {SimpleConditionsList} conditions Filtering conditions.
      * @returns {Promise<any>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns a found documents.
      */
-    searchOne(conditions: {
-        [name: string]: any;
-    }): Promise<any>;
+    searchOne(conditions: SimpleConditionsList): Promise<any>;
 }

@@ -18,12 +18,16 @@ export declare enum ConditionTypes {
 }
 /**
  * This simple class checks how a list of contitions should be specified.
- *
- * @class ConditionsList
+ * @type ConditionsList
  */
-export declare class ConditionsList {
-    [name: string]: Condition;
-}
+export declare type ConditionsList = Array<Condition>;
+/**
+ * Standard way to specify simple conditions.
+ * @type SimpleConditionsList
+ */
+export declare type SimpleConditionsList = {
+    [name: string]: any;
+};
 /**
  * This class represents all types of search conditions and how they evaluate
  * values.
@@ -36,12 +40,13 @@ export declare class Condition {
         [name: string]: ConditionTypes;
     };
     protected _data: any;
+    protected _field: string;
     protected _type: ConditionTypes;
     /**
      * @protected
      * @constructor
      */
-    protected constructor(type: ConditionTypes, data: any);
+    protected constructor(conditionType: ConditionTypes, field: string, data: any);
     /**
      * This point will hold the logic to validate a value when this object
      * completes its contruction.
@@ -58,6 +63,7 @@ export declare class Condition {
      * @method cleanData
      */
     protected cleanData: () => void;
+    field(): string;
     /**
      * This method holds the logic to prepare a condition's internal value to be
      * matched exactly in later validations.
@@ -137,17 +143,15 @@ export declare class Condition {
      * @param {any} conf Configuration to analyse while building a condition.
      * @returns {Condition} Return a condition object.
      */
-    static BuildCondition(conf: any): Condition;
+    static BuildCondition(field: string, conf: any): Condition;
     /**
      * This method takes a simple list of conditions and builds a list of search
      * condition objects.
      *
      * @static
      * @method BuildConditionsSet
-     * @param {{ [name: string]: any }} conds Simple list of conditions.
+     * @param {SimpleConditionsList} conditions Simple list of conditions.
      * @returns {ConditionsList} Returns a list of search conditions.
      */
-    static BuildConditionsSet(conds: {
-        [name: string]: any;
-    }): ConditionsList;
+    static BuildConditionsSet(conditions: SimpleConditionsList): ConditionsList;
 }

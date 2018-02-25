@@ -8,6 +8,7 @@ import * as JSZip from 'jszip';
 import * as jsonpath from 'jsonpath-plus';
 
 import { Collection } from './collection/collection.dfdb';
+import { ConditionsList } from './condition.dfdb';
 import { Condition } from './condition.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
@@ -290,17 +291,25 @@ export class Index implements IResource, IDelayedResource {
      * piece of value.
      *
      * @method find
-     * @param {Condition} cond Value to look for.
+     * @param {ConditionsList} conditions List of conditions to check.
      * @returns {Promise<string[]>} Returns a promise that gets resolve when the
      * search completes. In the promise it returns the list of found document IDs.
      */
-    public find(cond: Condition): Promise<string[]> {
+    public find(conditions: ConditionsList): Promise<string[]> {
         //
         // Restarting error messages.
         this.resetError();
         //
         // Building promise to return.
         return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
+            //
+            // Selecting only those conditions that apply to this index.
+            const conditionsToUse: ConditionsList = [];
+            conditions.forEach((cond: Condition) => {
+                if (this._field === cond.field()) {
+                    conditionsToUse.push(cond);
+                }
+            });
             //
             // Initializing a list of findings.
             let findings: string[] = [];
@@ -309,8 +318,14 @@ export class Index implements IResource, IDelayedResource {
             // equal or contained in it.
             Object.keys(this._data).forEach((indexValue: string) => {
                 //
+                // Check all conditions against current value.
+                let allValid = true;
+                conditionsToUse.forEach((cond: Condition) => {
+                    allValid = allValid && cond.validate(indexValue);
+                });
+                //
                 // Does current condition applies?
-                if (cond.validate(indexValue)) {
+                if (allValid) {
                     //
                     // Adding IDs.
                     findings = findings.concat(this._data[indexValue]);
