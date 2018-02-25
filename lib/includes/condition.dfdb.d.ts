@@ -4,17 +4,19 @@
  */
 /**
  * List of known types of conditions.
- *
  * @enum ConditionTypes
  */
 export declare enum ConditionTypes {
     Exact = 0,
-    Ignored = 1,
-    In = 2,
-    NotIn = 3,
-    Position = 4,
-    Range = 5,
-    Wrong = 6,
+    GreaterOrEqual = 1,
+    GreaterThan = 2,
+    Ignored = 3,
+    In = 4,
+    LowerOrEqual = 5,
+    LowerThan = 6,
+    NotIn = 7,
+    Position = 8,
+    Wrong = 9,
 }
 /**
  * This simple class checks how a list of contitions should be specified.
@@ -38,6 +40,9 @@ export declare class Condition {
     [key: string]: any;
     protected static readonly Keywords: {
         [name: string]: ConditionTypes;
+    };
+    protected static readonly KeywordsAliases: {
+        [name: string]: string;
     };
     protected _data: any;
     protected _field: string;
@@ -87,6 +92,22 @@ export declare class Condition {
      */
     protected cleanDataExact(): void;
     /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'greater than or equal' validations.
+     *
+     * @protected
+     * @method cleanDataGreaterOrEqual
+     */
+    protected cleanDataGreaterOrEqual(): void;
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'greater than' validations.
+     *
+     * @protected
+     * @method cleanDataGreaterThan
+     */
+    protected cleanDataGreaterThan(): void;
+    /**
      * There's no need to prepare a condition's internal value when it always
      * returns TRUE.
      *
@@ -102,6 +123,22 @@ export declare class Condition {
      * @method cleanDataIn
      */
     protected cleanDataIn(): void;
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'lower than or equal' validations.
+     *
+     * @protected
+     * @method cleanDataLowerOrEqual
+     */
+    protected cleanDataLowerOrEqual(): void;
+    /**
+     * This method holds the logic to prepare a condition's internal value for
+     * later 'lower than' validations.
+     *
+     * @protected
+     * @method cleanDataLowerThan
+     */
+    protected cleanDataLowerThan(): void;
     /**
      * This method holds the logic to prepare a condition's internal value to be
      * used as pool in later validations.
@@ -137,6 +174,26 @@ export declare class Condition {
      */
     protected validateExact(value: any): boolean;
     /**
+     * This method holds the logic to validate if a value greater than or equal to
+     * the one configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateGreaterOrEqual
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateGreaterOrEqual(value: any): boolean;
+    /**
+     * This method holds the logic to validate if a value greater than the one
+     * configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateGreaterThan
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateGreaterThan(value: any): boolean;
+    /**
      * This method is used to always accept values.
      *
      * @protected
@@ -155,6 +212,26 @@ export declare class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateIn(value: any): boolean;
+    /**
+     * This method holds the logic to validate if a value lower than or equal to
+     * the one configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLowerOrEqual
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLowerOrEqual(value: any): boolean;
+    /**
+     * This method holds the logic to validate if a value lower than the one
+     * configure (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLowerThan
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLowerThan(value: any): boolean;
     /**
      * This method holds the logic to validate if a value is among others in a
      * list (both values are interpreted as strings).

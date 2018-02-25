@@ -150,6 +150,36 @@ describe('dfdb: Search keywords [010]', function () {
             }).then(done, done);
     });
 
+    it(`searches for an exact value in an indexed field using an alias`, done => {
+        assert.typeOf(collection.find, 'function');
+
+        collection.find({ company: { '=': 'ISOPLEX' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 2);
+                assert.strictEqual(docs[0]._id, '7');
+                assert.strictEqual(docs[1]._id, '147');
+                assert.strictEqual(docs[0].company, 'ISOPLEX');
+                assert.strictEqual(docs[1].company, 'ISOPLEX');
+            }).then(done, done);
+    });
+
+    it(`searches for an exact value in an unindexed field using an alias`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: { '=': 'davidsonhicks@hawkster.com' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '103');
+                assert.strictEqual(docs[0].email, 'davidsonhicks@hawkster.com');
+            }).then(done, done);
+    });
+
     it(`searches for an unexisting document with an exact value in an unindexed field`, done => {
         assert.typeOf(collection.searchOne, 'function');
 
@@ -260,6 +290,102 @@ describe('dfdb: Search keywords [010]', function () {
             assert.strictEqual(docs[1]._id, '190');
             assert.strictEqual(docs[0].email, 'navarrolevine@quiltigen.com');
             assert.strictEqual(docs[1].email, 'roseannwade@skyplex.com');
+        }).then(done, done);
+    });
+
+    it(`searches ages greater than 27`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ age: { $gt: 27 } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 116);
+            }).then(done, done);
+    });
+
+    it(`searches ages greater than or equal to 30`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ age: { $ge: 30 } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 97);
+            }).then(done, done);
+    });
+
+    it(`searches ages lower than 23`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ age: { $lt: 23 } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 28);
+            }).then(done, done);
+    });
+
+    it(`searches ages lower than or equal to 26`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ age: { $le: 26 } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 73);
+            }).then(done, done);
+    });
+
+    it(`searches ages between 22 and 29 (not including them)`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({
+            age: {
+                $gt: 22,
+                $lt: 29
+            }
+        }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 59);
+        }).then(done, done);
+    });
+
+    it(`searches ages between 22 and 29 (not including them) using alias keywords`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({
+            age: {
+                '>': 22,
+                '<': 29
+            }
+        }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 59);
+        }).then(done, done);
+    });
+
+    it(`searches ages between 22 and 29 (including them) using alias keywords`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({
+            age: {
+                '>=': 22,
+                '<=': 29
+            }
+        }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 80);
         }).then(done, done);
     });
 
