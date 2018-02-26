@@ -213,6 +213,8 @@ forces the comparison to be exact.
     * Alias: `<=`
 * `$in`: Takes a list of values and accepts values that are inside it.
 * `$notIn`: Takes a list of values and reject values that are inside it.
+* `$like`: This is the default mechanism.
+    * Alias: `*`, `$partial`
 
 # Indexes
 ## Checking a field index
