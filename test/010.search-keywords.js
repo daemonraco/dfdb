@@ -389,6 +389,38 @@ describe('dfdb: Search keywords [010]', function () {
         }).then(done, done);
     });
 
+    it(`searches for a partial value using keywords in an indexed field`, done => {
+        assert.typeOf(collection.find, 'function');
+
+        collection.find({ company: { $like: 'ISOPLEX' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 3);
+                assert.strictEqual(docs[0]._id, '7');
+                assert.strictEqual(docs[1]._id, '147');
+                assert.strictEqual(docs[2]._id, '152');
+                assert.strictEqual(docs[0].company, 'ISOPLEX');
+                assert.strictEqual(docs[1].company, 'ISOPLEX');
+                assert.strictEqual(docs[2].company, 'IISOPLEXX');
+            }).then(done, done);
+    });
+
+    it(`searches for a partial value using keywords in an unindexed field`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ email: { $like: 'avidsonhicks@hawkster.co' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '103');
+                assert.strictEqual(docs[0].email, 'davidsonhicks@hawkster.com');
+            }).then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 

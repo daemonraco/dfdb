@@ -13,10 +13,10 @@ export enum ConditionTypes {
     GreaterThan,
     Ignored,
     In,
+    Like,
     LowerOrEqual,
     LowerThan,
     NotIn,
-    Position,
     Wrong
 };
 
@@ -50,6 +50,7 @@ export class Condition {
         '$gt': ConditionTypes.GreaterThan,
         '$in': ConditionTypes.In,
         '$le': ConditionTypes.LowerOrEqual,
+        '$like': ConditionTypes.Like,
         '$lt': ConditionTypes.LowerThan,
         '$notIn': ConditionTypes.NotIn
     };
@@ -58,7 +59,9 @@ export class Condition {
         '>=': '$ge',
         '>': '$gt',
         '<=': '$le',
-        '<': '$lt'
+        '<': '$lt',
+        '*': '$like',
+        '$partial': '$like'
     };
     //
     // Protected properties.
@@ -181,6 +184,20 @@ export class Condition {
         this._data = this._data.map((v: any) => `${v}`.toLowerCase());
     }
     /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * partially matched in later validations.
+     *
+     * @protected
+     * @method cleanDataLike
+     */
+    protected cleanDataLike(): void {
+        if (typeof this._data === 'object') {
+            this._data = `${this._data['$like']}`.toLowerCase();
+        } else {
+            this._data = `${this._data}`.toLowerCase();
+        }
+    }
+    /**
      * This method holds the logic to prepare a condition's internal value for
      * later 'lower than or equal' validations.
      *
@@ -210,16 +227,6 @@ export class Condition {
     protected cleanDataNotIn(): void {
         this._data = Array.isArray(this._data['$notIn']) ? this._data['$notIn'] : [];
         this._data = this._data.map((v: any) => `${v}`.toLowerCase());
-    }
-    /**
-     * This method holds the logic to prepare a condition's internal value to be
-     * partially matched in later validations.
-     *
-     * @protected
-     * @method cleanDataPosition
-     */
-    protected cleanDataPosition(): void {
-        this._data = `${this._data}`.toLowerCase();
     }
     /**
      * There's no need to prepare a condition's internal value when it always
@@ -291,6 +298,18 @@ export class Condition {
         return this._data.indexOf(`${value}`.toLowerCase()) > -1;
     }
     /**
+     * This method holds the logic to validate if a value is on is inside another
+     * (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLike
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLike(value: any): boolean {
+        return `${value}`.toLowerCase().indexOf(this._data) > -1;
+    }
+    /**
      * This method holds the logic to validate if a value lower than or equal to
      * the one configure (both values are interpreted as strings).
      *
@@ -327,18 +346,6 @@ export class Condition {
         return this._data.indexOf(`${value}`.toLowerCase()) < 0;
     }
     /**
-     * This method holds the logic to validate if a value is on is inside another
-     * (both values are interpreted as strings).
-     *
-     * @protected
-     * @method validatePosition
-     * @param {any} value Value to check.
-     * @returns {boolean} Returns TRUE when it checks out.
-     */
-    protected validatePosition(value: any): boolean {
-        return `${value}`.toLowerCase().indexOf(this._data) > -1;
-    }
-    /**
      * This method is used to always reject values.
      *
      * @protected
@@ -364,7 +371,7 @@ export class Condition {
     public static BuildCondition(field: string, conf: any): Condition {
         //
         // Default values.
-        let type: ConditionTypes = ConditionTypes.Position;
+        let type: ConditionTypes = ConditionTypes.Like;
         //
         // Is it a complex specification?
         if (typeof conf === 'object' && !Array.isArray(conf)) {

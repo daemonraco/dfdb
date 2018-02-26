@@ -12,10 +12,10 @@ export declare enum ConditionTypes {
     GreaterThan = 2,
     Ignored = 3,
     In = 4,
-    LowerOrEqual = 5,
-    LowerThan = 6,
-    NotIn = 7,
-    Position = 8,
+    Like = 5,
+    LowerOrEqual = 6,
+    LowerThan = 7,
+    NotIn = 8,
     Wrong = 9,
 }
 /**
@@ -124,6 +124,14 @@ export declare class Condition {
      */
     protected cleanDataIn(): void;
     /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * partially matched in later validations.
+     *
+     * @protected
+     * @method cleanDataLike
+     */
+    protected cleanDataLike(): void;
+    /**
      * This method holds the logic to prepare a condition's internal value for
      * later 'lower than or equal' validations.
      *
@@ -147,14 +155,6 @@ export declare class Condition {
      * @method cleanDataNotIn
      */
     protected cleanDataNotIn(): void;
-    /**
-     * This method holds the logic to prepare a condition's internal value to be
-     * partially matched in later validations.
-     *
-     * @protected
-     * @method cleanDataPosition
-     */
-    protected cleanDataPosition(): void;
     /**
      * There's no need to prepare a condition's internal value when it always
      * returns FALSE.
@@ -213,6 +213,16 @@ export declare class Condition {
      */
     protected validateIn(value: any): boolean;
     /**
+     * This method holds the logic to validate if a value is on is inside another
+     * (both values are interpreted as strings).
+     *
+     * @protected
+     * @method validateLike
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateLike(value: any): boolean;
+    /**
      * This method holds the logic to validate if a value lower than or equal to
      * the one configure (both values are interpreted as strings).
      *
@@ -242,16 +252,6 @@ export declare class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateNotIn(value: any): boolean;
-    /**
-     * This method holds the logic to validate if a value is on is inside another
-     * (both values are interpreted as strings).
-     *
-     * @protected
-     * @method validatePosition
-     * @param {any} value Value to check.
-     * @returns {boolean} Returns TRUE when it checks out.
-     */
-    protected validatePosition(value: any): boolean;
     /**
      * This method is used to always reject values.
      *
