@@ -16,7 +16,7 @@ const collectionName = 'test_collection';
 describe('dfdb: Indexing deep-fields [009]', function () {
     this.timeout(6000);
 
-    const { DocsOnFileDB, types } = require('..');
+    const { Collection, Connection, DocsOnFileDB } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -28,7 +28,7 @@ describe('dfdb: Indexing deep-fields [009]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
                 assert.strictEqual(`${db}`, `connection:${dbName}[${dbDirPath}]`);
@@ -47,7 +47,7 @@ describe('dfdb: Indexing deep-fields [009]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 assert.strictEqual(`${col}`, `collection:${collectionName}`);

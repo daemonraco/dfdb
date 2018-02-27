@@ -17,7 +17,7 @@ All operations with __DocsOnFileDB__ start through its manager.
 
 ## Accessing the manager
 ```js
-const DocsOnFileDB = require('dfdb').DocsOnFileDB;
+const { DocsOnFileDB } = require('dfdb');
 ```
 
 ## Connection to a database

@@ -67,8 +67,7 @@ const wrongSchema = {
 describe('dfdb: Collection schemas [008]', function () {
     this.timeout(12000);
 
-    const { DocsOnFileDB, types, constants } = require('..');
-    const { RejectionCodes } = constants;
+    const { Collection, Connection, DocsOnFileDB, RejectionCodes } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -79,7 +78,7 @@ describe('dfdb: Collection schemas [008]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
 
@@ -101,7 +100,7 @@ describe('dfdb: Collection schemas [008]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 collection = col;

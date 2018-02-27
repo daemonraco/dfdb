@@ -3,21 +3,25 @@
  * @author Alejandro D. Simi
  */
 
-import { DocsOnFileDB } from './includes/manager.dfdb';
+//
+// Exposing main objects.
+import { DocsOnFileDB as DocsOnFileDBClass } from './includes/manager.dfdb';
+export const dfdb: DocsOnFileDBClass = DocsOnFileDBClass.Instance();
+export const DocsOnFileDB: DocsOnFileDBClass = DocsOnFileDBClass.Instance();
+export const DFDBGuessDatabasePath = (dbname: string, dbpath: string): string => {
+    return DocsOnFileDBClass.GuessDatabasePath(dbname, dbpath);
+}
 
-import { BasicConstants, CollectionTypes, ConnectionSaveConstants } from './includes/constants.dfdb';
+//
+// Exposing constants.
+export { BasicConstants, CollectionTypes, ConnectionSaveConstants } from './includes/constants.dfdb';
+export { RejectionCodes } from './includes/rejection-codes.dfdb';
 
-import { Collection } from './includes/collection/collection.dfdb';
-import { Connection } from './includes/connection.dfdb';
-import { Index } from './includes/index.dfdb';
-import { Rejection } from './includes/rejection.dfdb';
-import { RejectionCodes } from './includes/rejection-codes.dfdb';
-import { Sequence } from './includes/sequence.dfdb';
-import { Tools } from './includes/tools.dfdb';
-
-export = {
-    dfdb: DocsOnFileDB.Instance(),
-    DocsOnFileDB: DocsOnFileDB.Instance(),
-    constants: { BasicConstants, CollectionTypes, ConnectionSaveConstants, RejectionCodes },
-    types: { Collection, Connection, DocsOnFileDB, Index, Rejection, Sequence, Tools }
-};
+//
+// Exposing types.
+export { Collection } from './includes/collection/collection.dfdb';
+export { Connection } from './includes/connection.dfdb';
+export { Index } from './includes/index.dfdb';
+export { Rejection } from './includes/rejection.dfdb';
+export { Sequence } from './includes/sequence.dfdb';
+export { Tools } from './includes/tools.dfdb';

@@ -15,7 +15,7 @@ const collectionName = 'test_collection';
 describe('dfdb: Basic use [002]', function () {
     this.timeout(6000);
 
-    const { DocsOnFileDB, types, constants } = require('..');
+    const { Collection, CollectionTypes, Connection, DocsOnFileDB } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -26,7 +26,7 @@ describe('dfdb: Basic use [002]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
 
@@ -55,7 +55,7 @@ describe('dfdb: Basic use [002]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 const hasCollection = connection.hasCollection(collectionName);
@@ -75,7 +75,7 @@ describe('dfdb: Basic use [002]', function () {
                 assert.isString(collections[collectionName].type);
 
                 assert.strictEqual(collections[collectionName].name, collectionName);
-                assert.strictEqual(collections[collectionName].type, constants.CollectionTypes.Simple);
+                assert.strictEqual(collections[collectionName].type, CollectionTypes.Simple);
 
                 collection = col;
             })
