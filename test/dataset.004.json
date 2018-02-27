@@ -1,0 +1,22 @@
+[
+    {
+        "price": 1,
+        "priceStr": "1"
+    },
+    {
+        "price": 10,
+        "priceStr": "10"
+    },
+    {
+        "price": 20,
+        "priceStr": "20"
+    },
+    {
+        "price": 100.1,
+        "priceStr": "100.1"
+    },
+    {
+        "price": 10.1,
+        "priceStr": "10.1"
+    }
+]

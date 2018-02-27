@@ -63,6 +63,7 @@ export class Condition {
         '*': '$like',
         '$partial': '$like'
     };
+    protected static readonly PrimitiveTypes: string[] = ['boolean', 'number'];
     //
     // Protected properties.
     protected _data: any = null;
@@ -150,7 +151,9 @@ export class Condition {
      * @method cleanDataGreaterOrEqual
      */
     protected cleanDataGreaterOrEqual(): void {
-        this._data = `${this._data['$ge']}`.toLowerCase();
+        if (Condition.PrimitiveTypes.indexOf(typeof this._data) < 0) {
+            this._data = `${this._data['$ge']}`.toLowerCase();
+        }
     }
     /**
      * This method holds the logic to prepare a condition's internal value for
@@ -160,7 +163,9 @@ export class Condition {
      * @method cleanDataGreaterThan
      */
     protected cleanDataGreaterThan(): void {
-        this._data = `${this._data['$gt']}`.toLowerCase();
+        if (Condition.PrimitiveTypes.indexOf(typeof this._data) < 0) {
+            this._data = `${this._data['$gt']}`.toLowerCase();
+        }
     }
     /**
      * There's no need to prepare a condition's internal value when it always
@@ -205,7 +210,9 @@ export class Condition {
      * @method cleanDataLowerOrEqual
      */
     protected cleanDataLowerOrEqual(): void {
-        this._data = `${this._data['$le']}`.toLowerCase();
+        if (Condition.PrimitiveTypes.indexOf(typeof this._data) < 0) {
+            this._data = `${this._data['$le']}`.toLowerCase();
+        }
     }
     /**
      * This method holds the logic to prepare a condition's internal value for
@@ -215,7 +222,9 @@ export class Condition {
      * @method cleanDataLowerThan
      */
     protected cleanDataLowerThan(): void {
-        this._data = `${this._data['$lt']}`.toLowerCase();
+        if (Condition.PrimitiveTypes.indexOf(typeof this._data) < 0) {
+            this._data = `${this._data['$lt']}`.toLowerCase();
+        }
     }
     /**
      * This method holds the logic to prepare a condition's internal value to be
@@ -260,7 +269,7 @@ export class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateGreaterOrEqual(value: any): boolean {
-        return `${value}`.toLowerCase() >= this._data;
+        return Condition.PrimitiveTypes.indexOf(typeof value) < 0 ? `${value}`.toLowerCase() >= this._data : value >= this._data;
     }
     /**
      * This method holds the logic to validate if a value greater than the one
@@ -272,7 +281,7 @@ export class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateGreaterThan(value: any): boolean {
-        return `${value}`.toLowerCase() > this._data;
+        return Condition.PrimitiveTypes.indexOf(typeof value) < 0 ? `${value}`.toLowerCase() > this._data : value > this._data;
     }
     /**
      * This method is used to always accept values.
@@ -319,7 +328,7 @@ export class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateLowerOrEqual(value: any): boolean {
-        return `${value}`.toLowerCase() <= this._data;
+        return Condition.PrimitiveTypes.indexOf(typeof value) < 0 ? `${value}`.toLowerCase() <= this._data : value <= this._data;
     }
     /**
      * This method holds the logic to validate if a value lower than the one
@@ -331,7 +340,7 @@ export class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateLowerThan(value: any): boolean {
-        return `${value}`.toLowerCase() < this._data;
+        return Condition.PrimitiveTypes.indexOf(typeof value) < 0 ? `${value}`.toLowerCase() < this._data : value < this._data;
     }
     /**
      * This method holds the logic to validate if a value is among others in a

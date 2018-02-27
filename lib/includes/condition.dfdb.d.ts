@@ -44,6 +44,7 @@ export declare class Condition {
     protected static readonly KeywordsAliases: {
         [name: string]: string;
     };
+    protected static readonly PrimitiveTypes: string[];
     protected _data: any;
     protected _field: string;
     protected _type: ConditionTypes;
