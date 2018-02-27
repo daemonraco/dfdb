@@ -16,7 +16,7 @@ const collectionName = 'test_collection';
 describe('dfdb: Heavy search [005]', function () {
     this.timeout(12000);
 
-    const { DocsOnFileDB, types } = require('..');
+    const { Collection, Connection, DocsOnFileDB } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -27,7 +27,7 @@ describe('dfdb: Heavy search [005]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
 
@@ -46,7 +46,7 @@ describe('dfdb: Heavy search [005]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 collection = col;

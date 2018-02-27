@@ -17,8 +17,7 @@ const collectionName = 'test_collection';
 describe('dfdb: Administration tools [004]', function () {
     this.timeout(6000);
 
-    const { constants, DocsOnFileDB, types } = require('..');
-    const { RejectionCodes } = constants;
+    const { Collection, Connection, DocsOnFileDB, DFDBGuessDatabasePath, RejectionCodes } = require('..');
     const dbDirPath = path.join(__dirname, '.tmpdb');
 
     let connection = null;
@@ -29,7 +28,7 @@ describe('dfdb: Administration tools [004]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
 
@@ -53,7 +52,7 @@ describe('dfdb: Administration tools [004]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 const hasCollection = connection.hasCollection(collectionName);
@@ -212,7 +211,7 @@ describe('dfdb: Administration tools [004]', function () {
 
         DocsOnFileDB.connect(dbName, dbDirPath, null)
             .then(db => {
-                assert.instanceOf(db, types.Connection);
+                assert.instanceOf(db, Connection);
                 assert.typeOf(db.connected, 'function');
                 assert.strictEqual(db.connected(), true);
 
@@ -236,7 +235,7 @@ describe('dfdb: Administration tools [004]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 collection = col;
@@ -294,7 +293,7 @@ describe('dfdb: Administration tools [004]', function () {
                 assert.isFalse(connection.error());
                 assert.isNull(connection.lastError());
 
-                assert.instanceOf(col, types.Collection);
+                assert.instanceOf(col, Collection);
                 assert.isFalse(col.error());
 
                 const hasCollection = connection.hasCollection(collectionName);
@@ -337,7 +336,7 @@ describe('dfdb: Administration tools [004]', function () {
     it('drops current database', done => {
         assert.typeOf(DocsOnFileDB.dropDatabase, 'function');
 
-        const dbFullPath = types.DocsOnFileDB.GuessDatabasePath(dbName, dbDirPath);
+        const dbFullPath = DFDBGuessDatabasePath(dbName, dbDirPath);
         let stat = null;
         try { stat = fs.statSync(dbFullPath); } catch (e) { }
         assert.isNotNull(stat);
@@ -370,7 +369,7 @@ describe('dfdb: Administration tools [004]', function () {
     it(`connects to an invalid database`, done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
 
-        const dbFullPath = types.DocsOnFileDB.GuessDatabasePath(invalidDbName, dbDirPath);
+        const dbFullPath = DFDBGuessDatabasePath(invalidDbName, dbDirPath);
         fs.writeFileSync(dbFullPath, 'NOT A DATABASE');
 
         let stat = null;
@@ -391,7 +390,7 @@ describe('dfdb: Administration tools [004]', function () {
     it(`drops a database that isn't a valid database`, done => {
         assert.typeOf(DocsOnFileDB.dropDatabase, 'function');
 
-        const dbFullPath = types.DocsOnFileDB.GuessDatabasePath(invalidDbName, dbDirPath);
+        const dbFullPath = DFDBGuessDatabasePath(invalidDbName, dbDirPath);
         fs.writeFileSync(dbFullPath, 'NOT A DATABASE');
 
         let stat = null;

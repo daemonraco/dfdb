@@ -9,7 +9,7 @@ const path = require('path');
 // Testing.
 describe('dfdb: Tools [007]', function () {
     const dfdb = require('..');
-    const Tools = dfdb.types.Tools;
+    const { Tools } = dfdb;
 
     it(`Merge of two simple objects`, () => {
         const left = {

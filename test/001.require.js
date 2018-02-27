@@ -15,101 +15,96 @@ describe('dfdb: Require [001]', function () {
 
         assert.property(dfdb, 'dfdb');
         assert.property(dfdb, 'DocsOnFileDB');
-        assert.property(dfdb, 'types');
-        assert.property(dfdb, 'constants');
+        assert.property(dfdb, 'DFDBGuessDatabasePath');
+        assert.typeOf(dfdb.DFDBGuessDatabasePath, 'function');
     });
 
     it(`loads a proper list of types`, () => {
-        assert.typeOf(dfdb.types, 'object');
-
-        assert.property(dfdb.types, 'Collection');
-        assert.property(dfdb.types, 'Connection');
-        assert.property(dfdb.types, 'DocsOnFileDB');
-        assert.property(dfdb.types, 'Index');
-        assert.property(dfdb.types, 'Rejection');
-        assert.property(dfdb.types, 'Sequence');
-        assert.property(dfdb.types, 'Tools');
+        assert.property(dfdb, 'Collection');
+        assert.property(dfdb, 'Connection');
+        assert.property(dfdb, 'DocsOnFileDB');
+        assert.property(dfdb, 'Index');
+        assert.property(dfdb, 'Rejection');
+        assert.property(dfdb, 'Sequence');
+        assert.property(dfdb, 'Tools');
     });
 
     it(`loads a proper list of constant lists`, () => {
-        assert.typeOf(dfdb.constants, 'object');
-
-        assert.property(dfdb.constants, 'BasicConstants');
-        assert.property(dfdb.constants, 'CollectionTypes');
-        assert.property(dfdb.constants, 'ConnectionSaveConstants');
-        assert.property(dfdb.constants, 'RejectionCodes');
+        assert.property(dfdb, 'BasicConstants');
+        assert.property(dfdb, 'CollectionTypes');
+        assert.property(dfdb, 'ConnectionSaveConstants');
+        assert.property(dfdb, 'RejectionCodes');
     });
 
     it(`loads a proper list of basic constants`, () => {
-        //assert.typeOf(dfdb.constants.BasicConstants, 'object');
+        const { BasicConstants } = dfdb;
 
-        assert.property(dfdb.constants.BasicConstants, 'DBExtension');
-        assert.property(dfdb.constants.BasicConstants, 'DefaultSequence');
+        assert.property(BasicConstants, 'DBExtension');
+        assert.property(BasicConstants, 'DefaultSequence');
 
-        assert.isString(dfdb.constants.BasicConstants.DefaultSequence);
+        assert.isString(BasicConstants.DefaultSequence);
     });
 
     it(`loads a proper list of collection types`, () => {
-        //assert.typeOf(dfdb.constants.ConnectionSaveConstants, 'object');
+        const { CollectionTypes } = dfdb;
 
-        assert.property(dfdb.constants.CollectionTypes, 'Heavy');
-        assert.property(dfdb.constants.CollectionTypes, 'Simple');
+        assert.property(CollectionTypes, 'Heavy');
+        assert.property(CollectionTypes, 'Simple');
 
-        assert.isString(dfdb.constants.CollectionTypes.Heavy);
-        assert.isString(dfdb.constants.CollectionTypes.Simple);
+        assert.isString(CollectionTypes.Heavy);
+        assert.isString(CollectionTypes.Simple);
     });
 
     it(`loads a proper list of connection constants`, () => {
-        //assert.typeOf(dfdb.constants.ConnectionSaveConstants, 'object');
+        const { ConnectionSaveConstants } = dfdb;
 
-        assert.property(dfdb.constants.ConnectionSaveConstants, 'LoadFile');
-        assert.property(dfdb.constants.ConnectionSaveConstants, 'RemoveFile');
-        assert.property(dfdb.constants.ConnectionSaveConstants, 'UpdateFile');
+        assert.property(ConnectionSaveConstants, 'LoadFile');
+        assert.property(ConnectionSaveConstants, 'RemoveFile');
+        assert.property(ConnectionSaveConstants, 'UpdateFile');
 
-        assert.isString(dfdb.constants.ConnectionSaveConstants.LoadFile);
-        assert.isString(dfdb.constants.ConnectionSaveConstants.RemoveFile);
-        assert.isString(dfdb.constants.ConnectionSaveConstants.UpdateFile);
+        assert.isString(ConnectionSaveConstants.LoadFile);
+        assert.isString(ConnectionSaveConstants.RemoveFile);
+        assert.isString(ConnectionSaveConstants.UpdateFile);
     });
 
     it(`loads a proper list of known errors constants`, () => {
-        //assert.typeOf(dfdb.constants.RejectionCodes, 'object');
+        const { RejectionCodes } = dfdb;
 
-        assert.property(dfdb.constants.RejectionCodes, 'DocIsNotObject');
-        assert.property(dfdb.constants.RejectionCodes, 'DocNotFound');
-        assert.property(dfdb.constants.RejectionCodes, 'NotIndexableValue');
-        assert.property(dfdb.constants.RejectionCodes, 'DuplicatedIndex');
-        assert.property(dfdb.constants.RejectionCodes, 'NotIndexedField');
-        assert.property(dfdb.constants.RejectionCodes, 'CollectionNotConnected');
-        assert.property(dfdb.constants.RejectionCodes, 'IndexNotConnected');
-        assert.property(dfdb.constants.RejectionCodes, 'SequenceNotConnected');
-        assert.property(dfdb.constants.RejectionCodes, 'DatabaseDoesntExist');
-        assert.property(dfdb.constants.RejectionCodes, 'DatabaseNotValid');
-        assert.property(dfdb.constants.RejectionCodes, 'UnknownIndex');
-        assert.property(dfdb.constants.RejectionCodes, 'DatabaseNotConnected');
-        assert.property(dfdb.constants.RejectionCodes, 'SchemaDoesntApply');
-        assert.property(dfdb.constants.RejectionCodes, 'InvalidSchema');
-        assert.property(dfdb.constants.RejectionCodes, 'UnknownError');
+        assert.property(RejectionCodes, 'DocIsNotObject');
+        assert.property(RejectionCodes, 'DocNotFound');
+        assert.property(RejectionCodes, 'NotIndexableValue');
+        assert.property(RejectionCodes, 'DuplicatedIndex');
+        assert.property(RejectionCodes, 'NotIndexedField');
+        assert.property(RejectionCodes, 'CollectionNotConnected');
+        assert.property(RejectionCodes, 'IndexNotConnected');
+        assert.property(RejectionCodes, 'SequenceNotConnected');
+        assert.property(RejectionCodes, 'DatabaseDoesntExist');
+        assert.property(RejectionCodes, 'DatabaseNotValid');
+        assert.property(RejectionCodes, 'UnknownIndex');
+        assert.property(RejectionCodes, 'DatabaseNotConnected');
+        assert.property(RejectionCodes, 'SchemaDoesntApply');
+        assert.property(RejectionCodes, 'InvalidSchema');
+        assert.property(RejectionCodes, 'UnknownError');
 
-        assert.isString(dfdb.constants.RejectionCodes.DocIsNotObject);
-        assert.isString(dfdb.constants.RejectionCodes.DocNotFound);
-        assert.isString(dfdb.constants.RejectionCodes.NotIndexableValue);
-        assert.isString(dfdb.constants.RejectionCodes.DuplicatedIndex);
-        assert.isString(dfdb.constants.RejectionCodes.NotIndexedField);
-        assert.isString(dfdb.constants.RejectionCodes.CollectionNotConnected);
-        assert.isString(dfdb.constants.RejectionCodes.IndexNotConnected);
-        assert.isString(dfdb.constants.RejectionCodes.SequenceNotConnected);
-        assert.isString(dfdb.constants.RejectionCodes.DatabaseDoesntExist);
-        assert.isString(dfdb.constants.RejectionCodes.DatabaseNotValid);
-        assert.isString(dfdb.constants.RejectionCodes.UnknownIndex);
-        assert.isString(dfdb.constants.RejectionCodes.DatabaseNotConnected);
-        assert.isString(dfdb.constants.RejectionCodes.SchemaDoesntApply);
-        assert.isString(dfdb.constants.RejectionCodes.InvalidSchema);
-        assert.isString(dfdb.constants.RejectionCodes.UnknownError);
+        assert.isString(RejectionCodes.DocIsNotObject);
+        assert.isString(RejectionCodes.DocNotFound);
+        assert.isString(RejectionCodes.NotIndexableValue);
+        assert.isString(RejectionCodes.DuplicatedIndex);
+        assert.isString(RejectionCodes.NotIndexedField);
+        assert.isString(RejectionCodes.CollectionNotConnected);
+        assert.isString(RejectionCodes.IndexNotConnected);
+        assert.isString(RejectionCodes.SequenceNotConnected);
+        assert.isString(RejectionCodes.DatabaseDoesntExist);
+        assert.isString(RejectionCodes.DatabaseNotValid);
+        assert.isString(RejectionCodes.UnknownIndex);
+        assert.isString(RejectionCodes.DatabaseNotConnected);
+        assert.isString(RejectionCodes.SchemaDoesntApply);
+        assert.isString(RejectionCodes.InvalidSchema);
+        assert.isString(RejectionCodes.UnknownError);
     });
 
     it(`builds a simple rejection object`, () => {
-        const { Rejection } = dfdb.types;
-        const { RejectionCodes } = dfdb.constants;
+        const { Rejection, RejectionCodes } = dfdb;
 
         const rejection = new Rejection(RejectionCodes.UnknownError);
 
@@ -124,8 +119,7 @@ describe('dfdb: Require [001]', function () {
     });
 
     it(`builds a rejection object with extra information in a string`, () => {
-        const { Rejection } = dfdb.types;
-        const { RejectionCodes } = dfdb.constants;
+        const { Rejection, RejectionCodes } = dfdb;
 
         const rejection = new Rejection(RejectionCodes.UnknownError, 'SOME MESSAGE');
 
@@ -140,8 +134,7 @@ describe('dfdb: Require [001]', function () {
     });
 
     it(`builds a rejection object with extra information in an object`, () => {
-        const { Rejection } = dfdb.types;
-        const { RejectionCodes } = dfdb.constants;
+        const { Rejection, RejectionCodes } = dfdb;
         const data = {
             integer: 11,
             float: 22.2,

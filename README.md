@@ -40,9 +40,9 @@ These are some basic examples you can take to use this library.
 ## Connection
 Getting connected to a database:
 ```js
-const dfdb = require().DocsOnFileDB;
+const { DocsOnFileDB } = require('dfdb');
 let db = false;
-dfdb.connect('mydb', __dirname).then(conn => {
+DocsOnFileDB.connect('mydb', __dirname).then(conn => {
     db = conn;
 });
 ```
