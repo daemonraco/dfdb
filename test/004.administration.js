@@ -366,6 +366,20 @@ describe('dfdb: Administration tools [004]', function () {
             .then(done, done);
     });
 
+    it(`connects to a wrong database path`, done => {
+        assert.typeOf(DocsOnFileDB.connect, 'function');
+
+        DocsOnFileDB.connect('not a name', 'not a path', null)
+            .then(db => {
+                assert.isTrue(false, `a success was not expected at this point.`);
+            })
+            .catch(err => {
+                const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.InvalidDBPath, true);
+                assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
+            })
+            .then(done, done);
+    });
+
     it(`connects to an invalid database`, done => {
         assert.typeOf(DocsOnFileDB.connect, 'function');
 

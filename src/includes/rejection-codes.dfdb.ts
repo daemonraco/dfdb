@@ -26,6 +26,7 @@ export class RejectionCodes {
     public static readonly SchemaDoesntApply: string = `E-0013`;
     public static readonly InvalidSchema: string = `E-0014`;
     public static readonly UnknownError: string = `E-0015`;
+    public static readonly InvalidDBPath: string = `E-0016`;
     //
     // Private class constants.
     private static readonly _messages: { [name: string]: string } = {
@@ -43,7 +44,8 @@ export class RejectionCodes {
         'E-0012': 'Database not connected',
         'E-0013': `Document doesn't follow the given schema`,
         'E-0014': `Given schema is not valid`,
-        'E-0015': `An unknown error has been triggered`
+        'E-0015': `An unknown error has been triggered`,
+        'E-0016': `Invalid database path`
     };
     //
     // Constructor.

@@ -23,6 +23,7 @@ export declare class RejectionCodes {
     static readonly SchemaDoesntApply: string;
     static readonly InvalidSchema: string;
     static readonly UnknownError: string;
+    static readonly InvalidDBPath: string;
     private static readonly _messages;
     /**
      * @constructor

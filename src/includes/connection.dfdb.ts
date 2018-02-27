@@ -490,6 +490,10 @@ export class Connection implements IResource {
                 .pipe(fs.createWriteStream(this._dbFullPath))
                 .on('finish', () => {
                     resolve();
+                })
+                .on('error', (error) => {
+                    this.setLastRejection(new Rejection(RejectionCodes.InvalidDBPath, error));
+                    reject(this._lastRejection);
                 });
         });
     }
