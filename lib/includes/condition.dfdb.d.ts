@@ -16,7 +16,8 @@ export declare enum ConditionTypes {
     LowerOrEqual = 6,
     LowerThan = 7,
     NotIn = 8,
-    Wrong = 9,
+    RegEx = 9,
+    Wrong = 10,
 }
 /**
  * This simple class checks how a list of contitions should be specified.
@@ -157,6 +158,14 @@ export declare class Condition {
      */
     protected cleanDataNotIn(): void;
     /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * matched as regular expression in later validations.
+     *
+     * @protected
+     * @method cleanDataRegEx
+     */
+    protected cleanDataRegEx(): void;
+    /**
      * There's no need to prepare a condition's internal value when it always
      * returns FALSE.
      *
@@ -176,7 +185,8 @@ export declare class Condition {
     protected validateExact(value: any): boolean;
     /**
      * This method holds the logic to validate if a value greater than or equal to
-     * the one configure (both values are interpreted as strings).
+     * the one configure (both values are interpreted as strings unless they are
+     * primitive types).
      *
      * @protected
      * @method validateGreaterOrEqual
@@ -186,7 +196,8 @@ export declare class Condition {
     protected validateGreaterOrEqual(value: any): boolean;
     /**
      * This method holds the logic to validate if a value greater than the one
-     * configure (both values are interpreted as strings).
+     * configure (both values are interpreted as strings unless they are primitive
+     * types).
      *
      * @protected
      * @method validateGreaterThan
@@ -225,7 +236,8 @@ export declare class Condition {
     protected validateLike(value: any): boolean;
     /**
      * This method holds the logic to validate if a value lower than or equal to
-     * the one configure (both values are interpreted as strings).
+     * the one configure (both values are interpreted as strings unless they are
+     * primitive types).
      *
      * @protected
      * @method validateLowerOrEqual
@@ -235,7 +247,8 @@ export declare class Condition {
     protected validateLowerOrEqual(value: any): boolean;
     /**
      * This method holds the logic to validate if a value lower than the one
-     * configure (both values are interpreted as strings).
+     * configure (both values are interpreted as strings unless they are primitive
+     * types).
      *
      * @protected
      * @method validateLowerThan
@@ -253,6 +266,16 @@ export declare class Condition {
      * @returns {boolean} Returns TRUE when it checks out.
      */
     protected validateNotIn(value: any): boolean;
+    /**
+     * This method holds the logic to validate if a value matches a regular
+     * expression.
+     *
+     * @protected
+     * @method validateRegEx
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateRegEx(value: any): boolean;
     /**
      * This method is used to always reject values.
      *

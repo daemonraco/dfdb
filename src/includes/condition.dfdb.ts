@@ -17,6 +17,7 @@ export enum ConditionTypes {
     LowerOrEqual,
     LowerThan,
     NotIn,
+    RegEx,
     Wrong
 };
 
@@ -52,7 +53,8 @@ export class Condition {
         '$le': ConditionTypes.LowerOrEqual,
         '$like': ConditionTypes.Like,
         '$lt': ConditionTypes.LowerThan,
-        '$notIn': ConditionTypes.NotIn
+        '$notIn': ConditionTypes.NotIn,
+        '$regex': ConditionTypes.RegEx
     };
     protected static readonly KeywordsAliases: { [name: string]: string } = {
         '=': '$exact',
@@ -61,7 +63,8 @@ export class Condition {
         '<=': '$le',
         '<': '$lt',
         '*': '$like',
-        '$partial': '$like'
+        '$partial': '$like',
+        '$regexp': '$regex'
     };
     protected static readonly PrimitiveTypes: string[] = ['boolean', 'number'];
     //
@@ -238,6 +241,20 @@ export class Condition {
         this._data = this._data.map((v: any) => `${v}`.toLowerCase());
     }
     /**
+     * This method holds the logic to prepare a condition's internal value to be
+     * matched as regular expression in later validations.
+     *
+     * @protected
+     * @method cleanDataRegEx
+     */
+    protected cleanDataRegEx(): void {
+        if (typeof this._data['$regex'] !== 'undefined' && this._data['$regex'] instanceof RegExp) {
+            this._data = new RegExp(this._data['$regex'], 'i');
+        } else {
+            this.cleanDataWrong();
+        }
+    }
+    /**
      * There's no need to prepare a condition's internal value when it always
      * returns FALSE.
      *
@@ -261,7 +278,8 @@ export class Condition {
     }
     /**
      * This method holds the logic to validate if a value greater than or equal to
-     * the one configure (both values are interpreted as strings).
+     * the one configure (both values are interpreted as strings unless they are
+     * primitive types).
      *
      * @protected
      * @method validateGreaterOrEqual
@@ -273,7 +291,8 @@ export class Condition {
     }
     /**
      * This method holds the logic to validate if a value greater than the one
-     * configure (both values are interpreted as strings).
+     * configure (both values are interpreted as strings unless they are primitive
+     * types).
      *
      * @protected
      * @method validateGreaterThan
@@ -320,7 +339,8 @@ export class Condition {
     }
     /**
      * This method holds the logic to validate if a value lower than or equal to
-     * the one configure (both values are interpreted as strings).
+     * the one configure (both values are interpreted as strings unless they are
+     * primitive types).
      *
      * @protected
      * @method validateLowerOrEqual
@@ -332,7 +352,8 @@ export class Condition {
     }
     /**
      * This method holds the logic to validate if a value lower than the one
-     * configure (both values are interpreted as strings).
+     * configure (both values are interpreted as strings unless they are primitive
+     * types).
      *
      * @protected
      * @method validateLowerThan
@@ -353,6 +374,18 @@ export class Condition {
      */
     protected validateNotIn(value: any): boolean {
         return this._data.indexOf(`${value}`.toLowerCase()) < 0;
+    }
+    /**
+     * This method holds the logic to validate if a value matches a regular
+     * expression.
+     *
+     * @protected
+     * @method validateRegEx
+     * @param {any} value Value to check.
+     * @returns {boolean} Returns TRUE when it checks out.
+     */
+    protected validateRegEx(value: any): boolean {
+        return `${value}`.toLowerCase().match(this._data) !== null;
     }
     /**
      * This method is used to always reject values.
