@@ -421,6 +421,32 @@ describe('dfdb: Search keywords [010]', function () {
             }).then(done, done);
     });
 
+    it(`searches for a value that match the pattern /^([i]{2}).*([X]{2})$/ using an unindexed field`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ company: { $regex: /^([i]{2}).*([X]{2})$/ } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 1);
+                assert.strictEqual(docs[0]._id, '152');
+                assert.strictEqual(docs[0].company, 'IISOPLEXX');
+            }).then(done, done);
+    });
+
+    it(`searches for a value that match a wrong pattern using an unindexed field`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ company: { $regex: 'NOT A PATTERN' } })
+            .then(docs => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.strictEqual(docs.length, 0);
+            }).then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
