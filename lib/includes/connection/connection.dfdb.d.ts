@@ -119,6 +119,22 @@ export declare class Connection implements IErrors, IResource {
      */
     hasCollection(name: string): boolean;
     /**
+     * This method allows to know if current database connection has an
+     * initializer assigned.
+     *
+     * @method hasInitiaizer
+     * @returns {boolean} Returns TRUE when it has.
+     */
+    hasInitiaizer(): boolean;
+    /**
+     * This method allows access to current database connection's  assigned
+     * initializer.
+     *
+     * @method initiaizer
+     * @returns {Initializer} Returns a copy of this connection's initializer.
+     */
+    initiaizer(): Initializer;
+    /**
      * Provides access to the error message registed by the last operation.
      *
      * @method lastError

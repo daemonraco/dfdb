@@ -176,6 +176,30 @@ export class Connection implements IErrors, IResource {
         return this._subLogicCollections.hasCollection(name);
     }
     /**
+     * This method allows to know if current database connection has an
+     * initializer assigned.
+     *
+     * @method hasInitiaizer
+     * @returns {boolean} Returns TRUE when it has.
+     */
+    public hasInitiaizer(): boolean {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicInit.hasInitiaizer();
+    }
+    /**
+     * This method allows access to current database connection's  assigned
+     * initializer.
+     *
+     * @method initiaizer
+     * @returns {Initializer} Returns a copy of this connection's initializer.
+     */
+    public initiaizer(): Initializer {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicInit.initiaizer();
+    }
+    /**
      * Provides access to the error message registed by the last operation.
      *
      * @method lastError
