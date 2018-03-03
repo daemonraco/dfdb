@@ -5,26 +5,27 @@
 import { Promise } from 'es6-promise';
 import { Collection } from './collection/collection.dfdb';
 import { ConditionsList } from './condition.dfdb';
-import { Connection } from './connection.dfdb';
+import { Connection } from './connection/connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
+import { IErrors } from './errors.i.dfdb';
 import { Rejection } from './rejection.dfdb';
+import { SubLogicErrors } from './errors.sl.dfdb';
 /**
  * This class represents a document's field index associated to a collection.
  *
  * @class Index
  */
-export declare class Index implements IResource, IDelayedResource {
+export declare class Index implements IErrors, IResource, IDelayedResource {
+    protected _collection: Collection;
     protected _connected: boolean;
     protected _connection: Connection;
     protected _data: {
         [name: string]: any;
     };
     protected _field: string;
-    protected _lastError: string;
-    protected _lastRejection: Rejection;
     protected _resourcePath: string;
     protected _skipSave: boolean;
-    protected _collection: Collection;
+    protected _subLogicErrors: SubLogicErrors<Index>;
     /**
      * @constructor
      * @param {Collection} collection Collection to which this index is
@@ -97,6 +98,13 @@ export declare class Index implements IResource, IDelayedResource {
      */
     lastError(): string | null;
     /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    lastRejection(): Rejection;
+    /**
      * This method unindexes a document from this index.
      *
      * @method removeDocument
@@ -128,13 +136,6 @@ export declare class Index implements IResource, IDelayedResource {
      */
     truncate(): Promise<void>;
     /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void;
-    /**
      * This method triggers the physical saving of this index file.
      *
      * @protected
@@ -143,12 +144,4 @@ export declare class Index implements IResource, IDelayedResource {
      * operation finishes.
      */
     protected save(): Promise<void>;
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void;
 }

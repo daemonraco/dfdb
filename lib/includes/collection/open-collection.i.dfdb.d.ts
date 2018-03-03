@@ -3,14 +3,15 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { Connection } from '../connection.dfdb';
+import { Collection } from './collection.dfdb';
+import { Connection } from '../connection/connection.dfdb';
 import { Index } from '../index.dfdb';
-import { Rejection } from '../rejection.dfdb';
 import { Sequence } from '../sequence.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionCRUD
@@ -20,22 +21,20 @@ export interface IOpenCollectionCRUD {
     _data: {
         [name: string]: any;
     };
-    _lastRejection: Rejection;
     _schemaApplier: any;
     _schemaValidator: any;
+    _subLogicErrors: SubLogicErrors<Collection>;
     _subLogicIndex: SubLogicIndex;
     _subLogicSchema: SubLogicSchema;
     _sequence: Sequence;
     error(): boolean;
-    resetError(): void;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
     update(id: any, doc: {
         [name: string]: any;
     }): Promise<any>;
 }
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionIndex
@@ -49,16 +48,14 @@ export interface IOpenCollectionIndex {
     _indexes: {
         [name: string]: Index;
     };
-    _lastRejection: Rejection;
     _manifest: {
         [name: string]: any;
     };
-    resetError(): void;
+    _subLogicErrors: SubLogicErrors<Collection>;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
 }
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionSchema
@@ -68,20 +65,18 @@ export interface IOpenCollectionSchema {
     _data: {
         [name: string]: any;
     };
-    _lastRejection: Rejection;
     _manifest: {
         [name: string]: any;
     };
     _schemaApplier: any;
     _schemaValidator: any;
+    _subLogicErrors: SubLogicErrors<Collection>;
     _subLogicIndex: SubLogicIndex;
     error(): boolean;
-    resetError(): void;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
 }
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionSeeker
@@ -93,7 +88,6 @@ export interface IOpenCollectionSeeker {
     _indexes: {
         [name: string]: Index;
     };
+    _subLogicErrors: SubLogicErrors<Collection>;
     error(): boolean;
-    resetError(): void;
-    setLastRejection(rejection: Rejection): void;
 }

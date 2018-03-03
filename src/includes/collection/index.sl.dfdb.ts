@@ -6,13 +6,12 @@
 import { Promise } from 'es6-promise';
 
 import { Collection } from './collection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IOpenCollectionIndex } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-import { Tools } from '../tools.dfdb';
+import { Tools, IPromiseStep } from '../tools.dfdb';
 
 /**
  * This class holds Collection's logic related to its indexes.
@@ -47,7 +46,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             });
             //
             // Indexing.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -64,7 +63,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     public addFieldIndex(name: string): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -108,11 +107,11 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
                     })
                     .catch(reject);
             } else if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DuplicatedIndex, { index: name }));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DuplicatedIndex, { index: name }));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -142,7 +141,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             });
             //
             // Closing.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -158,7 +157,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     public dropFieldIndex(name: string): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -217,7 +216,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             });
             //
             // Dropping.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -268,7 +267,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             })
             //
             // Loading.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -299,7 +298,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             });
             //
             // Closing.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -315,7 +314,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
     public rebuildFieldIndex(name: string): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -334,11 +333,11 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
                     })
                     .catch(reject);
             } else if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.UnknownIndex, { index: name }));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.UnknownIndex, { index: name }));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -367,7 +366,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             })
             //
             // Removing document.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });
@@ -398,7 +397,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
             })
             //
             // Truncating.
-            Collection.ProcessStepsSequence(steps)
+            Tools.ProcessPromiseSteps(steps)
                 .then(resolve)
                 .catch(reject);
         });

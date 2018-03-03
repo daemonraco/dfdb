@@ -7,27 +7,28 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 
 import { Collection } from './collection/collection.dfdb';
-import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
+import { Connection, ConnectionSavingQueueResult } from './connection/connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
+import { IErrors } from './errors.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';
+import { SubLogicErrors } from './errors.sl.dfdb';
 
 /**
  * This class represents a sequence of ids associated to a collection.
  *
  * @class Sequence
  */
-export class Sequence implements IResource, IDelayedResource {
+export class Sequence implements IErrors, IResource, IDelayedResource {
     //
     // Protected properties.
+    protected _collection: Collection = null;
     protected _connected: boolean = false;
     protected _connection: Connection = null;
-    protected _lastError: string = null;
-    protected _lastRejection: Rejection = null;
     protected _name: string = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
-    protected _collection: Collection = null;
+    protected _subLogicErrors: SubLogicErrors<Sequence> = null;
     protected _value: number = 0;
     //
     // Constructor.
@@ -46,6 +47,9 @@ export class Sequence implements IResource, IDelayedResource {
         //
         // Main path.
         this._resourcePath = `${this._collection.name()}/${this._name}.seq`;
+        //
+        // Sub-logics.
+        this._subLogicErrors = new SubLogicErrors<Sequence>(this);
     }
     //
     // Public methods.
@@ -61,7 +65,7 @@ export class Sequence implements IResource, IDelayedResource {
     public connect(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -118,7 +122,7 @@ export class Sequence implements IResource, IDelayedResource {
     public close(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -157,7 +161,7 @@ export class Sequence implements IResource, IDelayedResource {
     public drop(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -190,7 +194,9 @@ export class Sequence implements IResource, IDelayedResource {
      * @returns {boolean} Returns TRUE when there was an error.
      */
     public error(): boolean {
-        return this._lastError !== null;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.error();
     }
     /**
      * Provides access to the error message registed by the last operation.
@@ -199,7 +205,20 @@ export class Sequence implements IResource, IDelayedResource {
      * @returns {string|null} Returns an error message.
      */
     public lastError(): string | null {
-        return this._lastError;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastError();
+    }
+    /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    public lastRejection(): Rejection {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastRejection();
     }
     /**
      * This method advances the internal counter and returns it for ID usage
@@ -211,7 +230,7 @@ export class Sequence implements IResource, IDelayedResource {
     public next(): string {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Incrementing internal counter.
         this._value++;
@@ -245,16 +264,6 @@ export class Sequence implements IResource, IDelayedResource {
     //
     // Protected methods.
     /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void {
-        this._lastError = null;
-        this._lastRejection = null;
-    }
-    /**
      * This method triggers the physical saving of this sequence file.
      *
      * @protected
@@ -278,16 +287,5 @@ export class Sequence implements IResource, IDelayedResource {
                 })
                 .catch(reject);
         });
-    }
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void {
-        this._lastError = `${rejection}`;
-        this._lastRejection = rejection;
     }
 }

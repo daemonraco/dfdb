@@ -8,12 +8,11 @@ import * as Ajv from 'ajv';
 import * as md5 from 'md5';
 
 import { Collection } from './collection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-import { Tools } from '../tools.dfdb';
+import { Tools, IPromiseStep } from '../tools.dfdb';
 
 /**
  * This class holds Collection's logic related to its schema.
@@ -64,7 +63,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     public removeSchema(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -91,8 +90,8 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                     resolve();
                 }
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -116,7 +115,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     public setSchema(schema: any): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -136,26 +135,26 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                         let validator = ajv.compile(schema);
                         valid = true;
                     } catch (e) {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
                     }
                     //
                     // Is it valid?
                     if (valid) {
                         //
                         // Building a list of loading asynchronous operations to perform.
-                        let steps: ICollectionStep[] = [];
+                        let steps: IPromiseStep[] = [];
                         steps.push({ params: { schema, schemaMD5 }, stepFunction: (params: any) => this.applySchema(params) });
                         steps.push({ params: {}, stepFunction: (params: any) => this._mainObject._subLogicIndex.rebuildAllIndexes(params) });
                         //
                         // Loading everything.
-                        Collection.ProcessStepsSequence(steps)
+                        Tools.ProcessPromiseSteps(steps)
                             .then(() => {
                                 this._mainObject.save()
                                     .then(resolve)
                                     .catch(reject);
                             }).catch(reject);
                     } else {
-                        reject(this._mainObject._lastRejection);
+                        reject(this._mainObject._subLogicErrors.lastRejection());
                     }
                 } else {
                     //
@@ -163,8 +162,8 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                     resolve();
                 }
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -197,7 +196,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
             Object.keys(this._mainObject._data).forEach((id: string) => {
                 if (!this._mainObject.error()) {
                     if (!validator(this._mainObject._data[id])) {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
                     }
                 }
             });
@@ -219,7 +218,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
 
                 resolve();
             } else {
-                reject(this._mainObject._lastRejection);
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }

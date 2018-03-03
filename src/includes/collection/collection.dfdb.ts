@@ -6,18 +6,20 @@
 import { Promise } from 'es6-promise';
 
 import { BasicConstants } from '../constants.dfdb';
-import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
+import { Connection, ConnectionSavingQueueResult } from '../connection/connection.dfdb';
+import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicCRUD } from './crud.sl.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicFind } from './find.sl.dfdb';
 import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 import { SubLogicSearch } from './search.sl.dfdb';
 import { Sequence } from '../sequence.dfdb';
+import { Tools, IPromiseStep } from '../tools.dfdb';
 
 /**
  * This class represents a collection and provides access to all its information
@@ -25,15 +27,13 @@ import { Sequence } from '../sequence.dfdb';
  *
  * @class Collection
  */
-export class Collection implements IResource {
+export class Collection implements IErrors, IResource {
     //
     // Protected properties.
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _data: { [name: string]: any } = {};
     protected _indexes: { [name: string]: Index } = {};
-    protected _lastError: string = null;
-    protected _lastRejection: Rejection = null;
     protected _manifest: { [name: string]: any } = {
         indexes: {},
         schema: null,
@@ -45,6 +45,7 @@ export class Collection implements IResource {
     protected _schemaApplier: any = null;
     protected _schemaValidator: any = null;
     protected _subLogicCRUD: SubLogicCRUD = null;
+    protected _subLogicErrors: SubLogicErrors<Collection> = null;
     protected _subLogicFind: SubLogicFind = null;
     protected _subLogicIndex: SubLogicIndex = null;
     protected _subLogicSchema: SubLogicSchema = null;
@@ -69,6 +70,7 @@ export class Collection implements IResource {
         //
         // Sub-logics.
         this._subLogicCRUD = new SubLogicCRUD(this);
+        this._subLogicErrors = new SubLogicErrors<Collection>(this);
         this._subLogicFind = new SubLogicFind(this);
         this._subLogicIndex = new SubLogicIndex(this);
         this._subLogicSchema = new SubLogicSchema(this);
@@ -103,7 +105,7 @@ export class Collection implements IResource {
     public connect(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -112,14 +114,14 @@ export class Collection implements IResource {
             if (!this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadManifest(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadSequence(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.loadIndexes(params) });
                 //
                 // Loading everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // At this point, this collection is considered connected.
@@ -149,7 +151,7 @@ export class Collection implements IResource {
     public close(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -158,7 +160,7 @@ export class Collection implements IResource {
             if (this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 //
                 // This step closes this collection's sequence.
                 steps.push({
@@ -180,7 +182,7 @@ export class Collection implements IResource {
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.closeIndexes(params) });
                 //
                 // Closing everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // Asking connection to forget this collection and load
@@ -224,7 +226,7 @@ export class Collection implements IResource {
     public drop(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -233,14 +235,14 @@ export class Collection implements IResource {
             if (this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.dropIndexes(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropSequence(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropManifest(params) });
                 //
                 // Dropping everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // Completelly forgetting this collection from its
@@ -283,7 +285,9 @@ export class Collection implements IResource {
      * @returns {boolean} Returns TRUE when there was an error.
      */
     public error(): boolean {
-        return this._lastError !== null;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.error();
     }
     /**
      * This method searches for documents that match certain criteria. Conditions
@@ -367,7 +371,20 @@ export class Collection implements IResource {
      * @returns {string|null} Returns an error message.
      */
     public lastError(): string | null {
-        return this._lastError;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastError();
+    }
+    /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    public lastRejection(): Rejection {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastRejection();
     }
     /**
      * Provides access to current collection name.
@@ -719,16 +736,6 @@ export class Collection implements IResource {
         });
     }
     /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void {
-        this._lastError = null;
-        this._lastRejection = null;
-    }
-    /**
      * This method triggers the physical saving of all files.
      *
      * @protected
@@ -763,50 +770,6 @@ export class Collection implements IResource {
                         .catch(reject);
                 })
                 .catch(reject);
-        });
-    }
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void {
-        this._lastError = `${rejection}`;
-        this._lastRejection = rejection;
-    }
-    //
-    // Public class methods.
-    /**
-     * This method is a generic iterator of recursive asynchronous calls to
-     * multiple tasks.
-     *
-     * @protected
-     * @static
-     * @method ProcessStepsSequence
-     * @param {ICollectionStep[]} steps List of steps to take.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    public static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Are there steps to process.
-            if (steps.length > 0) {
-                //
-                // Picking a step to process
-                const step = steps.shift();
-                //
-                // Executing the step and setting the recurtion for its callback
-                step.stepFunction(step.params)
-                    .then(() => Collection.ProcessStepsSequence(steps).then(resolve).catch(reject))
-                    .catch(reject);
-            } else {
-                resolve();
-            }
         });
     }
 }

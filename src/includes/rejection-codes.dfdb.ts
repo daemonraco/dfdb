@@ -27,6 +27,10 @@ export class RejectionCodes {
     public static readonly InvalidSchema: string = `E-0014`;
     public static readonly UnknownError: string = `E-0015`;
     public static readonly InvalidDBPath: string = `E-0016`;
+    public static readonly NotImplemented: string = `E-0017`;
+    public static readonly InvalidJSON: string = `E-0018`;
+    public static readonly InvalidJSONString: string = `E-0019`;
+    public static readonly InvalidJSONFile: string = `E-0020`;
     //
     // Private class constants.
     private static readonly _messages: { [name: string]: string } = {
@@ -45,7 +49,11 @@ export class RejectionCodes {
         'E-0013': `Document doesn't follow the given schema`,
         'E-0014': `Given schema is not valid`,
         'E-0015': `An unknown error has been triggered`,
-        'E-0016': `Invalid database path`
+        'E-0016': `Invalid database path`,
+        'E-0017': `This is not implemented yet`,
+        'E-0018': `Given JSON object is not a valid`,
+        'E-0019': `Given string is not a valid JSON`,
+        'E-0020': `Given file contents is not a valid JSON`
     };
     //
     // Constructor.

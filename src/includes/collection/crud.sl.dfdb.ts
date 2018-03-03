@@ -30,7 +30,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     public insert(doc: { [name: string]: any }): Promise<{ [name: string]: any }> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<{ [name: string]: any }>((resolve: (res: { [name: string]: any }) => void, reject: (err: Rejection) => void) => {
@@ -38,11 +38,11 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
             // Is it a valid document?
             //  and is it connected?
             if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
                 //
                 // Should check the schema?
@@ -54,7 +54,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                         // Fixing default fields.
                         this._mainObject._schemaApplier(doc);
                     } else {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._mainObject._schemaValidator.errors[0].dataPath}' ${this._mainObject._schemaValidator.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._mainObject._schemaValidator.errors[0].dataPath}' ${this._mainObject._schemaValidator.errors[0].message}`));
                     }
                 }
                 //
@@ -93,7 +93,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                         })
                         .catch(reject);
                 } else {
-                    reject(this._mainObject._lastRejection);
+                    reject(this._mainObject._subLogicErrors.lastRejection());
                 }
             }
         });
@@ -113,7 +113,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     public partialUpdate(id: any, partialDoc: { [name: string]: any }): Promise<any> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
@@ -122,14 +122,14 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
             //      Is it a known document?
             //          Is it connected?
             if (typeof partialDoc !== 'object' || Array.isArray(partialDoc)) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (typeof this._mainObject._data[id] === 'undefined') {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
                 //
                 // Merging.
@@ -153,7 +153,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     public remove(id: any): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -161,11 +161,11 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
             // Is it connected.
             //      Does the document is present?
             if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (typeof this._mainObject._data[id] === 'undefined') {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
                 //
                 // Removing the document.
@@ -194,7 +194,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     public truncate(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -234,7 +234,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
     public update(id: any, doc: { [name: string]: any }): Promise<any> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
@@ -243,14 +243,14 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
             //      Is it a known document?
             //          Is it connected?
             if (typeof doc !== 'object' || Array.isArray(doc)) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocIsNotObject));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (typeof this._mainObject._data[id] === 'undefined') {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DocNotFound));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else if (!this._mainObject._connected) {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
                 //
                 // Should check the schema?
@@ -262,7 +262,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                         // Fixing default fields.
                         this._mainObject._schemaApplier(doc);
                     } else {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._mainObject._schemaValidator.errors[0].dataPath}' ${this._mainObject._schemaValidator.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `'\$${this._mainObject._schemaValidator.errors[0].dataPath}' ${this._mainObject._schemaValidator.errors[0].message}`));
                     }
                 }
                 //
@@ -303,7 +303,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                         })
                         .catch(reject);
                 } else {
-                    reject(this._mainObject._lastRejection);
+                    reject(this._mainObject._subLogicErrors.lastRejection());
                 }
             }
         });

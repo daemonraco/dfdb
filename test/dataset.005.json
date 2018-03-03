@@ -1,0 +1,108 @@
+{
+    "simple": {
+        "collections": [
+            {
+                "name": "test_collection"
+            }
+        ]
+    },
+    "complex": {
+        "collections": [
+            {
+                "name": "simple_collection"
+            },
+            {
+                "name": "collection_with_indexes",
+                "indexes": [
+                    {
+                        "field": "name"
+                    },
+                    {
+                        "field": "age"
+                    }
+                ]
+            },
+            {
+                "name": "with_schema_and_data",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "age": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string",
+                            "default": "pending..."
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "age"
+                    ]
+                },
+                "data": [
+                    {
+                        "name": "John Doe",
+                        "age": 34
+                    }
+                ]
+            }
+        ]
+    },
+    "moreComplex": {
+        "collections": [
+            {
+                "name": "simple_collection"
+            },
+            {
+                "name": "collection_with_indexes",
+                "indexes": [
+                    {
+                        "field": "name"
+                    },
+                    {
+                        "field": "age"
+                    }
+                ]
+            },
+            {
+                "name": "with_schema_and_data",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "age": {
+                            "type": "number"
+                        },
+                        "description": {
+                            "type": "string",
+                            "default": "pending..."
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "age"
+                    ]
+                },
+                "data": [
+                    {
+                        "name": "John Doe",
+                        "age": 34
+                    },
+                    {
+                        "name": "Jane Smith",
+                        "age": 27
+                    }
+                ]
+            }
+        ]
+    },
+    "wrong": {
+        "not": "valid"
+    }
+}

@@ -43,7 +43,7 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
                 //
                 // Is current field on conditions indexed?
                 if (typeof this._mainObject._indexes[cond.field()] === 'undefined') {
-                    this._mainObject.setLastRejection(new Rejection(RejectionCodes.NotIndexedField, { field: cond }));
+                    this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.NotIndexedField, { field: cond }));
                 } else {
                     indexesToUse.push(cond.field());
                 }

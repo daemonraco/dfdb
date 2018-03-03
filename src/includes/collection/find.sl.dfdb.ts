@@ -37,7 +37,7 @@ export class SubLogicFind extends SubLogicSeeker {
         const conditionsList: ConditionsList = Condition.BuildConditionsSet(conditions);
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: Rejection) => void) => {

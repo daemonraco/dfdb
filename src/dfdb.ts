@@ -20,7 +20,7 @@ export { RejectionCodes } from './includes/rejection-codes.dfdb';
 //
 // Exposing types.
 export { Collection } from './includes/collection/collection.dfdb';
-export { Connection } from './includes/connection.dfdb';
+export { Connection } from './includes/connection/connection.dfdb';
 export { Index } from './includes/index.dfdb';
 export { Rejection } from './includes/rejection.dfdb';
 export { Sequence } from './includes/sequence.dfdb';

@@ -24,6 +24,10 @@ export declare class RejectionCodes {
     static readonly InvalidSchema: string;
     static readonly UnknownError: string;
     static readonly InvalidDBPath: string;
+    static readonly NotImplemented: string;
+    static readonly InvalidJSON: string;
+    static readonly InvalidJSONString: string;
+    static readonly InvalidJSONFile: string;
     private static readonly _messages;
     /**
      * @constructor
