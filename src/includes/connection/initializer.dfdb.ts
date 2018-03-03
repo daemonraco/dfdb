@@ -99,10 +99,10 @@ export class Initializer implements IErrors {
         const validator: any = Initializer.JSONValidator();
         //
         // Is the given specification valid?
-        if (validator.validate(specs)) {
+        if (specs && validator.validate(specs)) {
             //
             // Loading collections.
-            this._collections = specs.collections;
+            this._collections = Tools.DeepCopy(specs.collections);
             //
             // Starting basic internal properties.
             this.buildAbstractions();
