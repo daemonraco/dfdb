@@ -5,9 +5,7 @@
 
 import { Promise } from 'es6-promise';
 import { queue } from 'async';
-import * as JSZip from 'jszip';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import { ConnectionSaveConstants } from '../constants.dfdb';
 import { ConnectionSavingQueueResult } from './types.dfdb';

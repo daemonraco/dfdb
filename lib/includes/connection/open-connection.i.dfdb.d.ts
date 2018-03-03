@@ -67,7 +67,7 @@ export interface IOpenConnectionConnect {
     _manifestPath: string;
     _subLogicFile: SubLogicFile;
     loadFile(zPath: string): Promise<ConnectionSavingQueueResult>;
-    save(): Promise<void>;
     resetError(): void;
+    save(): Promise<void>;
     setLastRejection(rejection: Rejection): void;
 }
