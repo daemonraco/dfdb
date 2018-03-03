@@ -8,12 +8,11 @@ import * as Ajv from 'ajv';
 import * as md5 from 'md5';
 
 import { Collection } from './collection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
-import { Tools } from '../tools.dfdb';
+import { Tools, IPromiseStep } from '../tools.dfdb';
 
 /**
  * This class holds Collection's logic related to its schema.
@@ -143,12 +142,12 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                     if (valid) {
                         //
                         // Building a list of loading asynchronous operations to perform.
-                        let steps: ICollectionStep[] = [];
+                        let steps: IPromiseStep[] = [];
                         steps.push({ params: { schema, schemaMD5 }, stepFunction: (params: any) => this.applySchema(params) });
                         steps.push({ params: {}, stepFunction: (params: any) => this._mainObject._subLogicIndex.rebuildAllIndexes(params) });
                         //
                         // Loading everything.
-                        Collection.ProcessStepsSequence(steps)
+                        Tools.ProcessPromiseSteps(steps)
                             .then(() => {
                                 this._mainObject.save()
                                     .then(resolve)

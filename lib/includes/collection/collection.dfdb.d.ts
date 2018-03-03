@@ -4,7 +4,6 @@
  */
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection/connection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
 import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../resource.i.dfdb';
@@ -374,16 +373,4 @@ export declare class Collection implements IErrors, IResource {
      * operation finishes.
      */
     protected save(): Promise<void>;
-    /**
-     * This method is a generic iterator of recursive asynchronous calls to
-     * multiple tasks.
-     *
-     * @protected
-     * @static
-     * @method ProcessStepsSequence
-     * @param {ICollectionStep[]} steps List of steps to take.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void>;
 }

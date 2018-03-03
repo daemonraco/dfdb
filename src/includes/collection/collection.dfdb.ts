@@ -7,7 +7,6 @@ import { Promise } from 'es6-promise';
 
 import { BasicConstants } from '../constants.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection/connection.dfdb';
-import { ICollectionStep } from './collection-step.i.dfdb';
 import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../resource.i.dfdb';
@@ -20,6 +19,7 @@ import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 import { SubLogicSearch } from './search.sl.dfdb';
 import { Sequence } from '../sequence.dfdb';
+import { Tools, IPromiseStep } from '../tools.dfdb';
 
 /**
  * This class represents a collection and provides access to all its information
@@ -114,14 +114,14 @@ export class Collection implements IErrors, IResource {
             if (!this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadManifest(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.loadSequence(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.loadIndexes(params) });
                 //
                 // Loading everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // At this point, this collection is considered connected.
@@ -160,7 +160,7 @@ export class Collection implements IErrors, IResource {
             if (this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 //
                 // This step closes this collection's sequence.
                 steps.push({
@@ -182,7 +182,7 @@ export class Collection implements IErrors, IResource {
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.closeIndexes(params) });
                 //
                 // Closing everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // Asking connection to forget this collection and load
@@ -235,14 +235,14 @@ export class Collection implements IErrors, IResource {
             if (this._connected) {
                 //
                 // Building a list of loading asynchronous operations to perform.
-                let steps: ICollectionStep[] = [];
+                let steps: IPromiseStep[] = [];
                 steps.push({ params: {}, stepFunction: (params: any) => this._subLogicIndex.dropIndexes(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropSequence(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropResource(params) });
                 steps.push({ params: {}, stepFunction: (params: any) => this.dropManifest(params) });
                 //
                 // Dropping everything.
-                Collection.ProcessStepsSequence(steps)
+                Tools.ProcessPromiseSteps(steps)
                     .then(() => {
                         //
                         // Completelly forgetting this collection from its
@@ -770,39 +770,6 @@ export class Collection implements IErrors, IResource {
                         .catch(reject);
                 })
                 .catch(reject);
-        });
-    }
-    //
-    // Public class methods.
-    /**
-     * This method is a generic iterator of recursive asynchronous calls to
-     * multiple tasks.
-     *
-     * @protected
-     * @static
-     * @method ProcessStepsSequence
-     * @param {ICollectionStep[]} steps List of steps to take.
-     * @returns {Promise<void>} Return a promise that gets resolved when the
-     * operation finishes.
-     */
-    public static ProcessStepsSequence(steps: ICollectionStep[]): Promise<void> {
-        //
-        // Building promise to return.
-        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
-            //
-            // Are there steps to process.
-            if (steps.length > 0) {
-                //
-                // Picking a step to process
-                const step = steps.shift();
-                //
-                // Executing the step and setting the recurtion for its callback
-                step.stepFunction(step.params)
-                    .then(() => Collection.ProcessStepsSequence(steps).then(resolve).catch(reject))
-                    .catch(reject);
-            } else {
-                resolve();
-            }
         });
     }
 }
