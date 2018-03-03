@@ -5,10 +5,12 @@
 import { Promise } from 'es6-promise';
 import { Connection } from '../connection/connection.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
+import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { SubLogicCRUD } from './crud.sl.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicFind } from './find.sl.dfdb';
 import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
@@ -20,7 +22,7 @@ import { Sequence } from '../sequence.dfdb';
  *
  * @class Collection
  */
-export declare class Collection implements IResource {
+export declare class Collection implements IErrors, IResource {
     protected _connected: boolean;
     protected _connection: Connection;
     protected _data: {
@@ -29,8 +31,6 @@ export declare class Collection implements IResource {
     protected _indexes: {
         [name: string]: Index;
     };
-    protected _lastError: string;
-    protected _lastRejection: Rejection;
     protected _manifest: {
         [name: string]: any;
     };
@@ -40,6 +40,7 @@ export declare class Collection implements IResource {
     protected _schemaApplier: any;
     protected _schemaValidator: any;
     protected _subLogicCRUD: SubLogicCRUD;
+    protected _subLogicErrors: SubLogicErrors<Collection>;
     protected _subLogicFind: SubLogicFind;
     protected _subLogicIndex: SubLogicIndex;
     protected _subLogicSchema: SubLogicSchema;
@@ -173,6 +174,13 @@ export declare class Collection implements IResource {
      * @returns {string|null} Returns an error message.
      */
     lastError(): string | null;
+    /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    lastRejection(): Rejection;
     /**
      * Provides access to current collection name.
      *
@@ -356,13 +364,6 @@ export declare class Collection implements IResource {
      */
     protected loadSequence(params: any): Promise<void>;
     /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void;
-    /**
      * This method triggers the physical saving of all files.
      *
      * @protected
@@ -373,14 +374,6 @@ export declare class Collection implements IResource {
      * operation finishes.
      */
     protected save(): Promise<void>;
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void;
     /**
      * This method is a generic iterator of recursive asynchronous calls to
      * multiple tasks.

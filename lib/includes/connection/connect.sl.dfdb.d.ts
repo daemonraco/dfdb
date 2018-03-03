@@ -5,6 +5,12 @@
 import { Promise } from 'es6-promise';
 import { IOpenConnectionConnect } from './open-connection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Connection's specific logic to manpulate how it connects to a
+ * database.
+ *
+ * @class SubLogicConnect
+ */
 export declare class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
     /**
      * Connects this object to the physicial database file. If the database file

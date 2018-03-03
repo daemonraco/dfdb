@@ -3,10 +3,11 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { Collection } from './collection.dfdb';
 import { Connection } from '../connection/connection.dfdb';
 import { Index } from '../index.dfdb';
-import { Rejection } from '../rejection.dfdb';
 import { Sequence } from '../sequence.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 /**
@@ -20,16 +21,14 @@ export interface IOpenCollectionCRUD {
     _data: {
         [name: string]: any;
     };
-    _lastRejection: Rejection;
     _schemaApplier: any;
     _schemaValidator: any;
+    _subLogicErrors: SubLogicErrors<Collection>;
     _subLogicIndex: SubLogicIndex;
     _subLogicSchema: SubLogicSchema;
     _sequence: Sequence;
     error(): boolean;
-    resetError(): void;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
     update(id: any, doc: {
         [name: string]: any;
     }): Promise<any>;
@@ -49,13 +48,11 @@ export interface IOpenCollectionIndex {
     _indexes: {
         [name: string]: Index;
     };
-    _lastRejection: Rejection;
     _manifest: {
         [name: string]: any;
     };
-    resetError(): void;
+    _subLogicErrors: SubLogicErrors<Collection>;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
 }
 /**
  * This is a workaround to access public and protected methods and properties of
@@ -68,17 +65,15 @@ export interface IOpenCollectionSchema {
     _data: {
         [name: string]: any;
     };
-    _lastRejection: Rejection;
     _manifest: {
         [name: string]: any;
     };
     _schemaApplier: any;
     _schemaValidator: any;
+    _subLogicErrors: SubLogicErrors<Collection>;
     _subLogicIndex: SubLogicIndex;
     error(): boolean;
-    resetError(): void;
     save(): Promise<void>;
-    setLastRejection(rejection: Rejection): void;
 }
 /**
  * This is a workaround to access public and protected methods and properties of
@@ -93,7 +88,6 @@ export interface IOpenCollectionSeeker {
     _indexes: {
         [name: string]: Index;
     };
+    _subLogicErrors: SubLogicErrors<Collection>;
     error(): boolean;
-    resetError(): void;
-    setLastRejection(rejection: Rejection): void;
 }

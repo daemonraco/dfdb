@@ -12,26 +12,27 @@ import { ConditionsList } from './condition.dfdb';
 import { Condition } from './condition.dfdb';
 import { Connection, ConnectionSavingQueueResult } from './connection/connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
+import { IErrors } from './errors.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';
+import { SubLogicErrors } from './errors.sl.dfdb';
 
 /**
  * This class represents a document's field index associated to a collection.
  *
  * @class Index
  */
-export class Index implements IResource, IDelayedResource {
+export class Index implements IErrors, IResource, IDelayedResource {
     //
     // Protected properties.
+    protected _collection: Collection = null;
     protected _connected: boolean = false;
     protected _connection: Connection = null;
     protected _data: { [name: string]: any } = {};
     protected _field: string = null;
-    protected _lastError: string = null;
-    protected _lastRejection: Rejection = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
-    protected _collection: Collection = null;
+    protected _subLogicErrors: SubLogicErrors<Index> = null;
     //
     // Constructor.
     /**
@@ -50,6 +51,9 @@ export class Index implements IResource, IDelayedResource {
         //
         // Main path.
         this._resourcePath = `${this._collection.name()}/${this._field}.idx`;
+        //
+        // Sub-logics.
+        this._subLogicErrors = new SubLogicErrors<Index>(this);
     }
     //
     // Public methods.
@@ -85,7 +89,7 @@ export class Index implements IResource, IDelayedResource {
         }
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -114,8 +118,8 @@ export class Index implements IResource, IDelayedResource {
                     //
                     // At this point, if the value is an object, it cannot be
                     // indexed and should be treated as an error.
-                    this.setLastRejection(new Rejection(RejectionCodes.NotIndexableValue));
-                    reject(this._lastRejection);
+                    this._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.NotIndexableValue));
+                    reject(this._subLogicErrors.lastRejection());
                 } else {
                     //
                     // Indexing field's value.
@@ -127,8 +131,8 @@ export class Index implements IResource, IDelayedResource {
                         .catch(reject);
                 }
             } else if (!this._connected) {
-                this.setLastRejection(new Rejection(RejectionCodes.IndexNotConnected));
-                reject(this._lastRejection);
+                this._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.IndexNotConnected));
+                reject(this._subLogicErrors.lastRejection());
             } else {
                 //
                 // IF the required field isn't present, the given document is
@@ -149,7 +153,7 @@ export class Index implements IResource, IDelayedResource {
     public connect(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -214,7 +218,7 @@ export class Index implements IResource, IDelayedResource {
     public close(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -253,7 +257,7 @@ export class Index implements IResource, IDelayedResource {
     public drop(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -284,7 +288,9 @@ export class Index implements IResource, IDelayedResource {
      * @returns {boolean} Returns TRUE when there was an error.
      */
     public error(): boolean {
-        return this._lastError !== null;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.error();
     }
     /**
      * This method searches for document IDs associated to a certain value or
@@ -298,7 +304,7 @@ export class Index implements IResource, IDelayedResource {
     public find(conditions: ConditionsList): Promise<string[]> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<string[]>((resolve: (res: string[]) => void, reject: (err: Rejection) => void) => {
@@ -346,7 +352,20 @@ export class Index implements IResource, IDelayedResource {
      * @returns {string|null} Returns an error message.
      */
     public lastError(): string | null {
-        return this._lastError;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastError();
+    }
+    /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    public lastRejection(): Rejection {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastRejection();
     }
     /**
      * This method unindexes a document from this index.
@@ -359,7 +378,7 @@ export class Index implements IResource, IDelayedResource {
     public removeDocument(id: string): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -414,7 +433,7 @@ export class Index implements IResource, IDelayedResource {
     public truncate(): Promise<void> {
         //
         // Restarting error messages.
-        this.resetError();
+        this._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -438,16 +457,6 @@ export class Index implements IResource, IDelayedResource {
     }
     //
     // Protected methods.
-    /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void {
-        this._lastError = null;
-        this._lastRejection = null;
-    }
     /**
      * This method triggers the physical saving of this index file.
      *
@@ -479,16 +488,5 @@ export class Index implements IResource, IDelayedResource {
                 })
                 .catch(reject);
         });
-    }
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void {
-        this._lastError = `${rejection}`;
-        this._lastRejection = rejection;
     }
 }

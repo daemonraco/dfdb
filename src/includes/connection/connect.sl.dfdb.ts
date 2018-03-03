@@ -14,6 +14,12 @@ import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 
+/**
+ * This class holds Connection's specific logic to manpulate how it connects to a
+ * database.
+ *
+ * @class SubLogicConnect
+ */
 export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
     /**
      * Connects this object to the physicial database file. If the database file
@@ -26,7 +32,7 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
     public connect(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -73,7 +79,7 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
     public close(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -152,8 +158,8 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
                     resolve();
                 })
                 .on('error', (error) => {
-                    this._mainObject.setLastRejection(new Rejection(RejectionCodes.InvalidDBPath, error));
-                    reject(this._mainObject._lastRejection);
+                    this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.InvalidDBPath, error));
+                    reject(this._mainObject._subLogicErrors.lastRejection());
                 });
         });
     }
@@ -191,8 +197,8 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
                 if (error) {
                     //
                     // Rejecting promise.
-                    this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
-                    reject(this._mainObject._lastRejection);
+                    this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
+                    reject(this._mainObject._subLogicErrors.lastRejection());
                 } else {
                     //
                     // Parsing data as a zip file.
@@ -210,8 +216,8 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
                             .then(resolve)
                             .catch(reject);
                     }).catch((error: any) => {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
-                        reject(this._mainObject._lastRejection);
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
+                        reject(this._mainObject._subLogicErrors.lastRejection());
                     });
                 }
             });

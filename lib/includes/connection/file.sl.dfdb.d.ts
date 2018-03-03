@@ -6,6 +6,11 @@ import { Promise } from 'es6-promise';
 import { ConnectionSavingQueueResult } from './types.dfdb';
 import { IOpenConnectionFile } from './open-connection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Connection's specific logic to manpulate a database files.
+ *
+ * @class SubLogicFile
+ */
 export declare class SubLogicFile extends SubLogic<IOpenConnectionFile> {
     /**
      * This method centralizes all calls to load a file from inside the database

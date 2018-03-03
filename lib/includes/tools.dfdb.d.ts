@@ -2,6 +2,24 @@
  * @file tools.dfdb.ts
  * @author Alejandro D. Simi
  */
+import { Promise } from 'es6-promise';
+/**
+ * Internal interfase that standardize recursive asynchronous calls to multiple
+ * tasks.
+ *
+ * @interface IPromiseStep
+ */
+export interface IPromiseStep {
+    /**
+     * @property {any} params Data to use when a step is executed.
+     */
+    params: any;
+    /**
+     * @property {any} function Function to call on execution of this step. It
+     * should returns a promise so it can be chained with other steps.
+     */
+    stepFunction: (params: any) => Promise<any>;
+}
 /**
  * This static class holds a list of tools used by DocsOnFileDB assets.
  *
@@ -37,4 +55,26 @@ export declare class Tools {
      * @returns {any} Returns a merged object.
      */
     static DeepMergeObjects(left: any, right: any): any;
+    /**
+     * This method returns a unique hash string representing an object.
+     *
+     * @protected
+     * @static
+     * @method ObjectToMD5
+     * @param {any} obj Object to represent.
+     * @returns {string} Returns an MD5 hash.
+     */
+    static ObjectToMD5(obj: any): string;
+    /**
+     * This method is a generic iterator of recursive asynchronous calls to
+     * multiple tasks.
+     *
+     * @protected
+     * @static
+     * @method ProcessPromiseSteps
+     * @param {IPromiseStep[]} steps List of steps to take.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    static ProcessPromiseSteps(steps: IPromiseStep[]): Promise<void>;
 }

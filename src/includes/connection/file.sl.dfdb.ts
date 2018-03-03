@@ -14,6 +14,11 @@ import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 
+/**
+ * This class holds Connection's specific logic to manpulate a database files.
+ *
+ * @class SubLogicFile
+ */
 export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
     /**
      * This method centralizes all calls to load a file from inside the database
@@ -40,8 +45,8 @@ export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
             } else {
                 //
                 // It should be connected to actually save.
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -55,7 +60,7 @@ export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
     public save(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -75,8 +80,8 @@ export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
             } else {
                 //
                 // It should be connected to actually save.
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -105,8 +110,8 @@ export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
             } else {
                 //
                 // It should be connected to actually save.
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -204,8 +209,8 @@ export class SubLogicFile extends SubLogic<IOpenConnectionFile> {
             } else {
                 //
                 // It should be connected to actually save.
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }

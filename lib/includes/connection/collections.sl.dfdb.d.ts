@@ -6,6 +6,12 @@ import { Promise } from 'es6-promise';
 import { Collection } from '../collection/collection.dfdb';
 import { IOpenConnectionCollections } from './open-connection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+/**
+ * This class holds Connection's specific logic to manpulate a database
+ * collections.
+ *
+ * @class SubLogicCollections
+ */
 export declare class SubLogicCollections extends SubLogic<IOpenConnectionCollections> {
     /**
      * Provides access to a collection inside current database connection. If such

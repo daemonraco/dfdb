@@ -7,18 +7,22 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { Collection } from '../collection/collection.dfdb';
+import { IErrors } from '../errors.i.dfdb';
+import { Initializer } from './initializer.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { SubLogicCollections } from './collections.sl.dfdb';
 import { SubLogicConnect } from './connect.sl.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicFile } from './file.sl.dfdb';
+import { SubLogicInit } from './init.sl.dfdb';
 export { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 /**
  * This class represents an active connection to a database on file.
  *
  * @class Connection
  */
-export declare class Connection implements IResource {
+export declare class Connection implements IErrors, IResource {
     protected _collections: {
         [name: string]: Collection;
     };
@@ -28,15 +32,15 @@ export declare class Connection implements IResource {
     protected _dbName: string;
     protected _dbPath: string;
     protected _fileAccessQueue: any;
-    protected _lastError: string;
-    protected _lastRejection: Rejection;
     protected _manifest: {
         [name: string]: any;
     };
     protected _manifestPath: string;
     protected _subLogicCollections: SubLogicCollections;
     protected _subLogicConnect: SubLogicConnect;
+    protected _subLogicErrors: SubLogicErrors<Connection>;
     protected _subLogicFile: SubLogicFile;
+    protected _subLogicInit: SubLogicInit;
     /**
      * @constructor
      * @param {string} dbname Name of the database to connect.
@@ -122,6 +126,13 @@ export declare class Connection implements IResource {
      */
     lastError(): string | null;
     /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    lastRejection(): Rejection;
+    /**
      * This method centralizes all calls to load a file from inside the database
      * zip file.
      *
@@ -132,13 +143,14 @@ export declare class Connection implements IResource {
      */
     loadFile(zPath: string): Promise<ConnectionSavingQueueResult>;
     /**
-     * Thi method actually saves zip information physically.
+     * This method tries to reapply the initial database structure an recreates
+     * does assets that may be missing.
      *
-     * @method save
-     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * @method reinitialize
+     * @returns {Promise<void>} Returns a promise that gets resolved when this
      * operation is finished.
      */
-    save(): Promise<void>;
+    reinitialize(): Promise<void>;
     /**
      * This method centralizes all calls to remove a file from inside the database
      * zip file.
@@ -149,6 +161,49 @@ export declare class Connection implements IResource {
      * result object.
      */
     removeFile(zPath: string): Promise<ConnectionSavingQueueResult>;
+    /**
+     * This method actually saves zip information physically.
+     *
+     * @method save
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    save(): Promise<void>;
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     *
+     * @method setInitializer
+     * @param {Initializer} specs Specifications to associate with this database
+     * connection.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    setInitializer(specs: Initializer): Promise<void>;
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     * Similar to 'setInitializer()' but based on a JSON.
+     *
+     * @method setInitializerFromJSON
+     * @param {any} specs Specifications to associate with this database
+     * connection given as a JSON.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    setInitializerFromJSON(specs: any): Promise<void>;
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     * Similar to 'setInitializer()' but based on a string.
+     *
+     * @method setInitializerFromJSON
+     * @param {string} specs Specifications to associate with this database
+     * connection given as a string.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    setInitializerFromString(specs: string): Promise<void>;
     /**
      * This methods provides a proper value for string auto-castings.
      *
@@ -169,21 +224,6 @@ export declare class Connection implements IResource {
      * result object.
      */
     updateFile(zPath: string, data: any, skipPhysicalSave?: boolean): Promise<ConnectionSavingQueueResult>;
-    /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void;
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void;
     /**
      * This method takes the basic values that represent a database and checks if
      * it exists and if it's valid or not.

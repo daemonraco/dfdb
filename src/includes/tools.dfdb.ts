@@ -3,6 +3,29 @@
  * @author Alejandro D. Simi
  */
 
+import { Promise } from 'es6-promise';
+import * as md5 from 'md5';
+
+import { Rejection } from './rejection.dfdb';
+
+/**
+ * Internal interfase that standardize recursive asynchronous calls to multiple
+ * tasks.
+ *
+ * @interface IPromiseStep
+ */
+export interface IPromiseStep {
+    /**
+     * @property {any} params Data to use when a step is executed.
+     */
+    params: any;
+    /**
+     * @property {any} function Function to call on execution of this step. It
+     * should returns a promise so it can be chained with other steps.
+     */
+    stepFunction: (params: any) => Promise<any>;
+}
+
 /**
  * This static class holds a list of tools used by DocsOnFileDB assets.
  *
@@ -71,5 +94,48 @@ export class Tools {
         }
 
         return left;
+    }
+    /**
+     * This method returns a unique hash string representing an object.
+     *
+     * @protected
+     * @static
+     * @method ObjectToMD5
+     * @param {any} obj Object to represent.
+     * @returns {string} Returns an MD5 hash.
+     */
+    public static ObjectToMD5(obj: any): string {
+        return md5(JSON.stringify(obj));
+    }
+    /**
+     * This method is a generic iterator of recursive asynchronous calls to
+     * multiple tasks.
+     *
+     * @protected
+     * @static
+     * @method ProcessPromiseSteps
+     * @param {IPromiseStep[]} steps List of steps to take.
+     * @returns {Promise<void>} Return a promise that gets resolved when the
+     * operation finishes.
+     */
+    public static ProcessPromiseSteps(steps: IPromiseStep[]): Promise<void> {
+        //
+        // Building promise to return.
+        return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
+            //
+            // Are there steps to process.
+            if (steps.length > 0) {
+                //
+                // Picking a step to process
+                const step = steps.shift();
+                //
+                // Executing the step and setting the recurtion for its callback
+                step.stepFunction(step.params)
+                    .then(() => Tools.ProcessPromiseSteps(steps).then(resolve).catch(reject))
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        });
     }
 }

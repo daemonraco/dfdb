@@ -9,12 +9,16 @@ import * as fs from 'fs';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { DocsOnFileDB } from '../manager.dfdb';
 import { Collection } from '../collection/collection.dfdb';
+import { IErrors } from '../errors.i.dfdb';
+import { Initializer } from './initializer.dfdb';
 import { IResource } from '../resource.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicCollections } from './collections.sl.dfdb';
 import { SubLogicConnect } from './connect.sl.dfdb';
+import { SubLogicErrors } from '../errors.sl.dfdb';
 import { SubLogicFile } from './file.sl.dfdb';
+import { SubLogicInit } from './init.sl.dfdb';
 
 export { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 
@@ -23,7 +27,7 @@ export { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './typ
  *
  * @class Connection
  */
-export class Connection implements IResource {
+export class Connection implements IErrors, IResource {
     //
     // Protected properties.
     protected _collections: { [name: string]: Collection } = {};
@@ -33,15 +37,17 @@ export class Connection implements IResource {
     protected _dbName: string = null;
     protected _dbPath: string = null;
     protected _fileAccessQueue: any = null;
-    protected _lastError: string = null;
-    protected _lastRejection: Rejection = null;
     protected _manifest: { [name: string]: any } = {
-        collections: {}
+        collections: {},
+        initializer: null,
+        initializerMD5: null
     };
     protected _manifestPath: string = null;
     protected _subLogicCollections: SubLogicCollections = null;
     protected _subLogicConnect: SubLogicConnect = null;
+    protected _subLogicErrors: SubLogicErrors<Connection> = null;
     protected _subLogicFile: SubLogicFile = null;
+    protected _subLogicInit: SubLogicInit = null;
     //
     // Constructor.
     /**
@@ -63,7 +69,9 @@ export class Connection implements IResource {
         // Sub-logics.
         this._subLogicCollections = new SubLogicCollections(this);
         this._subLogicConnect = new SubLogicConnect(this);
+        this._subLogicErrors = new SubLogicErrors<Connection>(this);
         this._subLogicFile = new SubLogicFile(this);
+        this._subLogicInit = new SubLogicInit(this);
     }
     //
     // Public methods.
@@ -135,7 +143,9 @@ export class Connection implements IResource {
      * @returns {boolean} Returns TRUE when there was an error.
      */
     public error(): boolean {
-        return this._lastError !== null;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.error();
     }
     /**
      * Ask this connection to forget a tracked collection.
@@ -172,7 +182,20 @@ export class Connection implements IResource {
      * @returns {string|null} Returns an error message.
      */
     public lastError(): string | null {
-        return this._lastError;
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastError();
+    }
+    /**
+     * Provides access to the rejection registed by the last operation.
+     *
+     * @method lastRejection
+     * @returns {Rejection} Returns an rejection object.
+     */
+    public lastRejection(): Rejection {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicErrors.lastRejection();
     }
     /**
      * This method centralizes all calls to load a file from inside the database
@@ -189,16 +212,17 @@ export class Connection implements IResource {
         return this._subLogicFile.loadFile(zPath);
     }
     /**
-     * Thi method actually saves zip information physically.
+     * This method tries to reapply the initial database structure an recreates
+     * does assets that may be missing.
      *
-     * @method save
-     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * @method reinitialize
+     * @returns {Promise<void>} Returns a promise that gets resolved when this
      * operation is finished.
      */
-    public save(): Promise<void> {
+    public reinitialize(): Promise<void> {
         //
         // Forwarding to sub-logic.
-        return this._subLogicFile.save();
+        return this._subLogicInit.reinitialize();
     }
     /**
      * This method centralizes all calls to remove a file from inside the database
@@ -213,6 +237,65 @@ export class Connection implements IResource {
         //
         // Forwarding to sub-logic.
         return this._subLogicFile.removeFile(zPath);
+    }
+    /**
+     * This method actually saves zip information physically.
+     *
+     * @method save
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    public save(): Promise<void> {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicFile.save();
+    }
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     *
+     * @method setInitializer
+     * @param {Initializer} specs Specifications to associate with this database
+     * connection.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    public setInitializer(specs: Initializer): Promise<void> {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicInit.setInitializer(specs);
+    }
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     * Similar to 'setInitializer()' but based on a JSON.
+     *
+     * @method setInitializerFromJSON
+     * @param {any} specs Specifications to associate with this database
+     * connection given as a JSON.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    public setInitializerFromJSON(specs: any): Promise<void> {
+        const initializer: Initializer = new Initializer();
+        initializer.loadFromJSON(specs);
+        return this.setInitializer(initializer);
+    }
+    /**
+     * This method assigns an initialization structure to this connection's
+     * database and applies it creating all required and missing assets.
+     * Similar to 'setInitializer()' but based on a string.
+     *
+     * @method setInitializerFromJSON
+     * @param {string} specs Specifications to associate with this database
+     * connection given as a string.
+     * @returns {Promise<void>} Returns a promise that gets resovled when this
+     * operation is finished.
+     */
+    public setInitializerFromString(specs: string): Promise<void> {
+        const initializer: Initializer = new Initializer();
+        initializer.loadFromString(specs);
+        return this.setInitializer(initializer);
     }
     /**
      * This methods provides a proper value for string auto-castings.
@@ -239,29 +322,6 @@ export class Connection implements IResource {
         //
         // Forwarding to sub-logic.
         return this._subLogicFile.updateFile(zPath, data, skipPhysicalSave);
-    }
-    //
-    // Protected methods.
-    /**
-     * This method cleans up current error messages.
-     *
-     * @protected
-     * @method resetError
-     */
-    protected resetError(): void {
-        this._lastError = null;
-        this._lastRejection = null;
-    }
-    /**
-     * Updates internal error values and messages.
-     *
-     * @protected
-     * @method setLastRejection
-     * @param {Rejection} rejection Rejection object to store as last error.
-     */
-    protected setLastRejection(rejection: Rejection): void {
-        this._lastError = `${rejection}`;
-        this._lastRejection = rejection;
     }
     //
     // Public class methods.

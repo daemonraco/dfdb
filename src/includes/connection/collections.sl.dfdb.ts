@@ -12,6 +12,12 @@ import { Rejection } from '../rejection.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 import { Tools } from '../tools.dfdb';
 
+/**
+ * This class holds Connection's specific logic to manpulate a database
+ * collections.
+ *
+ * @class SubLogicCollections
+ */
 export class SubLogicCollections extends SubLogic<IOpenConnectionCollections> {
     /**
      * Provides access to a collection inside current database connection. If such
@@ -24,7 +30,7 @@ export class SubLogicCollections extends SubLogic<IOpenConnectionCollections> {
     public collection(name: string): Promise<Collection> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<Collection>((resolve: (res: Collection) => void, reject: (err: Rejection) => void) => {

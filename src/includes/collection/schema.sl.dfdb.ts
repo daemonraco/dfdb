@@ -64,7 +64,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     public removeSchema(): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -91,8 +91,8 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                     resolve();
                 }
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -116,7 +116,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
     public setSchema(schema: any): Promise<void> {
         //
         // Restarting error messages.
-        this._mainObject.resetError();
+        this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
@@ -136,7 +136,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                         let validator = ajv.compile(schema);
                         valid = true;
                     } catch (e) {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.InvalidSchema, `'\$${ajv.errors[0].dataPath}' ${ajv.errors[0].message}`));
                     }
                     //
                     // Is it valid?
@@ -155,7 +155,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                                     .catch(reject);
                             }).catch(reject);
                     } else {
-                        reject(this._mainObject._lastRejection);
+                        reject(this._mainObject._subLogicErrors.lastRejection());
                     }
                 } else {
                     //
@@ -163,8 +163,8 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                     resolve();
                 }
             } else {
-                this._mainObject.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
-                reject(this._mainObject._lastRejection);
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
@@ -197,7 +197,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
             Object.keys(this._mainObject._data).forEach((id: string) => {
                 if (!this._mainObject.error()) {
                     if (!validator(this._mainObject._data[id])) {
-                        this._mainObject.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
+                        this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
                     }
                 }
             });
@@ -219,7 +219,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
 
                 resolve();
             } else {
-                reject(this._mainObject._lastRejection);
+                reject(this._mainObject._subLogicErrors.lastRejection());
             }
         });
     }
