@@ -3,12 +3,9 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { queue } from 'async';
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
-import * as path from 'path';
 
-import { BasicConstants, CollectionTypes, ConnectionSaveConstants } from '../constants.dfdb';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { DocsOnFileDB } from '../manager.dfdb';
 import { Collection } from '../collection/collection.dfdb';
@@ -18,7 +15,6 @@ import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicCollections } from './collections.sl.dfdb';
 import { SubLogicConnect } from './connect.sl.dfdb';
 import { SubLogicFile } from './file.sl.dfdb';
-import { Tools } from '../tools.dfdb';
 
 export { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 

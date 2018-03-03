@@ -7,7 +7,6 @@ import { Promise } from 'es6-promise';
 
 import { CollectionTypes } from '../constants.dfdb';
 import { Collection } from '../collection/collection.dfdb';
-import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { IOpenConnectionCollections } from './open-connection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
