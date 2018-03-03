@@ -10,7 +10,7 @@ import * as jsonpath from 'jsonpath-plus';
 import { Collection } from './collection/collection.dfdb';
 import { ConditionsList } from './condition.dfdb';
 import { Condition } from './condition.dfdb';
-import { Connection, ConnectionSavingQueueResult } from './connection.dfdb';
+import { Connection, ConnectionSavingQueueResult } from './connection/connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';

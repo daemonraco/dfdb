@@ -6,7 +6,7 @@
 import { Promise } from 'es6-promise';
 
 import { BasicConstants } from '../constants.dfdb';
-import { Connection, ConnectionSavingQueueResult } from '../connection.dfdb';
+import { Connection, ConnectionSavingQueueResult } from '../connection/connection.dfdb';
 import { ICollectionStep } from './collection-step.i.dfdb';
 import { Index } from '../index.dfdb';
 import { IResource } from '../resource.i.dfdb';

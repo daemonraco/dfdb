@@ -5,7 +5,7 @@
 import { Promise } from 'es6-promise';
 import { Collection } from './collection/collection.dfdb';
 import { ConditionsList } from './condition.dfdb';
-import { Connection } from './connection.dfdb';
+import { Connection } from './connection/connection.dfdb';
 import { IDelayedResource, IResource } from './resource.i.dfdb';
 import { Rejection } from './rejection.dfdb';
 /**

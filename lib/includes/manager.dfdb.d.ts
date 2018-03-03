@@ -3,7 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { Connection } from './connection.dfdb';
+import { Connection } from './connection/connection.dfdb';
 /**
  * Central manager for all connection.
  *

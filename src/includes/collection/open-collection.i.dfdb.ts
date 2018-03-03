@@ -5,7 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
-import { Connection } from '../connection.dfdb';
+import { Connection } from '../connection/connection.dfdb';
 import { Index } from '../index.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { Sequence } from '../sequence.dfdb';
@@ -13,7 +13,7 @@ import { SubLogicIndex } from './index.sl.dfdb';
 import { SubLogicSchema } from './schema.sl.dfdb';
 
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionCRUD
@@ -36,7 +36,7 @@ export interface IOpenCollectionCRUD {
 }
 
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionIndex
@@ -55,7 +55,7 @@ export interface IOpenCollectionIndex {
 }
 
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionSchema
@@ -76,7 +76,7 @@ export interface IOpenCollectionSchema {
 }
 
 /**
- * This is a wprkarround to access public and protected methods and properties of
+ * This is a workaround to access public and protected methods and properties of
  * a Collection object.
  *
  * @interface IOpenCollectionSeeker

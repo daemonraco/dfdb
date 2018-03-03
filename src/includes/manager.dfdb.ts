@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { BasicConstants } from './constants.dfdb';
-import { Connection, ConnectionDBValidationResult } from './connection.dfdb';
+import { Connection, ConnectionDBValidationResult } from './connection/connection.dfdb';
 import { Rejection } from './rejection.dfdb';
 import { RejectionCodes } from './rejection-codes.dfdb';
 
