@@ -23,10 +23,10 @@ export class SubLogicInit extends SubLogic<IOpenConnectionInit> {
      * This method allows to know if current database connection has an
      * initializer assigned.
      *
-     * @method hasInitiaizer
+     * @method hasInitializer
      * @returns {boolean} Returns TRUE when it has.
      */
-    public hasInitiaizer(): boolean {
+    public hasInitializer(): boolean {
         return this._mainObject._manifest.initializer !== null
             && this._mainObject._manifest.initializerMD5 !== null;
     }
@@ -34,10 +34,10 @@ export class SubLogicInit extends SubLogic<IOpenConnectionInit> {
      * This method allows access to current database connection's  assigned
      * initializer.
      *
-     * @method initiaizer
+     * @method initializer
      * @returns {Initializer} Returns a copy of this connection's initializer.
      */
-    public initiaizer(): Initializer {
+    public initializer(): Initializer {
         let out: Initializer = null;
 
         if (this._mainObject._manifest.initializer) {

@@ -45,12 +45,12 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`sets a simple initializer that generates an empty collection (db: ${dbName1})`, done => {
-        assert.typeOf(connection1.hasInitiaizer, 'function');
+        assert.typeOf(connection1.hasInitializer, 'function');
         assert.typeOf(connection1.setInitializerFromString, 'function');
         assert.typeOf(connection1.collections, 'function');
 
-        assert.isFalse(connection1.hasInitiaizer());
-        assert.isNull(connection1.initiaizer());
+        assert.isFalse(connection1.hasInitializer());
+        assert.isNull(connection1.initializer());
 
         connection1.setInitializerFromString(JSON.stringify(initializer.simple)).then(() => {
             const cols = Object.keys(connection1.collections());
@@ -58,10 +58,10 @@ describe('dfdb: initializers [012]', function () {
             assert.strictEqual(cols.length, 1);
             assert.strictEqual(cols[0], 'test_collection');
 
-            assert.isTrue(connection1.hasInitiaizer());
-            assert.isNotNull(connection1.initiaizer());
+            assert.isTrue(connection1.hasInitializer());
+            assert.isNotNull(connection1.initializer());
 
-            const initializer = connection1.initiaizer().toJSON();
+            const initializer = connection1.initializer().toJSON();
 
             assert.isArray(initializer.collections);
             assert.strictEqual(initializer.collections.length, 1);
@@ -78,16 +78,16 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`sets the same initializer again (db: ${dbName1})`, done => {
-        assert.typeOf(connection1.hasInitiaizer, 'function');
+        assert.typeOf(connection1.hasInitializer, 'function');
         assert.typeOf(connection1.setInitializerFromString, 'function');
         assert.typeOf(connection1.collections, 'function');
 
-        assert.isTrue(connection1.hasInitiaizer());
+        assert.isTrue(connection1.hasInitializer());
 
         connection1.setInitializerFromString(JSON.stringify(initializer.simple)).then(() => {
             const cols = Object.keys(connection1.collections());
 
-            assert.isTrue(connection1.hasInitiaizer());
+            assert.isTrue(connection1.hasInitializer());
 
             assert.strictEqual(cols.length, 1);
             assert.strictEqual(cols[0], 'test_collection');
@@ -125,16 +125,16 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`sets a simple initializer that generates an empty collection (db: ${dbName2})`, done => {
-        assert.typeOf(connection2.hasInitiaizer, 'function');
+        assert.typeOf(connection2.hasInitializer, 'function');
         assert.typeOf(connection2.setInitializerFromJSON, 'function');
         assert.typeOf(connection2.collections, 'function');
 
-        assert.isFalse(connection2.hasInitiaizer());
+        assert.isFalse(connection2.hasInitializer());
 
         connection2.setInitializerFromJSON(initializer.simple).then(() => {
             const cols = Object.keys(connection2.collections());
 
-            assert.isTrue(connection2.hasInitiaizer());
+            assert.isTrue(connection2.hasInitializer());
 
             assert.strictEqual(cols.length, 1);
             assert.strictEqual(cols[0], 'test_collection');
@@ -172,16 +172,16 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`sets a complex initializer that generates many assets (db: ${dbName3})`, done => {
-        assert.typeOf(connection3.hasInitiaizer, 'function');
+        assert.typeOf(connection3.hasInitializer, 'function');
         assert.typeOf(connection3.setInitializerFromJSON, 'function');
         assert.typeOf(connection3.collections, 'function');
 
-        assert.isFalse(connection3.hasInitiaizer());
+        assert.isFalse(connection3.hasInitializer());
 
         connection3.setInitializerFromJSON(initializer.complex).then(() => {
             const cols = Object.keys(connection3.collections()).sort();
 
-            assert.isTrue(connection3.hasInitiaizer());
+            assert.isTrue(connection3.hasInitializer());
 
             assert.strictEqual(cols.length, 3);
             assert.strictEqual(cols[0], 'collection_with_indexes');
@@ -205,15 +205,15 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`reinitializes the database when it had no changes (db: ${dbName3})`, done => {
-        assert.typeOf(connection3.hasInitiaizer, 'function');
+        assert.typeOf(connection3.hasInitializer, 'function');
         assert.typeOf(connection3.reinitialize, 'function');
 
-        assert.isTrue(connection3.hasInitiaizer());
+        assert.isTrue(connection3.hasInitializer());
 
         connection3.reinitialize().then(() => {
             const cols = Object.keys(connection3.collections()).sort();
 
-            assert.isTrue(connection3.hasInitiaizer());
+            assert.isTrue(connection3.hasInitializer());
 
             assert.strictEqual(cols.length, 3);
             assert.strictEqual(cols[0], 'collection_with_indexes');
@@ -261,15 +261,15 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`reinitializes the database when it had no changes (db: ${dbName3})`, done => {
-        assert.typeOf(connection3.hasInitiaizer, 'function');
+        assert.typeOf(connection3.hasInitializer, 'function');
         assert.typeOf(connection3.reinitialize, 'function');
 
-        assert.isTrue(connection3.hasInitiaizer());
+        assert.isTrue(connection3.hasInitializer());
 
         connection3.reinitialize().then(() => {
             const cols = Object.keys(connection3.collections()).sort();
 
-            assert.isTrue(connection3.hasInitiaizer());
+            assert.isTrue(connection3.hasInitializer());
 
             assert.strictEqual(cols.length, 3);
             assert.strictEqual(cols[0], 'collection_with_indexes');
@@ -293,16 +293,16 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`changes the initializer for something more complex (db: ${dbName3})`, done => {
-        assert.typeOf(connection3.hasInitiaizer, 'function');
+        assert.typeOf(connection3.hasInitializer, 'function');
         assert.typeOf(connection3.setInitializerFromJSON, 'function');
         assert.typeOf(connection3.collections, 'function');
 
-        assert.isTrue(connection3.hasInitiaizer());
+        assert.isTrue(connection3.hasInitializer());
 
         connection3.setInitializerFromJSON(initializer.moreComplex).then(() => {
             const cols = Object.keys(connection3.collections()).sort();
 
-            assert.isTrue(connection3.hasInitiaizer());
+            assert.isTrue(connection3.hasInitializer());
 
             assert.strictEqual(cols.length, 3);
             assert.strictEqual(cols[0], 'collection_with_indexes');
@@ -362,18 +362,18 @@ describe('dfdb: initializers [012]', function () {
     });
 
     it(`sets an invalid initializer (db: ${dbName4})`, done => {
-        assert.typeOf(connection4.hasInitiaizer, 'function');
+        assert.typeOf(connection4.hasInitializer, 'function');
         assert.typeOf(connection4.setInitializerFromJSON, 'function');
         assert.typeOf(connection4.collections, 'function');
 
-        assert.isFalse(connection4.hasInitiaizer());
+        assert.isFalse(connection4.hasInitializer());
 
         connection4.setInitializerFromJSON(initializer.wrong).then(() => {
             assert.isTrue(false, `a success was not expected at this point.`)
         }).catch(err => {
             const expectedErrorMessage = RejectionCodes.Message(RejectionCodes.InvalidJSON, true);
 
-            assert.isFalse(connection4.hasInitiaizer());
+            assert.isFalse(connection4.hasInitializer());
 
             assert.isNotNull(connection4.lastError());
             assert.strictEqual(`${err}`.indexOf(expectedErrorMessage), 0);
