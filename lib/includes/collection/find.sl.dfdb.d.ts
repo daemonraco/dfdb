@@ -18,7 +18,7 @@ export declare class SubLogicFind extends SubLogicSeeker {
      *
      * @method find
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
     find(conditions: SimpleConditionsList): Promise<any[]>;
@@ -28,7 +28,7 @@ export declare class SubLogicFind extends SubLogicSeeker {
      *
      * @method findOne
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * @returns {Promise<any>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
     findOne(conditions: SimpleConditionsList): Promise<any>;

@@ -215,6 +215,21 @@ export class Collection implements IErrors, IResource {
         });
     }
     /**
+     * This method searches for documents that match certain criteria and returns
+     * how many documents were found. Conditions may include indexed and unindexed
+     * fields.
+     *
+     * @method count
+     * @param {SimpleConditionsList} conditions Filtering conditions.
+     * @returns {Promise<number>} Returns a promise that gets resolved when the
+     * search completes. In the promise it returns the list of found documents.
+     */
+    public count(conditions: { [name: string]: any }): Promise<number> {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicSearch.count(conditions);
+    }
+    /**
      * This method removes this collection from its connection and erases all
      * traces of it. This means all its files and associated object files get
      * remove from the zip file.
@@ -295,7 +310,7 @@ export class Collection implements IErrors, IResource {
      *
      * @method find
      * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
     public find(conditions: { [name: string]: any }): Promise<any[]> {
@@ -309,7 +324,7 @@ export class Collection implements IErrors, IResource {
      *
      * @method findOne
      * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * @returns {Promise<any>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
     public findOne(conditions: any): Promise<any> {
@@ -468,7 +483,7 @@ export class Collection implements IErrors, IResource {
      *
      * @method search
      * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
     public search(conditions: { [name: string]: any }): Promise<any[]> {
@@ -482,7 +497,7 @@ export class Collection implements IErrors, IResource {
      *
      * @method searchOne
      * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * @returns {Promise<any>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
     public searchOne(conditions: { [name: string]: any }): Promise<any> {

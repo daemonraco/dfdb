@@ -21,12 +21,38 @@ export class SubLogicSearch extends SubLogicSeeker {
     //
     // Public methods.
     /**
+     * This method searches for documents that match certain criteria and returns
+     * how many documents were found. Conditions may include indexed and unindexed
+     * fields.
+     *
+     * @method count
+     * @param {SimpleConditionsList} conditions Filtering conditions.
+     * @returns {Promise<number>} Returns a promise that gets resolved when the
+     * search completes. In the promise it returns the list of found documents.
+     */
+    public count(conditions: SimpleConditionsList): Promise<number> {
+        //
+        // Restarting error messages.
+        this._mainObject._subLogicErrors.resetError();
+        //
+        // Building promise to return.
+        return new Promise<number>((resolve: (res: number) => void, reject: (err: Rejection) => void) => {
+            //
+            // Forwarding call.
+            this.search(conditions).then((findings: any[]) => {
+                //
+                // Counting results.
+                resolve(findings.length);
+            }).catch(reject);
+        });
+    }
+    /**
      * This method searches for documents that match certain criteria. Conditions
      * may include indexed and unindexed fields.
      *
      * @method search
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolve when the
+     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
     public search(conditions: SimpleConditionsList): Promise<any[]> {
@@ -118,7 +144,7 @@ export class SubLogicSearch extends SubLogicSeeker {
      *
      * @method searchOne
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolve when the
+     * @returns {Promise<any>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
     public searchOne(conditions: SimpleConditionsList): Promise<any> {
