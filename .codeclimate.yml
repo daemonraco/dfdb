@@ -1,4 +1,15 @@
+version: "2"
 exclude_patterns:
 - "docs/**"
 - "lib/**"
 - "test/**"
+checks:
+  file-lines:
+    config:
+      threshold: 1000
+  method-lines:
+    config:
+      threshold: 100
+  method-count:
+    config:
+      threshold: 100
