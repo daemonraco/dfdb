@@ -13,3 +13,5 @@ checks:
   method-count:
     config:
       threshold: 100
+  similar-code:
+    enabled: false
