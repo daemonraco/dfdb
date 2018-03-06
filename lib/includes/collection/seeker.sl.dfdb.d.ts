@@ -20,7 +20,7 @@ export declare class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
      * @protected
      * @method findIds
      * @param {ConditionsList} conditions Filtering conditions.
-     * @returns {Promise<string[]>} Returns a promise that gets resolve when all
+     * @returns {Promise<string[]>} Returns a promise that gets resolved when all
      * operations had finished. In the promise it returns a list of indexes.
      */
     protected findIds(conditions: ConditionsList): Promise<string[]>;

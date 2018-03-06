@@ -163,6 +163,30 @@ describe('dfdb: Heavy search [005]', function () {
         }).then(done, done);
     });
 
+    it(`counts documents without conditions`, done => {
+        assert.typeOf(collection.count, 'function');
+
+        collection.count({}).then(result => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(result, 200);
+        }).then(done, done);
+    });
+
+    it(`counts documents based on a condition`, done => {
+        assert.typeOf(collection.count, 'function');
+
+        collection.count({
+            extradata: 'somedata'
+        }).then(result => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(result, 1);
+        }).then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
