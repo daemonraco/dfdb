@@ -16,6 +16,7 @@ collections in __DocsOnFileDB__.
     - [Deleting all documents](#deleting-all-documents)
 - [Searching documents](#searching-documents)
     - [Search keywords](#search-keywords)
+    - [Counting results](#counting-results)
 - [Indexes](#indexes)
     - [Checking a field index](#checking-a-field-index)
     - [Listing indexes](#listing-indexes)
@@ -215,6 +216,26 @@ forces the comparison to be exact.
 * `$notIn`: Takes a list of values and reject values that are inside it.
 * `$like`: This is the default mechanism.
     * Alias: `*`, `$partial`
+
+## Counting results
+If instead of getting a list of results you want to know how many there are, you
+can use something like this:
+```js
+collection.count({ age: { $ge: 18, $lt: 65 } }).then(count => {
+    console.log(`Found documents: ${count}`);
+}).catch(err => {
+    console.err(`There was an error. ${err}`);
+});
+```
+
+Or simply this:
+```js
+collection.count().then(count => {
+    console.log(`Documents in this collection: ${count}`);
+}).catch(err => {
+    console.err(`There was an error. ${err}`);
+});
+```
 
 # Indexes
 ## Checking a field index
