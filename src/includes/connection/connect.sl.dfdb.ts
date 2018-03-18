@@ -13,6 +13,9 @@ import { IOpenConnectionConnect } from './open-connection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
+import { Tools } from '../tools.dfdb';
+
+declare var process: any;
 
 /**
  * This class holds Connection's specific logic to manpulate how it connects to a
@@ -121,6 +124,10 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
                                 //
                                 // Asking manager to forget this connection.
                                 DocsOnFileDB.Instance().forgetConnection(this._mainObject._dbName, this._mainObject._dbPath);
+                                //
+                                // Removing database lock file.
+                                try { fs.unlinkSync(this._mainObject._dbLockFullPath); } catch (e) { }
+
                                 resolve();
                             })
                             .catch(reject);
@@ -136,6 +143,26 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
     }
     //
     // Protected methods.
+    /**
+     * This method check this database is locked and who is locking it.
+     *
+     * @param {boolean} lock When TRUE, if the database is not locked, it locks
+     * it.
+     * @returns {boolean} Returns TRUE when this database is not locked for this
+     * process.
+     */
+    protected checkLock(lock: boolean = false): boolean {
+        let locked: boolean = false;
+
+        if (fs.existsSync(this._mainObject._dbLockFullPath)) {
+            const pid: number = parseInt(fs.readFileSync(this._mainObject._dbLockFullPath).toString());
+            locked = Tools.IsPidRunning(pid) && pid !== process.pid;
+        } else if (lock) {
+            fs.writeFileSync(this._mainObject._dbLockFullPath, process.pid);
+        }
+
+        return !locked;
+    }
     /**
      * This method creates basic assets.
      *
@@ -190,37 +217,45 @@ export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
-            // Physically reading the file.
-            fs.readFile(this._mainObject._dbFullPath, (error: any, data: any) => {
+            // Checking database lock.
+            if (this.checkLock(true)) {
                 //
-                // Did it fail?
-                if (error) {
+                // Physically reading the file.
+                fs.readFile(this._mainObject._dbFullPath, (error: any, data: any) => {
                     //
-                    // Rejecting promise.
-                    this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
-                    reject(this._mainObject._subLogicErrors.lastRejection());
-                } else {
-                    //
-                    // Parsing data as a zip file.
-                    JSZip.loadAsync(data).then((zip: any) => {
+                    // Did it fail?
+                    if (error) {
                         //
-                        // Zip file shortcut.
-                        this._mainObject._dbFile = zip;
-                        this._mainObject._connected = true;
-                        //
-                        // Starting the queue that centralizes all file accesses.
-                        this._mainObject._subLogicFile.setFileAccessQueue();
-                        //
-                        // Loading internal manifest.
-                        this.loadManifest()
-                            .then(resolve)
-                            .catch(reject);
-                    }).catch((error: any) => {
+                        // Rejecting promise.
                         this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
                         reject(this._mainObject._subLogicErrors.lastRejection());
-                    });
-                }
-            });
+                    } else {
+                        //
+                        // Parsing data as a zip file.
+                        JSZip.loadAsync(data).then((zip: any) => {
+                            //
+                            // Zip file shortcut.
+                            this._mainObject._dbFile = zip;
+                            this._mainObject._connected = true;
+                            //
+                            // Starting the queue that centralizes all file
+                            // accesses.
+                            this._mainObject._subLogicFile.setFileAccessQueue();
+                            //
+                            // Loading internal manifest.
+                            this.loadManifest()
+                                .then(resolve)
+                                .catch(reject);
+                        }).catch((error: any) => {
+                            this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseNotValid, { error, path: this._mainObject._dbFullPath }));
+                            reject(this._mainObject._subLogicErrors.lastRejection());
+                        });
+                    }
+                });
+            } else {
+                this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.DatabaseLocked));
+                reject(this._mainObject._subLogicErrors.lastRejection());
+            }
         });
     }
     /**

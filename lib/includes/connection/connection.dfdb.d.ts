@@ -29,6 +29,7 @@ export declare class Connection implements IErrors, IResource {
     protected _connected: boolean;
     protected _dbFile: JSZip;
     protected _dbFullPath: string;
+    protected _dbLockFullPath: string;
     protected _dbName: string;
     protected _dbPath: string;
     protected _fileAccessQueue: any;

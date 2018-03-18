@@ -11,6 +11,7 @@
  */
 export class BasicConstants {
     public static readonly DBExtension: string = '.dfdb';
+    public static readonly DBLockExtension: string = '.lock';
     public static readonly DefaultSequence: string = '_id';
 
     private constructor() { }

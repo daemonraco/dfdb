@@ -10,6 +10,7 @@
  */
 export declare class BasicConstants {
     static readonly DBExtension: string;
+    static readonly DBLockExtension: string;
     static readonly DefaultSequence: string;
     private constructor();
 }

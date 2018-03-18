@@ -8,6 +8,8 @@ import * as md5 from 'md5';
 
 import { Rejection } from './rejection.dfdb';
 
+declare var process: any;
+
 /**
  * Internal interfase that standardize recursive asynchronous calls to multiple
  * tasks.
@@ -94,6 +96,27 @@ export class Tools {
         }
 
         return left;
+    }
+    /**
+     * This method checks if certain PID is running.
+     *
+     * @static
+     * @method IsPidRunning
+     * @param {number} pid PID to check.
+     * @returns {boolean} Returns TRUE when a process with the requested PID is
+     * running.
+     */
+    public static IsPidRunning(pid: number): boolean {
+        let out: boolean = false;
+
+        try {
+            process.kill(pid, 0);
+            out = true;
+        } catch (e) {
+            out = e.code === 'EPERM';
+        }
+
+        return out;
     }
     /**
      * This method returns a unique hash string representing an object.
