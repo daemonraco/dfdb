@@ -6,6 +6,7 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 import * as fs from 'fs';
 
+import { BasicConstants } from '../constants.dfdb';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { DocsOnFileDB } from '../manager.dfdb';
 import { Collection } from '../collection/collection.dfdb';
@@ -34,6 +35,7 @@ export class Connection implements IErrors, IResource {
     protected _connected: boolean = false;
     protected _dbFile: JSZip = null;
     protected _dbFullPath: string = null;
+    protected _dbLockFullPath: string = null;
     protected _dbName: string = null;
     protected _dbPath: string = null;
     protected _fileAccessQueue: any = null;
@@ -65,6 +67,7 @@ export class Connection implements IErrors, IResource {
         // Main paths.
         this._manifestPath = `manifest`;
         this._dbFullPath = DocsOnFileDB.GuessDatabasePath(this._dbName, this._dbPath);
+        this._dbLockFullPath = `${this._dbFullPath}${BasicConstants.DBLockExtension}`;
         //
         // Sub-logics.
         this._subLogicCollections = new SubLogicCollections(this);

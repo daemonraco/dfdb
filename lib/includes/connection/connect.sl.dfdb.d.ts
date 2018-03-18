@@ -38,6 +38,15 @@ export declare class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
      */
     close(): Promise<void>;
     /**
+     * This method check this database is locked and who is locking it.
+     *
+     * @param {boolean} lock When TRUE, if the database is not locked, it locks
+     * it.
+     * @returns {boolean} Returns TRUE when this database is not locked for this
+     * process.
+     */
+    protected checkLock(lock?: boolean): boolean;
+    /**
      * This method creates basic assets.
      *
      * @protected

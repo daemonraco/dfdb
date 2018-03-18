@@ -40,6 +40,7 @@ export interface IOpenConnectionConnect {
     _connected: boolean;
     _dbFile: JSZip;
     _dbFullPath: string;
+    _dbLockFullPath: string;
     _dbName: string;
     _dbPath: string;
     _lastRejection: Rejection;

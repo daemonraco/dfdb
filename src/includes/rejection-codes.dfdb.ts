@@ -31,6 +31,7 @@ export class RejectionCodes {
     public static readonly InvalidJSON: string = `E-0018`;
     public static readonly InvalidJSONString: string = `E-0019`;
     public static readonly InvalidJSONFile: string = `E-0020`;
+    public static readonly DatabaseLocked: string = `E-0021`;
     //
     // Private class constants.
     private static readonly _messages: { [name: string]: string } = {
@@ -53,7 +54,8 @@ export class RejectionCodes {
         'E-0017': `This is not implemented yet`,
         'E-0018': `Given JSON object is not a valid`,
         'E-0019': `Given string is not a valid JSON`,
-        'E-0020': `Given file contents is not a valid JSON`
+        'E-0020': `Given file contents is not a valid JSON`,
+        'E-0021': `Unable to establish a database connection because it is locked`
     };
     //
     // Constructor.

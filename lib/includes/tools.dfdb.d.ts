@@ -56,6 +56,16 @@ export declare class Tools {
      */
     static DeepMergeObjects(left: any, right: any): any;
     /**
+     * This method checks if certain PID is running.
+     *
+     * @static
+     * @method IsPidRunning
+     * @param {number} pid PID to check.
+     * @returns {boolean} Returns TRUE when a process with the requested PID is
+     * running.
+     */
+    static IsPidRunning(pid: number): boolean;
+    /**
      * This method returns a unique hash string representing an object.
      *
      * @protected

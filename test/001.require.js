@@ -90,6 +90,7 @@ describe('dfdb: Require [001]', function () {
         assert.property(RejectionCodes, 'InvalidJSON');
         assert.property(RejectionCodes, 'InvalidJSONString');
         assert.property(RejectionCodes, 'InvalidJSONFile');
+        assert.property(RejectionCodes, 'DatabaseLocked');
 
         assert.isString(RejectionCodes.DocIsNotObject);
         assert.isString(RejectionCodes.DocNotFound);
@@ -111,6 +112,7 @@ describe('dfdb: Require [001]', function () {
         assert.isString(RejectionCodes.InvalidJSON);
         assert.isString(RejectionCodes.InvalidJSONString);
         assert.isString(RejectionCodes.InvalidJSONFile);
+        assert.isString(RejectionCodes.DatabaseLocked);
     });
 
     it(`builds a simple rejection object`, () => {

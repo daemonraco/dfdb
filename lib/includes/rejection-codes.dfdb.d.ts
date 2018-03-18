@@ -28,6 +28,7 @@ export declare class RejectionCodes {
     static readonly InvalidJSON: string;
     static readonly InvalidJSONString: string;
     static readonly InvalidJSONFile: string;
+    static readonly DatabaseLocked: string;
     private static readonly _messages;
     /**
      * @constructor
