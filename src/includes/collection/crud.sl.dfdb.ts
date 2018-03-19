@@ -132,11 +132,16 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                 reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
                 //
+                // Cleaning core fields to avoid issues.
+                delete partialDoc._id;
+                delete partialDoc._created;
+                delete partialDoc._updated;
+                //
                 // Merging.
                 const mergedDoc = Tools.DeepMergeObjects(this._mainObject._data[id], partialDoc);
                 //
                 // Forwarding call.
-                this._mainObject.update(id, mergedDoc)
+                this._mainObject.update(id, Tools.DeepCopy(mergedDoc))
                     .then(resolve)
                     .catch(reject);
             }
@@ -252,6 +257,11 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                 this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.CollectionNotConnected));
                 reject(this._mainObject._subLogicErrors.lastRejection());
             } else {
+                //
+                // Cleaning core fields to avoid issues.
+                delete doc._id;
+                delete doc._created;
+                delete doc._updated;
                 //
                 // Should check the schema?
                 if (this._mainObject._subLogicSchema.hasSchema()) {
