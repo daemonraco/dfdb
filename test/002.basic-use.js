@@ -183,6 +183,64 @@ describe('dfdb: Basic use [002]', function () {
             .then(done, done);
     });
 
+    it(`updates a document trying to change its ID`, done => {
+        assert.typeOf(collection.update, 'function');
+
+        collection.update(1, { _id: 10, hola: 'mundo!', extra: 10 })
+            .then(updatedDoc => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.typeOf(updatedDoc, 'object');
+
+                assert.property(updatedDoc, '_id');
+                assert.property(updatedDoc, '_created');
+                assert.property(updatedDoc, '_updated');
+                assert.notProperty(updatedDoc, 'hello');
+                assert.property(updatedDoc, 'hola');
+                assert.property(updatedDoc, 'extra');
+
+                assert.isString(updatedDoc._id);
+                assert.instanceOf(updatedDoc._created, Date);
+                assert.instanceOf(updatedDoc._updated, Date);
+
+                assert.strictEqual(updatedDoc._id, '1');
+                assert.strictEqual(updatedDoc.hola, 'mundo!');
+                assert.strictEqual(updatedDoc.extra, 10);
+            })
+            .then(done, done);
+    });
+
+    it('partially updates a document trying to change its ID', done => {
+        assert.typeOf(collection.partialUpdate, 'function');
+
+        collection.partialUpdate(1, { _id: 10, extra: 20, another: 30 })
+            .then(updatedDoc => {
+                assert.isFalse(collection.error());
+                assert.isNull(collection.lastError());
+
+                assert.typeOf(updatedDoc, 'object');
+
+                assert.property(updatedDoc, '_id');
+                assert.property(updatedDoc, '_created');
+                assert.property(updatedDoc, '_updated');
+                assert.notProperty(updatedDoc, 'hello');
+                assert.property(updatedDoc, 'hola');
+                assert.property(updatedDoc, 'extra');
+                assert.property(updatedDoc, 'another');
+
+                assert.isString(updatedDoc._id);
+                assert.instanceOf(updatedDoc._created, Date);
+                assert.instanceOf(updatedDoc._updated, Date);
+
+                assert.strictEqual(updatedDoc._id, '1');
+                assert.strictEqual(updatedDoc.hola, 'mundo!');
+                assert.strictEqual(updatedDoc.extra, 20);
+                assert.strictEqual(updatedDoc.another, 30);
+            })
+            .then(done, done);
+    });
+
     it('closes the connection', done => {
         assert.typeOf(connection.close, 'function');
 
