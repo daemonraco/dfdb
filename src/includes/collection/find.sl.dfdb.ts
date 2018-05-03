@@ -9,6 +9,7 @@ import { Condition, ConditionsList, SimpleConditionsList } from '../condition.df
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
+import { Tools } from '../tools.dfdb';
 
 /**
  * This class holds Collection's specific logic to find indexed document field
@@ -54,7 +55,7 @@ export class SubLogicFind extends SubLogicSeeker {
                     ids.forEach(id => findings.push(this._mainObject._data[id]));
                     //
                     // Returning found documents.
-                    resolve(findings);
+                    resolve(Tools.DeepCopy(findings));
                 })
                 .catch(reject);
         });

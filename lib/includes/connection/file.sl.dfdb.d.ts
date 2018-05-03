@@ -23,7 +23,7 @@ export declare class SubLogicFile extends SubLogic<IOpenConnectionFile> {
      */
     loadFile(zPath: string): Promise<ConnectionSavingQueueResult>;
     /**
-     * Thi method actually saves zip information physically.
+     * This method actually saves zip information physically.
      *
      * @method save
      * @returns {Promise<void>} Returns a promise that gets resovled when this

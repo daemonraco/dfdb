@@ -24,6 +24,8 @@ declare var process: any;
  * @class SubLogicConnect
  */
 export class SubLogicConnect extends SubLogic<IOpenConnectionConnect> {
+    //
+    // Public methods.
     /**
      * Connects this object to the physicial database file. If the database file
      * doesn't exist it is created.

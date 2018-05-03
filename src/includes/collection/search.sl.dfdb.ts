@@ -10,6 +10,7 @@ import { Condition, ConditionsList, SimpleConditionsList } from '../condition.df
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
+import { Tools } from '../tools.dfdb';
 
 /**
  * This class holds Collection's specific logic to find unindexed document field
@@ -79,7 +80,7 @@ export class SubLogicSearch extends SubLogicSeeker {
             const unindexedSearch = () => {
                 //
                 // Returning documents that match unindexed conditions.
-                resolve(findings.filter((datum: any) => {
+                resolve(Tools.DeepCopy(findings.filter((datum: any) => {
                     let accept = true;
                     //
                     // Checking each conditions.
@@ -100,7 +101,7 @@ export class SubLogicSearch extends SubLogicSeeker {
                     });
 
                     return accept;
-                }));
+                })));
             };
             //
             // Separating conditions for indexed fields from unindexed.

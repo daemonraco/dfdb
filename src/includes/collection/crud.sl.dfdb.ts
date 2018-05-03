@@ -112,6 +112,9 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      */
     public partialUpdate(id: any, partialDoc: { [name: string]: any }): Promise<any> {
         //
+        // Self-copying to avoid issues.
+        partialDoc = Tools.DeepCopy(partialDoc);
+        //
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
@@ -237,6 +240,9 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      * completed with all internal fields.
      */
     public update(id: any, doc: { [name: string]: any }): Promise<any> {
+        //
+        // Self-copying to avoid issues.
+        doc = Tools.DeepCopy(doc);
         //
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
