@@ -12,6 +12,7 @@ collections in __DocsOnFileDB__.
     - [Inserting a new document](#inserting-a-new-document)
     - [Updating/Replacing a document](#updatingreplacing-a-document)
     - [Partially updating a document](#partially-updating-a-document)
+    - [Updating multiple documents](#updating-multiple-documents)
     - [Deleting a document](#deleting-a-document)
     - [Deleting all documents](#deleting-all-documents)
 - [Searching documents](#searching-documents)
@@ -89,6 +90,23 @@ let newPartialData = {
 myCollection.partialUpdate(123, newPartialData)
     .then(updatedDoc => {
         console.log(JSON.stringify(updatedDoc, null, 2));
+    })
+    .catch(err => {
+        console.err(`There was an error. ${err}`);
+    });
+```
+
+## Updating multiple documents
+`updateMany()` is also similar to `update()`, but it can affect multiple documents
+at once.
+```js
+let partialData = {
+    age: 35,
+    address: 'Some Street 234'
+};
+myCollection.updateMany({ age: 34 }, newPartialData)
+    .then(updatedDocs => {
+        console.log(JSON.stringify(updatedDocs, null, 2));
     })
     .catch(err => {
         console.err(`There was an error. ${err}`);
