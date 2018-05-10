@@ -4,6 +4,7 @@
  */
 import { Promise } from 'es6-promise';
 import { SimpleConditionsList } from '../condition.dfdb';
+import { DBDocument } from '../basic-types.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
 /**
  * This class holds Collection's specific logic to find indexed document field
@@ -18,18 +19,18 @@ export declare class SubLogicFind extends SubLogicSeeker {
      *
      * @method find
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    find(conditions: SimpleConditionsList): Promise<any[]>;
+    find(conditions: SimpleConditionsList): Promise<DBDocument[]>;
     /**
      * This is the same than 'find()', but it returns only the first found
      * document.
      *
      * @method findOne
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
-    findOne(conditions: SimpleConditionsList): Promise<any>;
+    findOne(conditions: SimpleConditionsList): Promise<DBDocument>;
 }

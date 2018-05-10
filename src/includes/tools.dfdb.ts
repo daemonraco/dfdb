@@ -6,6 +6,7 @@
 import { Promise } from 'es6-promise';
 import * as md5 from 'md5';
 
+import { DBDocument } from './basic-types.dfdb';
 import { Rejection } from './rejection.dfdb';
 
 declare var process: any;
@@ -46,7 +47,7 @@ export class Tools {
     //
     // Public class methods.
     /**
-     * Takes an object and returns a clone of if. It avoids using the same
+     * Takes an object and returns a clone of it. It avoids using the same
      * pointer.
      *
      * @static
@@ -56,6 +57,40 @@ export class Tools {
      */
     public static DeepCopy(obj: any): any {
         return JSON.parse(JSON.stringify(obj));
+    }
+    /**
+     * Takes a document and returns a clone of it. It avoids using the same
+     * pointer.
+     *
+     * @static
+     * @method DeepCopyDocument
+     * @param {DBDocument} obj Document to be copied.
+     * @returns {DBDocument} Returns a deep copy of the given document.
+     */
+    public static DeepCopyDocument(doc: DBDocument): DBDocument {
+        //
+        // Basic cloning.
+        let out: DBDocument = Tools.DeepCopy(doc);
+        //
+        // Reactivating date objects.
+        out._created = new Date(out._created);
+        out._updated = new Date(out._updated);
+
+        return out;
+    }
+    /**
+     * Takes a list of documents and returns a clone of them all. It avoids using
+     * the same pointer.
+     *
+     * @static
+     * @method DeepCopyDocuments
+     * @param {DBDocument[]} obj List of documents to be copied.
+     * @returns {DBDocument[]} Returns a deep copy of the given documents list.
+     */
+    public static DeepCopyDocuments(docs: DBDocument[]): DBDocument[] {
+        //
+        // Cloning.
+        return docs.map((doc: DBDocument) => Tools.DeepCopyDocument(doc));
     }
     /**
      * This method takes two things that can be objects, arrays or simple values

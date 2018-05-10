@@ -5,6 +5,7 @@
  */
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
+import { BasicDictionary } from '../basic-types.dfdb';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { Collection } from '../collection/collection.dfdb';
 import { IErrors } from '../errors.i.dfdb';
@@ -33,9 +34,7 @@ export declare class Connection implements IErrors, IResource {
     protected _dbName: string;
     protected _dbPath: string;
     protected _fileAccessQueue: any;
-    protected _manifest: {
-        [name: string]: any;
-    };
+    protected _manifest: BasicDictionary;
     protected _manifestPath: string;
     protected _subLogicCollections: SubLogicCollections;
     protected _subLogicConnect: SubLogicConnect;
@@ -62,11 +61,10 @@ export declare class Connection implements IErrors, IResource {
      * Provides access to the list of collection this connections knows.
      *
      * @method collections
-     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     * @returns {BasicDictionary} Returns a list of collections this connection
+     * knows.
      */
-    collections(): {
-        [name: string]: any;
-    };
+    collections(): BasicDictionary;
     /**
      * Connects this object to the physicial database file. If the database file
      * doesn't exist it is created.

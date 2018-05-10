@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { BasicDictionary } from '../basic-types.dfdb';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 /**
@@ -55,12 +56,10 @@ export declare class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
      *
      * @protected
      * @method applySchema
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('schema', 'schemaMD5').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('schema', 'schemaMD5').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected applySchema(params: {
-        [name: string]: any;
-    }): Promise<void>;
+    protected applySchema(params: BasicDictionary): Promise<void>;
 }

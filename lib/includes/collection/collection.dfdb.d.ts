@@ -3,6 +3,8 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { ConditionsList } from '../condition.dfdb';
 import { Connection } from '../connection/connection.dfdb';
 import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
@@ -24,15 +26,11 @@ import { Sequence } from '../sequence.dfdb';
 export declare class Collection implements IErrors, IResource {
     protected _connected: boolean;
     protected _connection: Connection;
-    protected _data: {
-        [name: string]: any;
-    };
+    protected _data: BasicDictionary;
     protected _indexes: {
         [name: string]: Index;
     };
-    protected _manifest: {
-        [name: string]: any;
-    };
+    protected _manifest: BasicDictionary;
     protected _manifestPath: string;
     protected _name: string;
     protected _resourcePath: string;
@@ -91,9 +89,7 @@ export declare class Collection implements IErrors, IResource {
      * @returns {Promise<number>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    count(conditions: {
-        [name: string]: any;
-    }): Promise<number>;
+    count(conditions: ConditionsList): Promise<number>;
     /**
      * This method removes this collection from its connection and erases all
      * traces of it. This means all its files and associated object files get
@@ -125,23 +121,21 @@ export declare class Collection implements IErrors, IResource {
      * should only include indexed fields.
      *
      * @method find
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    find(conditions: {
-        [name: string]: any;
-    }): Promise<any[]>;
+    find(conditions: ConditionsList): Promise<DBDocument[]>;
     /**
      * This is the same than 'find()', but it returns only the first found
      * document.
      *
      * @method findOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
-    findOne(conditions: any): Promise<any>;
+    findOne(conditions: ConditionsList): Promise<DBDocument>;
     /**
      * Checks if this collection has a specific index.
      *
@@ -161,24 +155,18 @@ export declare class Collection implements IErrors, IResource {
      * List all indexes of this collection
      *
      * @method indexes
-     * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
+     * @returns {BasicDictionary} Retruns a simple object listing indexes.
      */
-    indexes(): {
-        [name: string]: any;
-    };
+    indexes(): BasicDictionary;
     /**
      * Inserts a new document and updates this collection's indexes with it.
      *
      * @method insert
-     * @param {{ [name: string]: any }} doc Document to insert.
-     * @returns {Promise<{ [name: string]: any }>} Returns the inserted document
+     * @param {BasicDictionary} doc Document to insert.
+     * @returns {Promise<DBDocument>} Returns the inserted document
      * completed with all internal fields.
      */
-    insert(doc: {
-        [name: string]: any;
-    }): Promise<{
-        [name: string]: any;
-    }>;
+    insert(doc: BasicDictionary): Promise<DBDocument>;
     /**
      * Provides access to the error message registed by the last operation.
      *
@@ -206,15 +194,13 @@ export declare class Collection implements IErrors, IResource {
      * one inside the database.
      *
      * @method update
-     * @param {any} id ID of the document to update.
-     * @param {{ [name: string]: any }} partialDoc Partial document to use as new
+     * @param {string} id ID of the document to update.
+     * @param {BasicDictionary} partialDoc Partial document to use as new
      * data.
-     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    partialUpdate(id: any, partialDoc: {
-        [name: string]: any;
-    }): Promise<any>;
+    partialUpdate(id: string, partialDoc: BasicDictionary): Promise<DBDocument>;
     /**
      * This method forces a index to reload and reindex all documents.
      *
@@ -228,11 +214,11 @@ export declare class Collection implements IErrors, IResource {
      * This method removes a document from this collection based on an ID.
      *
      * @method remove
-     * @param {any} id ID of the document to remove.
+     * @param {string} id ID of the document to remove.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    remove(id: any): Promise<void>;
+    remove(id: string): Promise<void>;
     /**
      * This method removes a the assigned schema for document validaton on this
      * collection.
@@ -254,25 +240,21 @@ export declare class Collection implements IErrors, IResource {
      * may include indexed and unindexed fields.
      *
      * @method search
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    search(conditions: {
-        [name: string]: any;
-    }): Promise<any[]>;
+    search(conditions: ConditionsList): Promise<DBDocument[]>;
     /**
      * This is the same than 'searchOne()', but it returns only the first found
      * document.
      *
      * @method searchOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
-     * search completes. In the promise it returns a found documents.
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when
+     * the search completes. In the promise it returns a found documents.
      */
-    searchOne(conditions: {
-        [name: string]: any;
-    }): Promise<any>;
+    searchOne(conditions: ConditionsList): Promise<DBDocument>;
     /**
      * Assignes or replaces the schema for document validaton on this collection.
      *
@@ -301,14 +283,21 @@ export declare class Collection implements IErrors, IResource {
      * Updates a document and updates this collection's indexes with it.
      *
      * @method update
-     * @param {any} id ID of the document to update.
-     * @param {{ [name: string]: any }} doc Document to use as new data.
-     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * @param {string} id ID of the document to update.
+     * @param {BasicDictionary} doc Document to use as new data.
+     * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    update(id: any, doc: {
-        [name: string]: any;
-    }): Promise<any>;
+    update(id: string, doc: BasicDictionary): Promise<DBDocument>;
+    /**
+     * This method is similar to 'update()' but can affect more than one document.
+     *
+     * @method updateMany
+     * @param {ConditionsList} conditions Filtering conditions.
+     * @param {BasicDictionary} doc Partial document to use as new data.
+     * @returns {Promise<DBDocument[]>} Returns a list of updated documents.
+     */
+    updateMany(conditions: ConditionsList, doc: BasicDictionary): Promise<DBDocument[]>;
     /**
      * This method drops the internal manifest file from zip.
      *
@@ -380,8 +369,6 @@ export declare class Collection implements IErrors, IResource {
      *
      * @protected
      * @method save
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */

@@ -1,11 +1,12 @@
 {
     "name": "dfdb",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "DFDB (DocsOnFileDB) locally stores a very simple noSQL database inside a zip file.",
     "main": "lib/dfdb",
     "types": "lib/dfdb",
     "scripts": {
         "start": "npm run build:live",
+        "prebuild": "rm lib/* -fvr",
         "build": "./node_modules/.bin/tsc",
         "build:live": "./node_modules/.bin/tsc -w",
         "build:docs": "./node_modules/.bin/yuidoc --extension .ts --config docs/.yuidoc.json --theme simple",
