@@ -7,6 +7,7 @@ import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
 import * as jsonpath from 'jsonpath-plus';
 
+import { BasicDictionary, DBDocument } from './basic-types.dfdb';
 import { Collection } from './collection/collection.dfdb';
 import { ConditionsList } from './condition.dfdb';
 import { Condition } from './condition.dfdb';
@@ -28,7 +29,7 @@ export class Index implements IErrors, IResource, IDelayedResource {
     protected _collection: Collection = null;
     protected _connected: boolean = false;
     protected _connection: Connection = null;
-    protected _data: { [name: string]: any } = {};
+    protected _data: BasicDictionary = {};
     protected _field: string = null;
     protected _resourcePath: string = null;
     protected _skipSave: boolean = false;
@@ -62,11 +63,11 @@ export class Index implements IErrors, IResource, IDelayedResource {
      * index field.
      *
      * @method addDocument
-     * @param {{ [name:string]: any }} doc Document to be indexed.
+     * @param {DBDocument} doc Document to be indexed.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    public addDocument(doc: { [name: string]: any }): Promise<void> {
+    public addDocument(doc: DBDocument): Promise<void> {
         //
         // This anonymous function takes a value for a index entry and adds the
         // given document ID to it.

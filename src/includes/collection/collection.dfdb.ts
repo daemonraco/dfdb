@@ -6,6 +6,8 @@
 import { Promise } from 'es6-promise';
 
 import { BasicConstants } from '../constants.dfdb';
+import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { ConditionsList } from '../condition.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection/connection.dfdb';
 import { IErrors } from '../errors.i.dfdb';
 import { Index } from '../index.dfdb';
@@ -32,9 +34,9 @@ export class Collection implements IErrors, IResource {
     // Protected properties.
     protected _connected: boolean = false;
     protected _connection: Connection = null;
-    protected _data: { [name: string]: any } = {};
+    protected _data: BasicDictionary = {};
     protected _indexes: { [name: string]: Index } = {};
-    protected _manifest: { [name: string]: any } = {
+    protected _manifest: BasicDictionary = {
         indexes: {},
         schema: null,
         schemaMD5: null
@@ -224,7 +226,7 @@ export class Collection implements IErrors, IResource {
      * @returns {Promise<number>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public count(conditions: { [name: string]: any }): Promise<number> {
+    public count(conditions: ConditionsList): Promise<number> {
         //
         // Forwarding to sub-logic.
         return this._subLogicSearch.count(conditions);
@@ -309,11 +311,11 @@ export class Collection implements IErrors, IResource {
      * should only include indexed fields.
      *
      * @method find
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public find(conditions: { [name: string]: any }): Promise<any[]> {
+    public find(conditions: ConditionsList): Promise<DBDocument[]> {
         //
         // Forwarding to sub-logic.
         return this._subLogicFind.find(conditions);
@@ -323,11 +325,11 @@ export class Collection implements IErrors, IResource {
      * document.
      *
      * @method findOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
-    public findOne(conditions: any): Promise<any> {
+    public findOne(conditions: ConditionsList): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicFind.findOne(conditions);
@@ -359,9 +361,9 @@ export class Collection implements IErrors, IResource {
      * List all indexes of this collection
      *
      * @method indexes
-     * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
+     * @returns {BasicDictionary} Retruns a simple object listing indexes.
      */
-    public indexes(): { [name: string]: any } {
+    public indexes(): BasicDictionary {
         //
         // Forwarding to sub-logic.
         return this._subLogicIndex.indexes();
@@ -370,11 +372,11 @@ export class Collection implements IErrors, IResource {
      * Inserts a new document and updates this collection's indexes with it.
      *
      * @method insert
-     * @param {{ [name: string]: any }} doc Document to insert.
-     * @returns {Promise<{ [name: string]: any }>} Returns the inserted document
+     * @param {BasicDictionary} doc Document to insert.
+     * @returns {Promise<DBDocument>} Returns the inserted document
      * completed with all internal fields.
      */
-    public insert(doc: { [name: string]: any }): Promise<{ [name: string]: any }> {
+    public insert(doc: BasicDictionary): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.insert(doc);
@@ -416,13 +418,13 @@ export class Collection implements IErrors, IResource {
      * one inside the database.
      *
      * @method update
-     * @param {any} id ID of the document to update.
-     * @param {{ [name: string]: any }} partialDoc Partial document to use as new
+     * @param {string} id ID of the document to update.
+     * @param {BasicDictionary} partialDoc Partial document to use as new
      * data.
-     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    public partialUpdate(id: any, partialDoc: { [name: string]: any }): Promise<any> {
+    public partialUpdate(id: string, partialDoc: BasicDictionary): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.partialUpdate(id, partialDoc);
@@ -444,11 +446,11 @@ export class Collection implements IErrors, IResource {
      * This method removes a document from this collection based on an ID.
      *
      * @method remove
-     * @param {any} id ID of the document to remove.
+     * @param {string} id ID of the document to remove.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    public remove(id: any): Promise<void> {
+    public remove(id: string): Promise<void> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.remove(id);
@@ -482,11 +484,11 @@ export class Collection implements IErrors, IResource {
      * may include indexed and unindexed fields.
      *
      * @method search
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public search(conditions: { [name: string]: any }): Promise<any[]> {
+    public search(conditions: ConditionsList): Promise<DBDocument[]> {
         //
         // Forwarding to sub-logic.
         return this._subLogicSearch.search(conditions);
@@ -496,11 +498,11 @@ export class Collection implements IErrors, IResource {
      * document.
      *
      * @method searchOne
-     * @param {{[name:string]:any}} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
-     * search completes. In the promise it returns a found documents.
+     * @param {BasicDictionary} conditions Filtering conditions.
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when
+     * the search completes. In the promise it returns a found documents.
      */
-    public searchOne(conditions: { [name: string]: any }): Promise<any> {
+    public searchOne(conditions: ConditionsList): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicSearch.searchOne(conditions);
@@ -543,15 +545,28 @@ export class Collection implements IErrors, IResource {
      * Updates a document and updates this collection's indexes with it.
      *
      * @method update
-     * @param {any} id ID of the document to update.
-     * @param {{ [name: string]: any }} doc Document to use as new data.
-     * @returns {Promise<{ [name: string]: any }>} Returns the updated document
+     * @param {string} id ID of the document to update.
+     * @param {BasicDictionary} doc Document to use as new data.
+     * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    public update(id: any, doc: { [name: string]: any }): Promise<any> {
+    public update(id: string, doc: BasicDictionary): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.update(id, doc);
+    }
+    /**
+     * This method is similar to 'update()' but can affect more than one document.
+     *
+     * @method updateMany
+     * @param {ConditionsList} conditions Filtering conditions.
+     * @param {BasicDictionary} doc Partial document to use as new data.
+     * @returns {Promise<DBDocument[]>} Returns a list of updated documents.
+     */
+    public updateMany(conditions: ConditionsList, doc: BasicDictionary): Promise<DBDocument[]> {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.updateMany(conditions, doc);
     }
     //
     // Protected methods.
@@ -755,8 +770,6 @@ export class Collection implements IErrors, IResource {
      *
      * @protected
      * @method save
-     * @param {any} params This parameter is provided for compatibility, but it's
-     * not used.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */

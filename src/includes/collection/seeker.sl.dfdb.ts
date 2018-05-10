@@ -6,6 +6,7 @@
 import { Promise } from 'es6-promise';
 
 import { ConditionsList, Condition } from '../condition.dfdb';
+import { DBDocument } from '../basic-types.dfdb';
 import { IOpenCollectionSeeker } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
@@ -94,9 +95,9 @@ export class SubLogicSeeker extends SubLogic<IOpenCollectionSeeker> {
      * @protected
      * @method idsToData
      * @param {string[]} ids List of IDs.
-     * @returns {{ [name: string]: any}[]} Returns a list of documents.
+     * @returns {DBDocument[]} Returns a list of documents.
      */
-    protected idsToData(ids: string[]): { [name: string]: any }[] {
+    protected idsToData(ids: string[]): DBDocument[] {
         return ids.map(id => this._mainObject._data[id]);
     }
 }

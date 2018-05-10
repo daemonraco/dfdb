@@ -5,6 +5,7 @@
  */
 import { Promise } from 'es6-promise';
 import * as JSZip from 'jszip';
+import { BasicDictionary } from '../basic-types.dfdb';
 import { Collection } from '../collection/collection.dfdb';
 import { Connection } from './connection.dfdb';
 import { ConnectionSavingQueueResult } from './types.dfdb';
@@ -21,9 +22,7 @@ export interface IOpenConnectionCollections {
     _collections: {
         [name: string]: Collection;
     };
-    _manifest: {
-        [name: string]: any;
-    };
+    _manifest: BasicDictionary;
     _subLogicErrors: SubLogicErrors<Connection>;
     save(): Promise<void>;
 }
@@ -44,9 +43,7 @@ export interface IOpenConnectionConnect {
     _dbName: string;
     _dbPath: string;
     _lastRejection: Rejection;
-    _manifest: {
-        [name: string]: any;
-    };
+    _manifest: BasicDictionary;
     _manifestPath: string;
     _subLogicErrors: SubLogicErrors<Connection>;
     _subLogicFile: SubLogicFile;
@@ -65,9 +62,7 @@ export interface IOpenConnectionFile {
     _dbFullPath: string;
     _fileAccessQueue: any;
     _lastRejection: Rejection;
-    _manifest: {
-        [name: string]: any;
-    };
+    _manifest: BasicDictionary;
     _manifestPath: string;
     _subLogicErrors: SubLogicErrors<Connection>;
     save(): Promise<void>;
@@ -81,9 +76,7 @@ export interface IOpenConnectionFile {
 export interface IOpenConnectionInit {
     _connected: boolean;
     _lastRejection: Rejection;
-    _manifest: {
-        [name: string]: any;
-    };
+    _manifest: BasicDictionary;
     _subLogicErrors: SubLogicErrors<Connection>;
     collection(name: string): Promise<Collection>;
     save(): Promise<void>;

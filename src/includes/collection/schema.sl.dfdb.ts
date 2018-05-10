@@ -7,6 +7,7 @@ import { Promise } from 'es6-promise';
 import * as Ajv from 'ajv';
 import * as md5 from 'md5';
 
+import { BasicDictionary } from '../basic-types.dfdb';
 import { Collection } from './collection.dfdb';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
@@ -175,12 +176,12 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
      *
      * @protected
      * @method applySchema
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('schema', 'schemaMD5').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('schema', 'schemaMD5').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected applySchema(params: { [name: string]: any }): Promise<void> {
+    protected applySchema(params: BasicDictionary): Promise<void> {
         //
         // Parsing parameters.
         const { schema, schemaMD5 } = params;

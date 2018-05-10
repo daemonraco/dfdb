@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { BasicDictionary, DBDocument } from './basic-types.dfdb';
 import { Collection } from './collection/collection.dfdb';
 import { ConditionsList } from './condition.dfdb';
 import { Connection } from './connection/connection.dfdb';
@@ -19,9 +20,7 @@ export declare class Index implements IErrors, IResource, IDelayedResource {
     protected _collection: Collection;
     protected _connected: boolean;
     protected _connection: Connection;
-    protected _data: {
-        [name: string]: any;
-    };
+    protected _data: BasicDictionary;
     protected _field: string;
     protected _resourcePath: string;
     protected _skipSave: boolean;
@@ -39,13 +38,11 @@ export declare class Index implements IErrors, IResource, IDelayedResource {
      * index field.
      *
      * @method addDocument
-     * @param {{ [name:string]: any }} doc Document to be indexed.
+     * @param {DBDocument} doc Document to be indexed.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    addDocument(doc: {
-        [name: string]: any;
-    }): Promise<void>;
+    addDocument(doc: DBDocument): Promise<void>;
     /**
      * Creating an index object doesn't mean it is connected to physical
      * information, this method does that.

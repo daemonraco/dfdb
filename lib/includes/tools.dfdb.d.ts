@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { DBDocument } from './basic-types.dfdb';
 /**
  * Internal interfase that standardize recursive asynchronous calls to multiple
  * tasks.
@@ -34,7 +35,7 @@ export declare class Tools {
      */
     private constructor();
     /**
-     * Takes an object and returns a clone of if. It avoids using the same
+     * Takes an object and returns a clone of it. It avoids using the same
      * pointer.
      *
      * @static
@@ -43,6 +44,26 @@ export declare class Tools {
      * @returns {any} Returns a deep copy of the given object.
      */
     static DeepCopy(obj: any): any;
+    /**
+     * Takes a document and returns a clone of it. It avoids using the same
+     * pointer.
+     *
+     * @static
+     * @method DeepCopyDocument
+     * @param {DBDocument} obj Document to be copied.
+     * @returns {DBDocument} Returns a deep copy of the given document.
+     */
+    static DeepCopyDocument(doc: DBDocument): DBDocument;
+    /**
+     * Takes a list of documents and returns a clone of them all. It avoids using
+     * the same pointer.
+     *
+     * @static
+     * @method DeepCopyDocuments
+     * @param {DBDocument[]} obj List of documents to be copied.
+     * @returns {DBDocument[]} Returns a deep copy of the given documents list.
+     */
+    static DeepCopyDocuments(docs: DBDocument[]): DBDocument[];
     /**
      * This method takes two things that can be objects, arrays or simple values
      * and tries the deep-merge the second one into the first one.

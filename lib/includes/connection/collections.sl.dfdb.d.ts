@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { BasicDictionary } from '../basic-types.dfdb';
 import { Collection } from '../collection/collection.dfdb';
 import { IOpenConnectionCollections } from './open-connection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
@@ -26,11 +27,10 @@ export declare class SubLogicCollections extends SubLogic<IOpenConnectionCollect
      * Provides access to the list of collection this connections knows.
      *
      * @method collections
-     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     * @returns {BasicDictionary} Returns a list of collections this connection
+     * knows.
      */
-    collections(): {
-        [name: string]: any;
-    };
+    collections(): BasicDictionary;
     /**
      * Ask this connection to forget a tracked collection.
      *

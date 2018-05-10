@@ -6,6 +6,7 @@
 import { Promise } from 'es6-promise';
 
 import { Condition, ConditionsList, SimpleConditionsList } from '../condition.dfdb';
+import { DBDocument } from '../basic-types.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -26,10 +27,10 @@ export class SubLogicFind extends SubLogicSeeker {
      *
      * @method find
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public find(conditions: SimpleConditionsList): Promise<any[]> {
+    public find(conditions: SimpleConditionsList): Promise<DBDocument[]> {
         //
         // Fixing conditions object.
         if (typeof conditions !== 'object' || Array.isArray(conditions)) {
@@ -41,10 +42,10 @@ export class SubLogicFind extends SubLogicSeeker {
         this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
-        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: Rejection) => void) => {
+        return new Promise<DBDocument[]>((resolve: (res: DBDocument[]) => void, reject: (err: Rejection) => void) => {
             //
             // Initializing an empty list of findings.
-            const findings: any[] = [];
+            const findings: DBDocument[] = [];
             //
             // Forwarding the search to a method that searches and returns only
             // ids.
@@ -55,7 +56,7 @@ export class SubLogicFind extends SubLogicSeeker {
                     ids.forEach(id => findings.push(this._mainObject._data[id]));
                     //
                     // Returning found documents.
-                    resolve(Tools.DeepCopy(findings));
+                    resolve(Tools.DeepCopyDocuments(findings));
                 })
                 .catch(reject);
         });
@@ -66,17 +67,17 @@ export class SubLogicFind extends SubLogicSeeker {
      *
      * @method findOne
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
-    public findOne(conditions: SimpleConditionsList): Promise<any> {
+    public findOne(conditions: SimpleConditionsList): Promise<DBDocument> {
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
+        return new Promise<DBDocument>((resolve: (res: DBDocument) => void, reject: (err: Rejection) => void) => {
             //
             // Forwading search.
             this.find(conditions)
-                .then((findings: any[]) => {
+                .then((findings: DBDocument[]) => {
                     //
                     // Picking the first document.
                     if (findings.length > 0) {

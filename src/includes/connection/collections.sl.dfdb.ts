@@ -5,6 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
+import { BasicDictionary } from '../basic-types.dfdb';
 import { CollectionTypes } from '../constants.dfdb';
 import { Collection } from '../collection/collection.dfdb';
 import { IOpenConnectionCollections } from './open-connection.i.dfdb';
@@ -81,9 +82,10 @@ export class SubLogicCollections extends SubLogic<IOpenConnectionCollections> {
      * Provides access to the list of collection this connections knows.
      *
      * @method collections
-     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     * @returns {BasicDictionary} Returns a list of collections this connection
+     * knows.
      */
-    public collections(): { [name: string]: any } {
+    public collections(): BasicDictionary {
         //
         // Returning a deep-copy to avoid unintentional changes.
         return Tools.DeepCopy(this._mainObject._manifest.collections);

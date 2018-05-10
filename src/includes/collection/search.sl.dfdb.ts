@@ -7,6 +7,7 @@ import { Promise } from 'es6-promise';
 import * as jsonpath from 'jsonpath-plus';
 
 import { Condition, ConditionsList, SimpleConditionsList } from '../condition.dfdb';
+import { DBDocument } from '../basic-types.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -40,7 +41,7 @@ export class SubLogicSearch extends SubLogicSeeker {
         return new Promise<number>((resolve: (res: number) => void, reject: (err: Rejection) => void) => {
             //
             // Forwarding call.
-            this.search(conditions).then((findings: any[]) => {
+            this.search(conditions).then((findings: DBDocument[]) => {
                 //
                 // Counting results.
                 resolve(findings.length);
@@ -53,10 +54,10 @@ export class SubLogicSearch extends SubLogicSeeker {
      *
      * @method search
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any[]>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument[]>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns the list of found documents.
      */
-    public search(conditions: SimpleConditionsList): Promise<any[]> {
+    public search(conditions: SimpleConditionsList): Promise<DBDocument[]> {
         //
         // Fixing conditions object.
         if (typeof conditions !== 'object' || Array.isArray(conditions)) {
@@ -68,10 +69,10 @@ export class SubLogicSearch extends SubLogicSeeker {
         this._mainObject._subLogicErrors.resetError();
         //
         // Building promise to return.
-        return new Promise<any[]>((resolve: (res: any[]) => void, reject: (err: Rejection) => void) => {
+        return new Promise<DBDocument[]>((resolve: (res: DBDocument[]) => void, reject: (err: Rejection) => void) => {
             //
             // Default values.
-            let findings: any[] = [];
+            let findings: DBDocument[] = [];
             let foundIds: string[] = [];
             let indexedConditions: ConditionsList = [];
             let unindexedConditions: ConditionsList = [];
@@ -80,7 +81,7 @@ export class SubLogicSearch extends SubLogicSeeker {
             const unindexedSearch = () => {
                 //
                 // Returning documents that match unindexed conditions.
-                resolve(Tools.DeepCopy(findings.filter((datum: any) => {
+                resolve(Tools.DeepCopyDocuments(findings.filter((datum: DBDocument) => {
                     let accept = true;
                     //
                     // Checking each conditions.
@@ -145,17 +146,17 @@ export class SubLogicSearch extends SubLogicSeeker {
      *
      * @method searchOne
      * @param {SimpleConditionsList} conditions Filtering conditions.
-     * @returns {Promise<any>} Returns a promise that gets resolved when the
+     * @returns {Promise<DBDocument>} Returns a promise that gets resolved when the
      * search completes. In the promise it returns a found documents.
      */
-    public searchOne(conditions: SimpleConditionsList): Promise<any> {
+    public searchOne(conditions: SimpleConditionsList): Promise<DBDocument> {
         //
         // Building promise to return.
-        return new Promise<any>((resolve: (res: any) => void, reject: (err: Rejection) => void) => {
+        return new Promise<DBDocument>((resolve: (res: DBDocument) => void, reject: (err: Rejection) => void) => {
             //
             // Forwarding call.
             this.search(conditions)
-                .then((findings: any[]) => {
+                .then((findings: DBDocument[]) => {
                     //
                     // Picking the first found document.
                     if (findings.length > 0) {

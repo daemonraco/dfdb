@@ -3,6 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
+import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
 import { IOpenCollectionIndex } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 /**
@@ -15,13 +16,11 @@ export declare class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
      * This method adds certain document to all field indexes.
      *
      * @method addDocToIndexes
-     * @param {{ [name: string]: any }} doc Document to be added.
+     * @param {DBDocument} doc Document to be added.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    addDocToIndexes(doc: {
-        [name: string]: any;
-    }): Promise<void>;
+    addDocToIndexes(doc: DBDocument): Promise<void>;
     /**
      * This method associates a new index to a root document field and trigger
      * it's first indexation.
@@ -73,11 +72,9 @@ export declare class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
      * List all indexes of this collection
      *
      * @method indexes
-     * @returns {{[name:string]:any}} Retruns a simple object listing indexes.
+     * @returns {BasicDictionary} Retruns a simple object listing indexes.
      */
-    indexes(): {
-        [name: string]: any;
-    };
+    indexes(): BasicDictionary;
     /**
      * This method loads all associated field indexes.
      *
@@ -132,67 +129,65 @@ export declare class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
      *
      * @protected
      * @method addDocToIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name', 'doc').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('name', 'doc').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected addDocToIndex(params: {
-        [name: string]: any;
-    }): Promise<void>;
+    protected addDocToIndex(params: BasicDictionary): Promise<void>;
     /**
      * This closes a specific index.
      *
      * @protected
      * @method closeIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('name').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected closeIndex(params: any): Promise<void>;
+    protected closeIndex(params: BasicDictionary): Promise<void>;
     /**
      * This method drops a specific index.
      *
      * @protected
      * @method dropIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('name').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected dropIndex(params: any): Promise<void>;
+    protected dropIndex(params: BasicDictionary): Promise<void>;
     /**
      * This closes a specific index.
      *
      * @protected
      * @method loadIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation.
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected loadIndex(params: any): Promise<void>;
+    protected loadIndex(params: BasicDictionary): Promise<void>;
     /**
      * This method removes a document from a specific index.
      *
      * @protected
      * @method removeDocFromIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('id', 'name').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('id', 'name').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected removeDocFromIndex(params: any): Promise<void>;
+    protected removeDocFromIndex(params: BasicDictionary): Promise<void>;
     /**
      * This method truncates a specific index.
      *
      * @protected
      * @method truncateIndex
-     * @param {{ [name: string]: any }} params List of required parameters to
-     * perform this operation ('name').
+     * @param {BasicDictionary} params List of required parameters to perform this
+     * operation ('name').
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    protected truncateIndex(params: any): Promise<void>;
+    protected truncateIndex(params: BasicDictionary): Promise<void>;
 }

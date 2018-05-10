@@ -7,6 +7,7 @@ import * as JSZip from 'jszip';
 import * as fs from 'fs';
 
 import { BasicConstants } from '../constants.dfdb';
+import { BasicDictionary } from '../basic-types.dfdb';
 import { ConnectionDBValidationResult, ConnectionSavingQueueResult } from './types.dfdb';
 import { DocsOnFileDB } from '../manager.dfdb';
 import { Collection } from '../collection/collection.dfdb';
@@ -39,7 +40,7 @@ export class Connection implements IErrors, IResource {
     protected _dbName: string = null;
     protected _dbPath: string = null;
     protected _fileAccessQueue: any = null;
-    protected _manifest: { [name: string]: any } = {
+    protected _manifest: BasicDictionary = {
         collections: {},
         initializer: null,
         initializerMD5: null
@@ -95,9 +96,10 @@ export class Connection implements IErrors, IResource {
      * Provides access to the list of collection this connections knows.
      *
      * @method collections
-     * @returns {{ [name: string]: any }} Returns a list of collections this connection knows.
+     * @returns {BasicDictionary} Returns a list of collections this connection
+     * knows.
      */
-    public collections(): { [name: string]: any } {
+    public collections(): BasicDictionary {
         //
         // Forwarding to sub-logic.
         return this._subLogicCollections.collections();

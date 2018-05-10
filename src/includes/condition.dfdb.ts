@@ -25,8 +25,8 @@ export enum ConditionTypes {
  * This simple class checks how a list of contitions should be specified.
  * @type ConditionsList
  */
-
 export type ConditionsList = Array<Condition>;
+
 /**
  * Standard way to specify simple conditions.
  * @type SimpleConditionsList
