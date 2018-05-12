@@ -5,7 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
-import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { BasicDictionary, DBDocument, DBDocumentID } from '../basic-types.dfdb';
 import { Collection } from './collection.dfdb';
 import { Index } from '../index.dfdb';
 import { IOpenCollectionIndex } from './open-collection.i.dfdb';
@@ -86,7 +86,7 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
                         // Recursive add-and-wait of all documents to the new
                         // index.
                         const processIds = () => {
-                            const id = ids.shift();
+                            const id: DBDocumentID = ids.shift();
                             if (id) {
                                 //
                                 // Skiping physical save, that will be done when
@@ -346,11 +346,11 @@ export class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
      * This method a document from all field indexes.
      *
      * @method removeDocFromIndexes
-     * @param {string} id ID of the document to be removed.
+     * @param {DBDocumentID} id ID of the document to be removed.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    public removeDocFromIndexes(id: string): Promise<void> {
+    public removeDocFromIndexes(id: DBDocumentID): Promise<void> {
         //
         // Building promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {

@@ -14,6 +14,7 @@ collections in __DocsOnFileDB__.
     - [Partially updating a document](#partially-updating-a-document)
     - [Updating multiple documents](#updating-multiple-documents)
     - [Deleting a document](#deleting-a-document)
+    - [Deleting multiple documents](#deleting-multiple-documents)
     - [Deleting all documents](#deleting-all-documents)
 - [Searching documents](#searching-documents)
     - [Search keywords](#search-keywords)
@@ -118,6 +119,19 @@ myCollection.updateMany({ age: 34 }, newPartialData)
 myCollection.remove(123)
     .then(() => {
         console.log(`Document removed.`);
+    })
+    .catch(err => {
+        console.err(`There was an error. ${err}`);
+    });
+```
+
+## Deleting multiple documents
+`removeMany()` is also similar to `remove()`, but it can affect multiple documents
+at once.
+```js
+myCollection.removeMany({ age: 34 })
+    .then(results => {
+        console.log(JSON.stringify(results, null, 2));
     })
     .catch(err => {
         console.err(`There was an error. ${err}`);

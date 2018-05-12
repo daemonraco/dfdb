@@ -3,7 +3,7 @@
  * @author Alejandro D. Simi
  */
 import { Promise } from 'es6-promise';
-import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { BasicDictionary, DBDocument, DBDocumentID } from '../basic-types.dfdb';
 import { IOpenCollectionIndex } from './open-collection.i.dfdb';
 import { SubLogic } from '../sub-logic.dfdb';
 /**
@@ -109,11 +109,11 @@ export declare class SubLogicIndex extends SubLogic<IOpenCollectionIndex> {
      * This method a document from all field indexes.
      *
      * @method removeDocFromIndexes
-     * @param {string} id ID of the document to be removed.
+     * @param {DBDocumentID} id ID of the document to be removed.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    removeDocFromIndexes(id: string): Promise<void>;
+    removeDocFromIndexes(id: DBDocumentID): Promise<void>;
     /**
      * This method truncates all field indexes.
      *

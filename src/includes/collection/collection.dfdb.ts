@@ -6,7 +6,7 @@
 import { Promise } from 'es6-promise';
 
 import { BasicConstants } from '../constants.dfdb';
-import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { BasicDictionary, DBDocument, DBDocumentID } from '../basic-types.dfdb';
 import { ConditionsList } from '../condition.dfdb';
 import { Connection, ConnectionSavingQueueResult } from '../connection/connection.dfdb';
 import { IErrors } from '../errors.i.dfdb';
@@ -418,13 +418,13 @@ export class Collection implements IErrors, IResource {
      * one inside the database.
      *
      * @method update
-     * @param {string} id ID of the document to update.
+     * @param {DBDocumentID} id ID of the document to update.
      * @param {BasicDictionary} partialDoc Partial document to use as new
      * data.
      * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    public partialUpdate(id: string, partialDoc: BasicDictionary): Promise<DBDocument> {
+    public partialUpdate(id: DBDocumentID, partialDoc: BasicDictionary): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.partialUpdate(id, partialDoc);
@@ -446,14 +446,27 @@ export class Collection implements IErrors, IResource {
      * This method removes a document from this collection based on an ID.
      *
      * @method remove
-     * @param {string} id ID of the document to remove.
+     * @param {DBDocumentID} id ID of the document to remove.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    public remove(id: string): Promise<void> {
+    public remove(id: DBDocumentID): Promise<void> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.remove(id);
+    }
+    /**
+     * This method is similar to 'remove()' but can affect more than one document.
+     *
+     * @method removeMany
+     * @param {ConditionsList} conditions Filtering conditions.
+     * @returns {Promise<BasicDictionary>} Returns a simple object describing the
+     * operation's results.
+     */
+    public removeMany(conditions: ConditionsList): Promise<BasicDictionary> {
+        //
+        // Forwarding to sub-logic.
+        return this._subLogicCRUD.removeMany(conditions);
     }
     /**
      * This method removes a the assigned schema for document validaton on this
@@ -545,12 +558,12 @@ export class Collection implements IErrors, IResource {
      * Updates a document and updates this collection's indexes with it.
      *
      * @method update
-     * @param {string} id ID of the document to update.
+     * @param {DBDocumentID} id ID of the document to update.
      * @param {BasicDictionary} doc Document to use as new data.
      * @returns {Promise<DBDocument>} Returns the updated document
      * completed with all internal fields.
      */
-    public update(id: string, doc: BasicDictionary): Promise<DBDocument> {
+    public update(id: DBDocumentID, doc: BasicDictionary): Promise<DBDocument> {
         //
         // Forwarding to sub-logic.
         return this._subLogicCRUD.update(id, doc);
@@ -722,9 +735,9 @@ export class Collection implements IErrors, IResource {
                             .forEach(line => {
                                 //
                                 // Parsing information from current line.
-                                const pieces = line.split('|');
-                                const id = pieces.shift();
-                                const doc = JSON.parse(pieces.join('|'));
+                                const pieces: string[] = line.split('|');
+                                const id: DBDocumentID = pieces.shift();
+                                const doc: any = JSON.parse(pieces.join('|'));
                                 //
                                 // Fixing ID, just in case.
                                 doc._id = id;
@@ -781,7 +794,7 @@ export class Collection implements IErrors, IResource {
             //
             // Converting data into a list of strings that can be physically
             // stored.
-            Object.keys(this._data).forEach(id => {
+            Object.keys(this._data).forEach((id: DBDocumentID) => {
                 data.push(`${id}|${JSON.stringify(this._data[id])}`);
             });
             //

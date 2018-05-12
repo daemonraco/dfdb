@@ -169,4 +169,27 @@ describe('dfdb: Multiple changes [013]', function () {
                 assert.strictEqual(docs.length, 0);
             }).then(done, done);
     });
+
+    it(`deleting multiple entries`, done => {
+        assert.typeOf(collection.removeMany, 'function');
+
+        collection.removeMany({ age: { $gt: 40 } }).then(results => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.isObject(results);
+            assert.strictEqual(results.count, 2);
+        }).then(done, done);
+    });
+
+    it(`searches testing entries`, done => {
+        assert.typeOf(collection.search, 'function');
+
+        collection.search({ age: { $gt: 40 } }).then(docs => {
+            assert.isFalse(collection.error());
+            assert.isNull(collection.lastError());
+
+            assert.strictEqual(docs.length, 0);
+        }).then(done, done);
+    });
 });
