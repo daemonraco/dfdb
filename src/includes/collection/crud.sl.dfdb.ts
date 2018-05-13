@@ -5,7 +5,7 @@
 
 import { Promise } from 'es6-promise';
 
-import { BasicDictionary, DBDocument } from '../basic-types.dfdb';
+import { BasicDictionary, DBDocument, DBDocumentID } from '../basic-types.dfdb';
 import { ConditionsList } from '../condition.dfdb';
 import { IOpenCollectionCRUD } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
@@ -37,7 +37,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<DBDocument>((resolve: (res: DBDocument) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
@@ -109,13 +109,13 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      * one inside the database.
      *
      * @method partialUpdate
-     * @param {string} id ID of the document to update.
+     * @param {DBDocumentID} id ID of the document to update.
      * @param {BasicDictionary} partialDoc Partial document to use as new
      * data.
      * @returns {Promise<BasicDictionary>} Returns the updated document
      * completed with all internal fields.
      */
-    public partialUpdate(id: string, partialDoc: BasicDictionary): Promise<DBDocument> {
+    public partialUpdate(id: DBDocumentID, partialDoc: BasicDictionary): Promise<DBDocument> {
         //
         // Self-copying to avoid issues.
         partialDoc = Tools.DeepCopy(partialDoc);
@@ -123,7 +123,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<DBDocument>((resolve: (res: DBDocument) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
@@ -159,16 +159,16 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      * This method removes a document from this collection based on an ID.
      *
      * @method remove
-     * @param {string} id ID of the document to remove.
+     * @param {DBDocumentID} id ID of the document to remove.
      * @returns {Promise<void>} Return a promise that gets resolved when the
      * operation finishes.
      */
-    public remove(id: string): Promise<void> {
+    public remove(id: DBDocumentID): Promise<void> {
         //
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected.
@@ -198,6 +198,63 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
         });
     }
     /**
+     * This method is similar to 'remove()' but can affect more than one document.
+     *
+     * @method removeMany
+     * @param {ConditionsList} conditions Filtering conditions.
+     * @returns {Promise<BasicDictionary>} Returns a simple object describing the
+     * operation's results.
+     */
+    public removeMany(conditions: ConditionsList): Promise<BasicDictionary> {
+        //
+        // Building a promise to return.
+        return new Promise<BasicDictionary>((resolve: (res: BasicDictionary) => void, reject: (err: Rejection) => void) => {
+            //
+            // Searching for items to remove.
+            this._mainObject._subLogicSearch.search(conditions)
+                .then((items: DBDocument[]) => {
+                    //
+                    // Default values.
+                    const results: BasicDictionary = {
+                        count: 0
+                    };
+                    //
+                    // Extracting only IDs.
+                    const ids: DBDocumentID[] = items.map((item: DBDocument) => item._id);
+                    //
+                    // Creating a function to walk over each ID.
+                    const run = () => {
+                        //
+                        // Picking one ID.
+                        const id: DBDocumentID = ids.shift();
+                        //
+                        // Is there something to update?
+                        if (id) {
+                            //
+                            // Partially updating a document.
+                            this.remove(id)
+                                .then(() => {
+                                    //
+                                    // Adding to results.
+                                    results.count++;
+                                    //
+                                    // Going for the next ID.
+                                    run();
+                                }).catch(reject);
+                        } else {
+                            //
+                            // Finishing and returning results.
+                            resolve(results);
+                        }
+                    };
+                    //
+                    // Walking over.
+                    run();
+                })
+                .catch(reject)
+        });
+    }
+    /**
      * This method removes all data of this collection and also its indexes.
      *
      * @method truncate
@@ -209,7 +266,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Is it connected?
@@ -239,12 +296,12 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      * Updates a document and updates this collection's indexes with it.
      *
      * @method update
-     * @param {string} id ID of the document to update.
+     * @param {DBDocumentID} id ID of the document to update.
      * @param {BasicDictionary} doc Document to use as new data.
      * @returns {Promise<BasicDictionary>} Returns the updated document
      * completed with all internal fields.
      */
-    public update(id: string, doc: BasicDictionary): Promise<DBDocument> {
+    public update(id: DBDocumentID, doc: BasicDictionary): Promise<DBDocument> {
         //
         // Self-copying to avoid issues.
         doc = Tools.DeepCopy(doc);
@@ -252,7 +309,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
         // Restarting error messages.
         this._mainObject._subLogicErrors.resetError();
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<DBDocument>((resolve: (res: DBDocument) => void, reject: (err: Rejection) => void) => {
             //
             // Is it a valid document?
@@ -339,7 +396,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
      */
     public updateMany(conditions: ConditionsList, doc: BasicDictionary): Promise<DBDocument[]> {
         //
-        // Building promise to return.
+        // Building a promise to return.
         return new Promise<DBDocument[]>((resolve: (res: DBDocument[]) => void, reject: (err: Rejection) => void) => {
             //
             // Searching for items to update.
@@ -356,7 +413,7 @@ export class SubLogicCRUD extends SubLogic<IOpenCollectionCRUD> {
                     const run = () => {
                         //
                         // Picking one ID.
-                        const id = ids.shift();
+                        const id: DBDocumentID = ids.shift();
                         //
                         // Is there something to update?
                         if (id) {

@@ -6,7 +6,7 @@
 import { Promise } from 'es6-promise';
 
 import { Condition, ConditionsList, SimpleConditionsList } from '../condition.dfdb';
-import { DBDocument } from '../basic-types.dfdb';
+import { DBDocument, DBDocumentID } from '../basic-types.dfdb';
 import { Rejection } from '../rejection.dfdb';
 import { RejectionCodes } from '../rejection-codes.dfdb';
 import { SubLogicSeeker } from './seeker.sl.dfdb';
@@ -50,10 +50,10 @@ export class SubLogicFind extends SubLogicSeeker {
             // Forwarding the search to a method that searches and returns only
             // ids.
             this.findIds(conditionsList)
-                .then((ids: string[]) => {
+                .then((ids: DBDocumentID[]) => {
                     //
                     // Converting the list of IDs into a list of documents.
-                    ids.forEach(id => findings.push(this._mainObject._data[id]));
+                    ids.forEach((id: DBDocumentID) => findings.push(this._mainObject._data[id]));
                     //
                     // Returning found documents.
                     resolve(Tools.DeepCopyDocuments(findings));

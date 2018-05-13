@@ -7,7 +7,7 @@ import { Promise } from 'es6-promise';
 import * as Ajv from 'ajv';
 import * as md5 from 'md5';
 
-import { BasicDictionary } from '../basic-types.dfdb';
+import { BasicDictionary, DBDocumentID } from '../basic-types.dfdb';
 import { Collection } from './collection.dfdb';
 import { IOpenCollectionSchema } from './open-collection.i.dfdb';
 import { Rejection } from '../rejection.dfdb';
@@ -43,7 +43,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
         if (this._mainObject._connected && this.hasSchema()) {
             //
             // Creating a simple validator.
-            let auxAjv = new Ajv();
+            let auxAjv: any = new Ajv();
             this._mainObject._schemaValidator = auxAjv.compile(this._mainObject._manifest.schema);
             //
             // Creating a validator to add default values.
@@ -130,8 +130,8 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                 if (schemaMD5 !== this._mainObject._manifest.schemaMD5) {
                     //
                     // Checking schema.
-                    let valid = false;
-                    let ajv = new Ajv();
+                    let valid: boolean = false;
+                    let ajv: any = new Ajv();
                     try {
                         let validator = ajv.compile(schema);
                         valid = true;
@@ -190,11 +190,11 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
         return new Promise<void>((resolve: () => void, reject: (err: Rejection) => void) => {
             //
             // Creating a few temporary validators.
-            let auxAjv = new Ajv();
-            let validator = auxAjv.compile(schema);
+            let auxAjv: any = new Ajv();
+            let validator: any = auxAjv.compile(schema);
             //
             // Checking current data against schema.
-            Object.keys(this._mainObject._data).forEach((id: string) => {
+            Object.keys(this._mainObject._data).forEach((id: DBDocumentID) => {
                 if (!this._mainObject.error()) {
                     if (!validator(this._mainObject._data[id])) {
                         this._mainObject._subLogicErrors.setLastRejection(new Rejection(RejectionCodes.SchemaDoesntApply, `Id: ${id}. '\$${validator.errors[0].dataPath}' ${validator.errors[0].message}`));
@@ -213,7 +213,7 @@ export class SubLogicSchema extends SubLogic<IOpenCollectionSchema> {
                 this.loadSchemaHandlers();
                 //
                 // Fixing current data using the new schema.
-                Object.keys(this._mainObject._data).forEach((id: string) => {
+                Object.keys(this._mainObject._data).forEach((id: DBDocumentID) => {
                     this._mainObject._schemaApplier(this._mainObject._data[id]);
                 });
 
