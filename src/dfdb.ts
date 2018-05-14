@@ -19,6 +19,7 @@ export { RejectionCodes } from './includes/rejection-codes.dfdb';
 
 //
 // Exposing types.
+export { BasicDictionary, DBDocument, DBDocumentID } from './includes/basic-types.dfdb';
 export { Collection } from './includes/collection/collection.dfdb';
 export { Connection } from './includes/connection/connection.dfdb';
 export { Index } from './includes/index.dfdb';
